@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { LanguageSwitcher } from "./language-switcher"
 import { useLanguage } from "./language-provider"
 import { useAuth } from "@/hooks/use-auth"
-import { MessageSquare, User, Calendar, Wallet, Menu, LogOut, HelpCircle, Plus, LogIn } from "lucide-react"
+import { MessageSquare, User, Calendar, Wallet, Menu, LogOut, HelpCircle, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "./logo"
 import {
@@ -33,7 +33,7 @@ NavigationItem.displayName = "NavigationItem"
 export const Header = memo(() => {
   const { t } = useLanguage()
   const router = useRouter()
-  const { status, isLoggedIn, isGuest, logout, startRegistration } = useAuth()
+  const { status, isLoggedIn, isGuest, logout } = useAuth()
 
   const handleLogout = () => {
     logout()
@@ -41,14 +41,6 @@ export const Header = memo(() => {
     setTimeout(() => {
       window.location.href = ROUTES.home
     }, 100)
-  }
-
-  const handleActionClick = (action: string) => {
-    if (!isLoggedIn && !isGuest) {
-      startRegistration(action)
-    } else {
-      router.push(action)
-    }
   }
 
   const navigationItems = [
@@ -65,21 +57,6 @@ export const Header = memo(() => {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-4 md:gap-8">
             <Logo />
-
-            {/* Task Action Buttons - For all users */}
-            <div className="hidden md:flex items-center gap-3">
-              <Button className="rounded-full px-6" onClick={() => handleActionClick("/request-service")}>
-                <Plus className="h-4 w-4 mr-2" />
-                Publicar tarea
-              </Button>
-              <Button
-                variant="ghost"
-                className="text-primary hover:text-primary"
-                onClick={() => router.push("/browse-services")}
-              >
-                Explorar tareas
-              </Button>
-            </div>
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
