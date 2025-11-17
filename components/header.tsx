@@ -1,10 +1,9 @@
 "use client"
 
-import { memo } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { memo, useState, useEffect } from "react"
+import { useTranslations } from 'next-intl';
+import { Link, useRouter } from '@/i18n/navigation';
 import { LanguageSwitcher } from "./language-switcher"
-import { useLanguage } from "./language-provider"
 import { useAuth } from "@/hooks/use-auth"
 import { MessageSquare, User, Calendar, Wallet, Menu, LogOut, HelpCircle, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -31,9 +30,23 @@ const NavigationItem = memo(({ href, icon: Icon, label }: { href: string; icon: 
 NavigationItem.displayName = "NavigationItem"
 
 export const Header = memo(() => {
-  const { t } = useLanguage()
+  const t = useTranslations()
   const router = useRouter()
   const { status, isLoggedIn, isGuest, logout } = useAuth()
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY || document.documentElement.scrollTop
+      setIsScrolled(scrollPosition > 0)
+    }
+
+    // Check initial scroll position
+    handleScroll()
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -48,15 +61,15 @@ export const Header = memo(() => {
     { href: ROUTES.messages, icon: MessageSquare, label: t("nav.messages") },
     { href: ROUTES.calendar, icon: Calendar, label: t("nav.calendar") },
     { href: ROUTES.wallet, icon: Wallet, label: t("nav.wallet") },
-    { href: ROUTES.helpCenter, icon: HelpCircle, label: "Centro de Ayuda" },
+    { href: ROUTES.helpCenter, icon: HelpCircle, label: t("nav.help") },
   ]
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 shadow-sm">
+    <header className={`sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 transition-shadow duration-200 ${isScrolled ? "shadow-sm" : ""}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-4 md:gap-8">
-            <Logo />
+            <Logo width={60} height={60} />
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
@@ -91,15 +104,15 @@ export const Header = memo(() => {
                 onClick={() => router.push("/login")}
               >
                 <LogIn className="h-4 w-4" />
-                <span className="hidden sm:inline">Iniciar sesión</span>
+                <span className="hidden sm:inline">{t("button.login")}</span>
               </Button>
             ) : (
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" className="px-4" onClick={() => router.push("/login")}>
-                  Iniciar sesión
+                  {t("button.login")}
                 </Button>
                 <Button size="sm" className="px-4" onClick={() => router.push("/register")}>
-                  Registrarse
+                  {t("button.register")}
                 </Button>
               </div>
             )}

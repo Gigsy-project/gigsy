@@ -2,19 +2,18 @@
 
 import type React from "react"
 
-import { useLanguage } from "@/components/language-provider"
+import { useTranslations } from 'next-intl';
+import { Link, useRouter } from '@/i18n/navigation';
 import { Logo } from "@/components/logo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { GoogleIcon } from "@/components/icons/google-icon"
 import { AppleIcon } from "@/components/icons/apple-icon"
 
 export default function LoginPage() {
-  const { t } = useLanguage()
+  const t = useTranslations()
   const router = useRouter()
 
   const handleSocialLogin = (provider: "google" | "apple") => {

@@ -7,10 +7,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { Shield, Star, Zap, ShieldCheck, ArrowRight, CheckCircle, MapPin, Clock, Loader2, Check, Wrench } from "lucide-react"
-import Link from "next/link"
+import { useTranslations } from 'next-intl';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useAuth } from "@/hooks/use-auth"
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import {
   Select,
   SelectContent,
@@ -34,35 +34,7 @@ import {
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
 
-const features = [
-  {
-    icon: Shield,
-    title: "Verificados",
-    description: "Personas con verificación completa y confiable en cada servicio",
-  },
-  {
-    icon: Star,
-    title: "Calidad",
-    description: "Sistema de calificaciones confiable y transparente para todos",
-  },
-  {
-    icon: Zap,
-    title: "Rápido",
-    description: "Conexión inmediata con personas de tu comunidad cercana",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Protegido",
-    description: "Cobertura ante imprevistos para tu tranquilidad y seguridad",
-  },
-]
-
-const benefits = [
-  "Proveedores verificados y confiables",
-  "Precios transparentes sin sorpresas",
-  "Comunicación directa y segura",
-  "Pagos protegidos y garantizados",
-]
+// Features will be created dynamically with translations
 
 // Lista de ciudades de Chile
 const CHILEAN_CITIES = [
@@ -164,12 +136,36 @@ const useUserCity = () => {
 }
 
 export default function HomePage() {
+  const t = useTranslations()
   const { status, isLoggedIn, isLoading, continueAsGuest } = useAuth()
   const router = useRouter()
   const { city, isLoadingLocation, setCity: setUserCity } = useUserCity()
   const [isCityDialogOpen, setIsCityDialogOpen] = useState(false)
   const [selectedCity, setSelectedCity] = useState("")
   const [selectedAction, setSelectedAction] = useState("")
+
+  const features = [
+    {
+      icon: Shield,
+      title: t("hero.features.verified"),
+      description: t("hero.features.verifiedDesc"),
+    },
+    {
+      icon: Star,
+      title: t("hero.features.quality"),
+      description: t("hero.features.qualityDesc"),
+    },
+    {
+      icon: Zap,
+      title: t("hero.features.fast"),
+      description: t("hero.features.fastDesc"),
+    },
+    {
+      icon: ShieldCheck,
+      title: t("hero.features.protected"),
+      description: t("hero.features.protectedDesc"),
+    },
+  ]
 
   // Show loading state while checking auth
   if (isLoading) {
@@ -201,7 +197,7 @@ export default function HomePage() {
                   {isLoadingLocation ? (
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-3 w-3 animate-spin" />
-                      <span>Obteniendo ubicación...</span>
+                      <span>{t("hero.gettingLocation")}</span>
                     </div>
                   ) : (
                     <>
@@ -210,7 +206,7 @@ export default function HomePage() {
                         onClick={() => setIsCityDialogOpen(true)}
                         className="text-primary hover:underline ml-2"
                       >
-                        Cambiar ciudad
+                        {t("hero.changeCity")}
                       </button>
                     </>
                   )}
@@ -218,8 +214,7 @@ export default function HomePage() {
 
                 {/* Main Heading */}
                 <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight">
-                  Busca/Postea cualquier servicio
-                  <span className="block text-primary">en tu comunidad</span>
+                  {t("hero.title")}
                 </h1>
 
                 {/* Service Request Form */}
@@ -229,15 +224,15 @@ export default function HomePage() {
                     <SelectTrigger className="w-full h-14 text-base rounded-xl min-h-[56px]">
                       <div className="flex items-center gap-2 flex-1 justify-start">
                         <Clock className="h-4 w-4" />
-                        <SelectValue placeholder="Selecciona que deseas hacer" className="text-left" />
+                        <SelectValue placeholder={t("hero.selectAction")} className="text-left" />
                       </div>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="accion" disabled>
-                        Selecciona que deseas hacer
+                        {t("hero.selectAction")}
                       </SelectItem>
-                      <SelectItem value="buscar">Buscar un servicio</SelectItem>
-                      <SelectItem value="publicar">Publicar un servicio</SelectItem>
+                      <SelectItem value="buscar">{t("hero.searchService")}</SelectItem>
+                      <SelectItem value="publicar">{t("hero.postService")}</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -247,7 +242,7 @@ export default function HomePage() {
                       <Wrench className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <Input
-                      placeholder={selectedAction === "buscar" ? "¿Qué servicio buscas?" : "¿Qué servicio quieres publicar?"}
+                      placeholder={selectedAction === "buscar" ? t("hero.whatServiceSearch") : t("hero.whatServicePost")}
                       className="pl-12 h-14 text-base rounded-xl"
                     />
                   </div>
@@ -258,15 +253,15 @@ export default function HomePage() {
                     className="w-full h-14 text-base font-semibold rounded-xl"
                     onClick={() => router.push("/browse-services")}
                   >
-                    Buscar servicios
+                    {t("button.search")}
                   </Button>
 
                   {/* Login Prompt */}
                   <p className="text-sm text-muted-foreground text-center pt-2">
                     <Link href="/login" className="text-primary hover:underline">
-                      Inicia sesión
+                      {t("button.login")}
                     </Link>{" "}
-                    para ver tu actividad reciente
+                    {t("hero.loginPrompt")}
                   </p>
                 </div>
               </div>
@@ -288,13 +283,13 @@ export default function HomePage() {
         <Dialog open={isCityDialogOpen} onOpenChange={setIsCityDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Cambia tu ubicación</DialogTitle>
+              <DialogTitle>{t("hero.changeLocation")}</DialogTitle>
             </DialogHeader>
             <div className="py-4">
               <Command>
-                <CommandInput placeholder="Buscar ciudad..." />
+                <CommandInput placeholder={t("hero.searchCity")} />
                 <CommandList>
-                  <CommandEmpty>No se encontró la ciudad.</CommandEmpty>
+                  <CommandEmpty>{t("hero.cityNotFound")}</CommandEmpty>
                   <CommandGroup>
                     {CHILEAN_CITIES.map((cityOption) => (
                       <CommandItem
@@ -331,9 +326,9 @@ export default function HomePage() {
         <section className="py-4 lg:py-6">
           <div className="container mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold mb-4">¿Por qué elegir GigSy?</h2>
+              <h2 className="text-2xl lg:text-3xl font-bold mb-4">{t("hero.whyChoose")}</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                La plataforma más confiable para conectar con servicios de calidad
+                {t("hero.whyChooseDesc")}
               </p>
             </div>
 
