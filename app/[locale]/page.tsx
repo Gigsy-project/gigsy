@@ -202,12 +202,13 @@ export default function HomePage() {
                   ) : (
                     <>
                       <span>{city}</span>
-                      <button
+                      <Button
+                        variant="link"
                         onClick={() => setIsCityDialogOpen(true)}
-                        className="text-primary hover:underline ml-2"
+                        className="text-primary hover:underline ml-1"
                       >
                         {t("hero.changeCity")}
-                      </button>
+                      </Button>
                     </>
                   )}
                 </div>
@@ -334,7 +335,7 @@ export default function HomePage() {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
               {features.map((feature, index) => (
-                <Card key={index} className="border-0 shadow-none bg-transparent">
+                <Card key={feature.title} className="border-0 shadow-none bg-transparent">
                   <CardContent className="p-6 text-center">
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                       <feature.icon className="h-5 w-5 text-primary" />
