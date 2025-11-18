@@ -1,9 +1,11 @@
 "use client"
 
-import Link from "next/link"
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { AppStoreButton, GooglePlayButton } from "./base/buttons/app-store-buttons"
 
 export function Footer() {
+  const t = useTranslations()
   return (
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto px-4">
@@ -11,14 +13,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Compañía */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Compañía</h3>
+            <h3 className="text-lg font-semibold mb-4">{t("footer.company")}</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/about"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Acerca de nosotros
+                  {t("footer.aboutUs")}
                 </Link>
               </li>
               <li>
@@ -26,7 +28,7 @@ export function Footer() {
                   href="/careers"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Trabaja con nosotros
+                  {t("footer.workWithUs")}
                 </Link>
               </li>
               <li>
@@ -34,7 +36,7 @@ export function Footer() {
                   href="/press"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Prensa
+                  {t("footer.press")}
                 </Link>
               </li>
               <li>
@@ -42,7 +44,7 @@ export function Footer() {
                   href="/blog"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Blog
+                  {t("footer.blog")}
                 </Link>
               </li>
               <li>
@@ -50,7 +52,7 @@ export function Footer() {
                   href="/contact"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Contacto
+                  {t("footer.contact")}
                 </Link>
               </li>
             </ul>
@@ -58,14 +60,14 @@ export function Footer() {
 
           {/* Quiénes somos */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quiénes somos</h3>
+            <h3 className="text-lg font-semibold mb-4">{t("footer.whoWeAre")}</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/mission"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Nuestra misión
+                  {t("footer.ourMission")}
                 </Link>
               </li>
               <li>
@@ -73,7 +75,7 @@ export function Footer() {
                   href="/values"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Nuestros valores
+                  {t("footer.ourValues")}
                 </Link>
               </li>
               <li>
@@ -81,7 +83,7 @@ export function Footer() {
                   href="/team"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Nuestro equipo
+                  {t("footer.ourTeam")}
                 </Link>
               </li>
               <li>
@@ -89,7 +91,7 @@ export function Footer() {
                   href="/history"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Nuestra historia
+                  {t("footer.ourHistory")}
                 </Link>
               </li>
               <li>
@@ -97,7 +99,7 @@ export function Footer() {
                   href="/investors"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Inversionistas
+                  {t("footer.investors")}
                 </Link>
               </li>
             </ul>
@@ -105,14 +107,14 @@ export function Footer() {
 
           {/* Lo que ofrecemos */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Lo que ofrecemos</h3>
+            <h3 className="text-lg font-semibold mb-4">{t("footer.whatWeOffer")}</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/services"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Nuestros servicios
+                  {t("footer.ourServices")}
                 </Link>
               </li>
               <li>
@@ -120,7 +122,7 @@ export function Footer() {
                   href="/how-it-works"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Cómo funciona
+                  {t("footer.howItWorks")}
                 </Link>
               </li>
               <li>
@@ -128,7 +130,7 @@ export function Footer() {
                   href="/pricing"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Precios
+                  {t("footer.pricing")}
                 </Link>
               </li>
               <li>
@@ -136,7 +138,7 @@ export function Footer() {
                   href="/safety"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Seguridad
+                  {t("footer.safety")}
                 </Link>
               </li>
               <li>
@@ -144,7 +146,7 @@ export function Footer() {
                   href="/guarantee"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Garantía
+                  {t("footer.guarantee")}
                 </Link>
               </li>
             </ul>
@@ -152,14 +154,14 @@ export function Footer() {
 
           {/* Soporte y Legal */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Soporte</h3>
+            <h3 className="text-lg font-semibold mb-4">{t("footer.support")}</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/help-center"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Centro de ayuda
+                  {t("footer.helpCenter")}
                 </Link>
               </li>
               <li>
@@ -167,7 +169,7 @@ export function Footer() {
                   href="/faq"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Preguntas frecuentes
+                  {t("footer.faq")}
                 </Link>
               </li>
               <li>
@@ -175,7 +177,7 @@ export function Footer() {
                   href="/terms"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Términos de servicio
+                  {t("footer.termsOfService")}
                 </Link>
               </li>
               <li>
@@ -183,7 +185,7 @@ export function Footer() {
                   href="/privacy"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Política de privacidad
+                  {t("footer.privacyPolicy")}
                 </Link>
               </li>
               <li>
@@ -191,7 +193,7 @@ export function Footer() {
                   href="/cookies"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Política de cookies
+                  {t("footer.cookiePolicy")}
                 </Link>
               </li>
             </ul>
@@ -257,7 +259,7 @@ export function Footer() {
 
           {/* Copyright */}
           <div className="text-center text-gray-400 text-sm">
-            <p>&copy; 2024 AidMarkt. Todos los derechos reservados.</p>
+            <p>&copy; 2024 GigSy. {t("footer.rights")}</p>
           </div>
         </div>
       </div>
