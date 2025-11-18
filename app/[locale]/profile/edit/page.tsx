@@ -1,20 +1,35 @@
-"use client"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useFormValidation, commonValidationRules } from "@/hooks/use-form-validation"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  useFormValidation,
+  commonValidationRules,
+} from "@/hooks/use-form-validation";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ArrowLeft,
   Camera,
@@ -30,8 +45,63 @@ import {
   X,
   Plus,
   Trash2,
-} from "lucide-react"
-import Link from "next/link"
+} from "lucide-react";
+import Link from "next/link";
+
+// Types
+interface BasicInfo {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+interface Location {
+  country: string;
+  city: string;
+  address: string;
+}
+
+interface About {
+  bio: string;
+}
+
+interface Availability {
+  days: string[];
+  startTime: string;
+  endTime: string;
+  immediateAvailability: boolean;
+}
+
+interface Language {
+  name: string;
+  level: string;
+}
+
+interface Experience {
+  title: string;
+  company: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  description: string;
+}
+
+interface ProfileData {
+  basicInfo: BasicInfo;
+  location: Location;
+  about: About;
+  services: string[];
+  availability: Availability;
+  languages: Language[];
+  experience: Experience[];
+  interests: string[];
+}
+
+interface FormProps<T> {
+  data: T;
+  onSave: (data: T) => void;
+}
 
 // Datos iniciales del perfil
 const initialProfileData = {
@@ -67,38 +137,45 @@ const initialProfileData = {
       startDate: "2020-01",
       endDate: "2023-04",
       current: false,
-      description: "Responsable de coordinar servicios de limpieza para clientes corporativos.",
+      description:
+        "Responsable de coordinar servicios de limpieza para clientes corporativos.",
     },
   ],
   interests: ["Ecología", "Tecnología", "Deportes"],
-}
+};
 
 // Componente para editar información básica
-const BasicInfoForm = ({ data, onSave }) => {
-  const [formData, setFormData] = useState(data)
+const BasicInfoForm = ({ data, onSave }: FormProps<BasicInfo>) => {
+  const [formData, setFormData] = useState(data);
   const { errors, validateForm } = useFormValidation({
     name: commonValidationRules.name,
     email: commonValidationRules.email,
     phone: commonValidationRules.phone,
-  })
+  });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     if (validateForm(formData)) {
-      onSave(formData)
+      onSave(formData);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="name">Nombre completo</Label>
-        <Input id="name" name="name" value={formData.name} onChange={handleChange} placeholder="Tu nombre completo" />
+        <Input
+          id="name"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          placeholder="Tu nombre completo"
+        />
         {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
       </div>
 
@@ -117,7 +194,13 @@ const BasicInfoForm = ({ data, onSave }) => {
 
       <div className="space-y-2">
         <Label htmlFor="phone">Teléfono</Label>
-        <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="+56 9 XXXX XXXX" />
+        <Input
+          id="phone"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          placeholder="+56 9 XXXX XXXX"
+        />
         {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
       </div>
 
@@ -125,22 +208,22 @@ const BasicInfoForm = ({ data, onSave }) => {
         <Button type="submit">Guardar cambios</Button>
       </div>
     </form>
-  )
-}
+  );
+};
 
 // Componente para editar ubicación
-const LocationForm = ({ data, onSave }) => {
-  const [formData, setFormData] = useState(data)
+const LocationForm = ({ data, onSave }: FormProps<Location>) => {
+  const [formData, setFormData] = useState(data);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSave(formData)
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -149,7 +232,9 @@ const LocationForm = ({ data, onSave }) => {
         <Select
           name="country"
           value={formData.country}
-          onValueChange={(value) => setFormData((prev) => ({ ...prev, country: value }))}
+          onValueChange={(value) =>
+            setFormData((prev) => ({ ...prev, country: value }))
+          }
         >
           <SelectTrigger>
             <SelectValue placeholder="Selecciona un país" />
@@ -166,7 +251,13 @@ const LocationForm = ({ data, onSave }) => {
 
       <div className="space-y-2">
         <Label htmlFor="city">Ciudad</Label>
-        <Input id="city" name="city" value={formData.city} onChange={handleChange} placeholder="Tu ciudad" />
+        <Input
+          id="city"
+          name="city"
+          value={formData.city}
+          onChange={handleChange}
+          placeholder="Tu ciudad"
+        />
       </div>
 
       <div className="space-y-2">
@@ -184,22 +275,22 @@ const LocationForm = ({ data, onSave }) => {
         <Button type="submit">Guardar cambios</Button>
       </div>
     </form>
-  )
-}
+  );
+};
 
 // Componente para editar acerca de mí
-const AboutForm = ({ data, onSave }) => {
-  const [formData, setFormData] = useState(data)
+const AboutForm = ({ data, onSave }: FormProps<About>) => {
+  const [formData, setFormData] = useState(data);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSave(formData)
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -214,7 +305,8 @@ const AboutForm = ({ data, onSave }) => {
           className="min-h-[150px]"
         />
         <p className="text-xs text-muted-foreground">
-          Una buena descripción ayuda a los clientes a conocerte mejor y aumenta tus posibilidades de ser contratado.
+          Una buena descripción ayuda a los clientes a conocerte mejor y aumenta
+          tus posibilidades de ser contratado.
         </p>
       </div>
 
@@ -222,29 +314,29 @@ const AboutForm = ({ data, onSave }) => {
         <Button type="submit">Guardar cambios</Button>
       </div>
     </form>
-  )
-}
+  );
+};
 
 // Componente para editar servicios
-const ServicesForm = ({ data, onSave }) => {
-  const [services, setServices] = useState(data)
-  const [newService, setNewService] = useState("")
+const ServicesForm = ({ data, onSave }: FormProps<string[]>) => {
+  const [services, setServices] = useState(data);
+  const [newService, setNewService] = useState("");
 
   const handleAddService = () => {
     if (newService.trim() && !services.includes(newService.trim())) {
-      setServices([...services, newService.trim()])
-      setNewService("")
+      setServices([...services, newService.trim()]);
+      setNewService("");
     }
-  }
+  };
 
-  const handleRemoveService = (index) => {
-    setServices(services.filter((_, i) => i !== index))
-  }
+  const handleRemoveService = (index: number) => {
+    setServices(services.filter((_, i) => i !== index));
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSave(services)
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(services);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -264,7 +356,11 @@ const ServicesForm = ({ data, onSave }) => {
 
       <div className="flex flex-wrap gap-2 mt-4">
         {services.map((service, index) => (
-          <Badge key={index} variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
+          <Badge
+            key={index}
+            variant="secondary"
+            className="flex items-center gap-1 px-3 py-1.5"
+          >
             {service}
             <button
               type="button"
@@ -281,40 +377,48 @@ const ServicesForm = ({ data, onSave }) => {
         <Button type="submit">Guardar cambios</Button>
       </div>
     </form>
-  )
-}
+  );
+};
 
 // Componente para editar disponibilidad
-const AvailabilityForm = ({ data, onSave }) => {
-  const [formData, setFormData] = useState(data)
-  const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+const AvailabilityForm = ({ data, onSave }: FormProps<Availability>) => {
+  const [formData, setFormData] = useState(data);
+  const daysOfWeek = [
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+    "Domingo",
+  ];
 
-  const handleDayToggle = (day) => {
+  const handleDayToggle = (day: string) => {
     if (formData.days.includes(day)) {
       setFormData({
         ...formData,
         days: formData.days.filter((d) => d !== day),
-      })
+      });
     } else {
       setFormData({
         ...formData,
         days: [...formData.days, day],
-      })
+      });
     }
-  }
+  };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
       [name]: type === "checkbox" ? checked : value,
-    })
-  }
+    });
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSave(formData)
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -339,11 +443,23 @@ const AvailabilityForm = ({ data, onSave }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="startTime">Hora de inicio</Label>
-          <Input id="startTime" name="startTime" type="time" value={formData.startTime} onChange={handleChange} />
+          <Input
+            id="startTime"
+            name="startTime"
+            type="time"
+            value={formData.startTime}
+            onChange={handleChange}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="endTime">Hora de término</Label>
-          <Input id="endTime" name="endTime" type="time" value={formData.endTime} onChange={handleChange} />
+          <Input
+            id="endTime"
+            name="endTime"
+            type="time"
+            value={formData.endTime}
+            onChange={handleChange}
+          />
         </div>
       </div>
 
@@ -352,7 +468,9 @@ const AvailabilityForm = ({ data, onSave }) => {
           id="immediateAvailability"
           name="immediateAvailability"
           checked={formData.immediateAvailability}
-          onCheckedChange={(checked) => setFormData({ ...formData, immediateAvailability: !!checked })}
+          onCheckedChange={(checked) =>
+            setFormData({ ...formData, immediateAvailability: !!checked })
+          }
         />
         <Label htmlFor="immediateAvailability" className="font-normal">
           Disponibilidad inmediata
@@ -363,30 +481,36 @@ const AvailabilityForm = ({ data, onSave }) => {
         <Button type="submit">Guardar cambios</Button>
       </div>
     </form>
-  )
-}
+  );
+};
 
 // Componente para editar idiomas
-const LanguagesForm = ({ data, onSave }) => {
-  const [languages, setLanguages] = useState(data)
-  const [newLanguage, setNewLanguage] = useState({ name: "", level: "Básico" })
-  const languageLevels = ["Básico", "Intermedio", "Avanzado", "Nativo"]
+const LanguagesForm = ({ data, onSave }: FormProps<Language[]>) => {
+  const [languages, setLanguages] = useState(data);
+  const [newLanguage, setNewLanguage] = useState({ name: "", level: "Básico" });
+  const languageLevels = ["Básico", "Intermedio", "Avanzado", "Nativo"];
 
   const handleAddLanguage = () => {
-    if (newLanguage.name.trim() && !languages.some((lang) => lang.name === newLanguage.name.trim())) {
-      setLanguages([...languages, { ...newLanguage, name: newLanguage.name.trim() }])
-      setNewLanguage({ name: "", level: "Básico" })
+    if (
+      newLanguage.name.trim() &&
+      !languages.some((lang) => lang.name === newLanguage.name.trim())
+    ) {
+      setLanguages([
+        ...languages,
+        { ...newLanguage, name: newLanguage.name.trim() },
+      ]);
+      setNewLanguage({ name: "", level: "Básico" });
     }
-  }
+  };
 
-  const handleRemoveLanguage = (index) => {
-    setLanguages(languages.filter((_, i) => i !== index))
-  }
+  const handleRemoveLanguage = (index: number) => {
+    setLanguages(languages.filter((_, i) => i !== index));
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSave(languages)
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(languages);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -395,10 +519,17 @@ const LanguagesForm = ({ data, onSave }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             value={newLanguage.name}
-            onChange={(e) => setNewLanguage({ ...newLanguage, name: e.target.value })}
+            onChange={(e) =>
+              setNewLanguage({ ...newLanguage, name: e.target.value })
+            }
             placeholder="Idioma (ej. Inglés)"
           />
-          <Select value={newLanguage.level} onValueChange={(value) => setNewLanguage({ ...newLanguage, level: value })}>
+          <Select
+            value={newLanguage.level}
+            onValueChange={(value) =>
+              setNewLanguage({ ...newLanguage, level: value })
+            }
+          >
             <SelectTrigger>
               <SelectValue placeholder="Nivel" />
             </SelectTrigger>
@@ -419,16 +550,27 @@ const LanguagesForm = ({ data, onSave }) => {
       <div className="space-y-2">
         <Label>Idiomas</Label>
         {languages.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No has añadido ningún idioma.</p>
+          <p className="text-sm text-muted-foreground">
+            No has añadido ningún idioma.
+          </p>
         ) : (
           <div className="space-y-2">
             {languages.map((language, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+              >
                 <div>
                   <p className="font-medium">{language.name}</p>
-                  <p className="text-sm text-muted-foreground">{language.level}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {language.level}
+                  </p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => handleRemoveLanguage(index)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRemoveLanguage(index)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -441,13 +583,13 @@ const LanguagesForm = ({ data, onSave }) => {
         <Button type="submit">Guardar cambios</Button>
       </div>
     </form>
-  )
-}
+  );
+};
 
 // Componente para editar experiencia
-const ExperienceForm = ({ data, onSave }) => {
-  const [experiences, setExperiences] = useState(data)
-  const [isAddingExperience, setIsAddingExperience] = useState(false)
+const ExperienceForm = ({ data, onSave }: FormProps<Experience[]>) => {
+  const [experiences, setExperiences] = useState(data);
+  const [isAddingExperience, setIsAddingExperience] = useState(false);
   const [currentExperience, setCurrentExperience] = useState({
     title: "",
     company: "",
@@ -456,39 +598,41 @@ const ExperienceForm = ({ data, onSave }) => {
     endDate: "",
     current: false,
     description: "",
-  })
-  const [editIndex, setEditIndex] = useState(-1)
+  });
+  const [editIndex, setEditIndex] = useState(-1);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value, type, checked } = e.target as any;
     setCurrentExperience({
       ...currentExperience,
       [name]: type === "checkbox" ? checked : value,
-    })
-  }
+    });
+  };
 
   const handleSaveExperience = () => {
     if (editIndex >= 0) {
       // Editing existing experience
-      const updatedExperiences = [...experiences]
-      updatedExperiences[editIndex] = currentExperience
-      setExperiences(updatedExperiences)
+      const updatedExperiences = [...experiences];
+      updatedExperiences[editIndex] = currentExperience;
+      setExperiences(updatedExperiences);
     } else {
       // Adding new experience
-      setExperiences([...experiences, currentExperience])
+      setExperiences([...experiences, currentExperience]);
     }
-    resetExperienceForm()
-  }
+    resetExperienceForm();
+  };
 
-  const handleEditExperience = (index) => {
-    setCurrentExperience(experiences[index])
-    setEditIndex(index)
-    setIsAddingExperience(true)
-  }
+  const handleEditExperience = (index: number) => {
+    setCurrentExperience(experiences[index]);
+    setEditIndex(index);
+    setIsAddingExperience(true);
+  };
 
-  const handleRemoveExperience = (index) => {
-    setExperiences(experiences.filter((_, i) => i !== index))
-  }
+  const handleRemoveExperience = (index: number) => {
+    setExperiences(experiences.filter((_, i) => i !== index));
+  };
 
   const resetExperienceForm = () => {
     setCurrentExperience({
@@ -499,15 +643,15 @@ const ExperienceForm = ({ data, onSave }) => {
       endDate: "",
       current: false,
       description: "",
-    })
-    setEditIndex(-1)
-    setIsAddingExperience(false)
-  }
+    });
+    setEditIndex(-1);
+    setIsAddingExperience(false);
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSave(experiences)
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(experiences);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -524,7 +668,9 @@ const ExperienceForm = ({ data, onSave }) => {
       </div>
 
       {experiences.length === 0 && !isAddingExperience ? (
-        <p className="text-sm text-muted-foreground">No has añadido ninguna experiencia laboral.</p>
+        <p className="text-sm text-muted-foreground">
+          No has añadido ninguna experiencia laboral.
+        </p>
       ) : (
         <div className="space-y-4">
           {experiences.map((exp, index) => (
@@ -534,19 +680,38 @@ const ExperienceForm = ({ data, onSave }) => {
                   <h4 className="font-medium">{exp.title}</h4>
                   <p className="text-sm">{exp.company}</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(exp.startDate).toLocaleDateString("es-ES", { year: "numeric", month: "long" })} -{" "}
+                    {new Date(exp.startDate).toLocaleDateString("es-ES", {
+                      year: "numeric",
+                      month: "long",
+                    })}{" "}
+                    -{" "}
                     {exp.current
                       ? "Actual"
-                      : new Date(exp.endDate).toLocaleDateString("es-ES", { year: "numeric", month: "long" })}
+                      : new Date(exp.endDate).toLocaleDateString("es-ES", {
+                          year: "numeric",
+                          month: "long",
+                        })}
                   </p>
-                  <p className="text-xs text-muted-foreground">{exp.location}</p>
-                  {exp.description && <p className="text-sm mt-2">{exp.description}</p>}
+                  <p className="text-xs text-muted-foreground">
+                    {exp.location}
+                  </p>
+                  {exp.description && (
+                    <p className="text-sm mt-2">{exp.description}</p>
+                  )}
                 </div>
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon" onClick={() => handleEditExperience(index)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEditExperience(index)}
+                  >
                     <Edit3 className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleRemoveExperience(index)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleRemoveExperience(index)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -560,7 +725,9 @@ const ExperienceForm = ({ data, onSave }) => {
         <Dialog open={isAddingExperience} onOpenChange={setIsAddingExperience}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>{editIndex >= 0 ? "Editar experiencia" : "Añadir experiencia"}</DialogTitle>
+              <DialogTitle>
+                {editIndex >= 0 ? "Editar experiencia" : "Añadir experiencia"}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-1 gap-4">
@@ -626,7 +793,12 @@ const ExperienceForm = ({ data, onSave }) => {
                     id="current"
                     name="current"
                     checked={currentExperience.current}
-                    onCheckedChange={(checked) => setCurrentExperience({ ...currentExperience, current: !!checked })}
+                    onCheckedChange={(checked) =>
+                      setCurrentExperience({
+                        ...currentExperience,
+                        current: !!checked,
+                      })
+                    }
                   />
                   <Label htmlFor="current" className="font-normal">
                     Trabajo actual
@@ -647,7 +819,11 @@ const ExperienceForm = ({ data, onSave }) => {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={resetExperienceForm}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={resetExperienceForm}
+              >
                 Cancelar
               </Button>
               <Button type="button" onClick={handleSaveExperience}>
@@ -662,29 +838,29 @@ const ExperienceForm = ({ data, onSave }) => {
         <Button type="submit">Guardar cambios</Button>
       </div>
     </form>
-  )
-}
+  );
+};
 
 // Componente para editar intereses
-const InterestsForm = ({ data, onSave }) => {
-  const [interests, setInterests] = useState(data)
-  const [newInterest, setNewInterest] = useState("")
+const InterestsForm = ({ data, onSave }: FormProps<string[]>) => {
+  const [interests, setInterests] = useState(data);
+  const [newInterest, setNewInterest] = useState("");
 
   const handleAddInterest = () => {
     if (newInterest.trim() && !interests.includes(newInterest.trim())) {
-      setInterests([...interests, newInterest.trim()])
-      setNewInterest("")
+      setInterests([...interests, newInterest.trim()]);
+      setNewInterest("");
     }
-  }
+  };
 
-  const handleRemoveInterest = (index) => {
-    setInterests(interests.filter((_, i) => i !== index))
-  }
+  const handleRemoveInterest = (index: number) => {
+    setInterests(interests.filter((_, i) => i !== index));
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSave(interests)
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(interests);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -701,13 +877,18 @@ const InterestsForm = ({ data, onSave }) => {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Los intereses te ayudan a conectar con personas afines y mostrar tu personalidad.
+          Los intereses te ayudan a conectar con personas afines y mostrar tu
+          personalidad.
         </p>
       </div>
 
       <div className="flex flex-wrap gap-2 mt-4">
         {interests.map((interest, index) => (
-          <Badge key={index} variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
+          <Badge
+            key={index}
+            variant="secondary"
+            className="flex items-center gap-1 px-3 py-1.5"
+          >
             {interest}
             <button
               type="button"
@@ -724,8 +905,8 @@ const InterestsForm = ({ data, onSave }) => {
         <Button type="submit">Guardar cambios</Button>
       </div>
     </form>
-  )
-}
+  );
+};
 
 // Profile sections data
 const profileSections = [
@@ -785,85 +966,124 @@ const profileSections = [
     icon: Heart,
     completed: false,
   },
-]
+];
 
 export default function EditProfilePage() {
-  const router = useRouter()
-  const [showSuccess, setShowSuccess] = useState(false)
-  const [selectedSection, setSelectedSection] = useState<string | null>(null)
-  const [profileData, setProfileData] = useState(initialProfileData)
+  const router = useRouter();
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [profileData, setProfileData] = useState(initialProfileData);
   const [completedSections, setCompletedSections] = useState(
     profileSections.filter((section) => section.completed).length,
-  )
+  );
 
-  const totalSections = profileSections.length
-  const completionPercentage = Math.round((completedSections / totalSections) * 100)
+  const totalSections = profileSections.length;
+  const completionPercentage = Math.round(
+    (completedSections / totalSections) * 100,
+  );
 
   const handleSectionClick = (sectionId: string) => {
-    setSelectedSection(sectionId)
-  }
+    setSelectedSection(sectionId);
+  };
 
   const handlePhotoEdit = () => {
     // En una aplicación real, esto abriría un modal para subir una foto
-    console.log("Editando foto de perfil")
-  }
+    console.log("Editando foto de perfil");
+  };
 
   const handleSaveProfile = () => {
-    setShowSuccess(true)
+    setShowSuccess(true);
     setTimeout(() => {
-      setShowSuccess(false)
-      router.push("/profile")
-    }, 2000)
-  }
+      setShowSuccess(false);
+      router.push("/profile");
+    }, 2000);
+  };
 
   const handleSaveSection = (sectionId: string, data: any) => {
     setProfileData((prev) => ({
       ...prev,
       [sectionId === "basic-info" ? "basicInfo" : sectionId]: data,
-    }))
+    }));
 
     // Marcar la sección como completada si no lo estaba
-    const sectionIndex = profileSections.findIndex((section) => section.id === sectionId)
+    const sectionIndex = profileSections.findIndex(
+      (section) => section.id === sectionId,
+    );
     if (sectionIndex !== -1 && !profileSections[sectionIndex].completed) {
-      profileSections[sectionIndex].completed = true
-      setCompletedSections(completedSections + 1)
+      profileSections[sectionIndex].completed = true;
+      setCompletedSections(completedSections + 1);
     }
 
     // Mostrar mensaje de éxito
-    setShowSuccess(true)
+    setShowSuccess(true);
     setTimeout(() => {
-      setShowSuccess(false)
-      setSelectedSection(null)
-    }, 1500)
-  }
+      setShowSuccess(false);
+      setSelectedSection(null);
+    }, 1500);
+  };
 
   const renderSectionForm = () => {
     switch (selectedSection) {
       case "basic-info":
-        return <BasicInfoForm data={profileData.basicInfo} onSave={(data) => handleSaveSection("basic-info", data)} />
+        return (
+          <BasicInfoForm
+            data={profileData.basicInfo}
+            onSave={(data) => handleSaveSection("basic-info", data)}
+          />
+        );
       case "location":
-        return <LocationForm data={profileData.location} onSave={(data) => handleSaveSection("location", data)} />
+        return (
+          <LocationForm
+            data={profileData.location}
+            onSave={(data) => handleSaveSection("location", data)}
+          />
+        );
       case "about":
-        return <AboutForm data={profileData.about} onSave={(data) => handleSaveSection("about", data)} />
+        return (
+          <AboutForm
+            data={profileData.about}
+            onSave={(data) => handleSaveSection("about", data)}
+          />
+        );
       case "services":
-        return <ServicesForm data={profileData.services} onSave={(data) => handleSaveSection("services", data)} />
+        return (
+          <ServicesForm
+            data={profileData.services}
+            onSave={(data) => handleSaveSection("services", data)}
+          />
+        );
       case "availability":
         return (
           <AvailabilityForm
             data={profileData.availability}
             onSave={(data) => handleSaveSection("availability", data)}
           />
-        )
+        );
       case "languages":
-        return <LanguagesForm data={profileData.languages} onSave={(data) => handleSaveSection("languages", data)} />
+        return (
+          <LanguagesForm
+            data={profileData.languages}
+            onSave={(data) => handleSaveSection("languages", data)}
+          />
+        );
       case "experience":
-        return <ExperienceForm data={profileData.experience} onSave={(data) => handleSaveSection("experience", data)} />
+        return (
+          <ExperienceForm
+            data={profileData.experience}
+            onSave={(data) => handleSaveSection("experience", data)}
+          />
+        );
       case "interests":
-        return <InterestsForm data={profileData.interests} onSave={(data) => handleSaveSection("interests", data)} />
+        return (
+          <InterestsForm
+            data={profileData.interests}
+            onSave={(data) => handleSaveSection("interests", data)}
+          />
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -871,7 +1091,10 @@ export default function EditProfilePage() {
       <main className="flex-1 py-8">
         <div className="container max-w-4xl">
           <div className="mb-6">
-            <Link href="/profile" className="flex items-center text-primary hover:underline">
+            <Link
+              href="/profile"
+              className="flex items-center text-primary hover:underline"
+            >
               <ArrowLeft className="h-4 w-4 mr-1" />
               Volver al perfil
             </Link>
@@ -895,7 +1118,10 @@ export default function EditProfilePage() {
                 <div className="flex flex-col items-center space-y-4">
                   <div className="relative">
                     <Avatar className="h-32 w-32">
-                      <AvatarImage src="/images/juan-perez.jpg" alt="Juan Pérez" />
+                      <AvatarImage
+                        src="/images/juan-perez.jpg"
+                        alt="Juan Pérez"
+                      />
                       <AvatarFallback className="text-2xl">JP</AvatarFallback>
                     </Avatar>
                     <Button
@@ -914,16 +1140,20 @@ export default function EditProfilePage() {
                   <div className="mb-6">
                     <h1 className="text-3xl font-bold mb-2">Mi perfil</h1>
                     <p className="text-muted-foreground">
-                      Los clientes y oferentes pueden ver tu perfil para conocerte mejor y generar confianza en nuestra
-                      comunidad.
+                      Los clientes y oferentes pueden ver tu perfil para
+                      conocerte mejor y generar confianza en nuestra comunidad.
                     </p>
                   </div>
 
                   {/* Progress */}
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Completitud del perfil</span>
-                      <span className="text-sm text-muted-foreground">{completionPercentage}%</span>
+                      <span className="text-sm font-medium">
+                        Completitud del perfil
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {completionPercentage}%
+                      </span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">
                       <div
@@ -936,16 +1166,26 @@ export default function EditProfilePage() {
                   {/* Quick Stats */}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <div className="text-xl font-bold">{completedSections}</div>
-                      <div className="text-xs text-muted-foreground">Secciones completas</div>
+                      <div className="text-xl font-bold">
+                        {completedSections}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Secciones completas
+                      </div>
                     </div>
                     <div className="text-center p-3 bg-muted/30 rounded-lg">
                       <div className="text-xl font-bold">4.8</div>
-                      <div className="text-xs text-muted-foreground">Calificación</div>
+                      <div className="text-xs text-muted-foreground">
+                        Calificación
+                      </div>
                     </div>
                     <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <div className="text-xl font-bold">{profileData.services.length}</div>
-                      <div className="text-xs text-muted-foreground">Servicios</div>
+                      <div className="text-xl font-bold">
+                        {profileData.services.length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Servicios
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -958,9 +1198,17 @@ export default function EditProfilePage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold">
-                    {profileSections.find((section) => section.id === selectedSection)?.title}
+                    {
+                      profileSections.find(
+                        (section) => section.id === selectedSection,
+                      )?.title
+                    }
                   </h2>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedSection(null)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedSection(null)}
+                  >
                     <X className="h-4 w-4 mr-1" /> Cerrar
                   </Button>
                 </div>
@@ -971,7 +1219,7 @@ export default function EditProfilePage() {
             /* Profile Sections Grid */
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               {profileSections.map((section) => {
-                const IconComponent = section.icon
+                const IconComponent = section.icon;
                 return (
                   <Card
                     key={section.id}
@@ -985,31 +1233,48 @@ export default function EditProfilePage() {
                             <IconComponent className="h-6 w-6 text-primary" />
                           </div>
                           <div className="flex-1">
-                            <h3 className="font-semibold text-lg">{section.title}</h3>
-                            <p className="text-sm text-muted-foreground">{section.description}</p>
+                            <h3 className="font-semibold text-lg">
+                              {section.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              {section.description}
+                            </p>
 
                             {/* Show preview of data */}
                             <div className="mt-2">
                               {section.id === "basic-info" && (
-                                <p className="text-sm font-medium">{profileData.basicInfo.name}</p>
+                                <p className="text-sm font-medium">
+                                  {profileData.basicInfo.name}
+                                </p>
                               )}
                               {section.id === "location" && (
                                 <p className="text-sm font-medium">
-                                  {profileData.location.city}, {profileData.location.country}
+                                  {profileData.location.city},{" "}
+                                  {profileData.location.country}
                                 </p>
                               )}
                               {section.id === "services" && (
                                 <div className="flex flex-wrap gap-1 mt-1">
-                                  {profileData.services?.slice(0, 2).map((service, index) => (
-                                    <Badge key={index} variant="secondary" className="text-xs">
-                                      {service}
-                                    </Badge>
-                                  ))}
-                                  {profileData.services && profileData.services.length > 2 && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      +{profileData.services.length - 2}
-                                    </Badge>
-                                  )}
+                                  {profileData.services
+                                    ?.slice(0, 2)
+                                    .map((service, index) => (
+                                      <Badge
+                                        key={index}
+                                        variant="secondary"
+                                        className="text-xs"
+                                      >
+                                        {service}
+                                      </Badge>
+                                    ))}
+                                  {profileData.services &&
+                                    profileData.services.length > 2 && (
+                                      <Badge
+                                        variant="secondary"
+                                        className="text-xs"
+                                      >
+                                        +{profileData.services.length - 2}
+                                      </Badge>
+                                    )}
                                 </div>
                               )}
                               {section.id === "about" && (
@@ -1021,23 +1286,35 @@ export default function EditProfilePage() {
                                 <p className="text-sm text-muted-foreground">
                                   {profileData.availability.days.length > 0
                                     ? `${profileData.availability.days[0]}${
-                                        profileData.availability.days.length > 1 ? "..." : ""
+                                        profileData.availability.days.length > 1
+                                          ? "..."
+                                          : ""
                                       } ${profileData.availability.startTime} - ${profileData.availability.endTime}`
                                     : "Sin especificar"}
                                 </p>
                               )}
                               {section.id === "languages" && (
                                 <div className="flex flex-wrap gap-1 mt-1">
-                                  {profileData.languages?.slice(0, 2).map((lang, index) => (
-                                    <Badge key={index} variant="secondary" className="text-xs">
-                                      {lang.name}
-                                    </Badge>
-                                  ))}
-                                  {profileData.languages && profileData.languages.length > 2 && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      +{profileData.languages.length - 2}
-                                    </Badge>
-                                  )}
+                                  {profileData.languages
+                                    ?.slice(0, 2)
+                                    .map((lang, index) => (
+                                      <Badge
+                                        key={index}
+                                        variant="secondary"
+                                        className="text-xs"
+                                      >
+                                        {lang.name}
+                                      </Badge>
+                                    ))}
+                                  {profileData.languages &&
+                                    profileData.languages.length > 2 && (
+                                      <Badge
+                                        variant="secondary"
+                                        className="text-xs"
+                                      >
+                                        +{profileData.languages.length - 2}
+                                      </Badge>
+                                    )}
                                 </div>
                               )}
                               {section.id === "experience" && (
@@ -1049,32 +1326,46 @@ export default function EditProfilePage() {
                               )}
                               {section.id === "interests" && (
                                 <div className="flex flex-wrap gap-1 mt-1">
-                                  {profileData.interests?.slice(0, 2).map((interest, index) => (
-                                    <Badge key={index} variant="secondary" className="text-xs">
-                                      {interest}
-                                    </Badge>
-                                  ))}
-                                  {profileData.interests && profileData.interests.length > 2 && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      +{profileData.interests.length - 2}
-                                    </Badge>
-                                  )}
+                                  {profileData.interests
+                                    ?.slice(0, 2)
+                                    .map((interest, index) => (
+                                      <Badge
+                                        key={index}
+                                        variant="secondary"
+                                        className="text-xs"
+                                      >
+                                        {interest}
+                                      </Badge>
+                                    ))}
+                                  {profileData.interests &&
+                                    profileData.interests.length > 2 && (
+                                      <Badge
+                                        variant="secondary"
+                                        className="text-xs"
+                                      >
+                                        +{profileData.interests.length - 2}
+                                      </Badge>
+                                    )}
                                 </div>
                               )}
                               {!section.completed && (
-                                <p className="text-sm text-muted-foreground italic">Sin completar</p>
+                                <p className="text-sm text-muted-foreground italic">
+                                  Sin completar
+                                </p>
                               )}
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {section.completed && <div className="w-2 h-2 bg-green-500 rounded-full" />}
+                          {section.completed && (
+                            <div className="w-2 h-2 bg-green-500 rounded-full" />
+                          )}
                           <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                )
+                );
               })}
             </div>
           )}
@@ -1084,7 +1375,11 @@ export default function EditProfilePage() {
             <Button onClick={handleSaveProfile} size="lg" className="px-8">
               Guardar cambios
             </Button>
-            <Button variant="outline" size="lg" onClick={() => router.push("/profile")}>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => router.push("/profile")}
+            >
               Cancelar
             </Button>
           </div>
@@ -1092,5 +1387,5 @@ export default function EditProfilePage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }

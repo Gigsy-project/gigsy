@@ -1,15 +1,26 @@
-"use client"
+"use client";
 
-import { useState, useMemo, useCallback, memo, useEffect } from "react"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useState, useMemo, useCallback, memo, useEffect } from "react";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Search,
   MapPin,
@@ -22,11 +33,11 @@ import {
   User,
   Loader2,
   Filter,
-} from "lucide-react"
-import { formatCurrency } from "@/lib/utils"
-import type { ServiceTask } from "@/lib/types"
-import { Switch } from "@/components/ui/switch"
-import { Slider } from "@/components/ui/slider"
+} from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
+import type { ServiceTask } from "@/lib/types";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import {
   Sheet,
   SheetContent,
@@ -35,38 +46,38 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetFooter,
-} from "@/components/ui/sheet"
-import dynamic from "next/dynamic"
+} from "@/components/ui/sheet";
+import dynamic from "next/dynamic";
 
 // Types
 interface ServiceLocation {
-  lat: number
-  lng: number
+  lat: number;
+  lng: number;
 }
 
 interface ServiceTaskWithLocation extends ServiceTask {
-  coordinates: ServiceLocation
+  coordinates: ServiceLocation;
 }
 
-type WorkType = "in-person" | "remotely" | "all"
+type WorkType = "in-person" | "remotely" | "all";
 
 interface FilterState {
-  searchQuery: string
-  selectedCategory: string
-  selectedLocation: string
-  selectedPriceRange: string
-  sortBy: string
-  showAvailableOnly: boolean
-  showNoOffersOnly: boolean
-  workType: WorkType
-  distance: number
+  searchQuery: string;
+  selectedCategory: string;
+  selectedLocation: string;
+  selectedPriceRange: string;
+  sortBy: string;
+  showAvailableOnly: boolean;
+  showNoOffersOnly: boolean;
+  workType: WorkType;
+  distance: number;
 }
 
 // Constants
-const DEFAULT_USER_LOCATION: ServiceLocation = { lat: -33.4513, lng: -70.6653 } // Santiago Centro
-const DEFAULT_DISTANCE = 10
-const MAX_DISTANCE = 20
-const MIN_DISTANCE = 1
+const DEFAULT_USER_LOCATION: ServiceLocation = { lat: -33.4513, lng: -70.6653 }; // Santiago Centro
+const DEFAULT_DISTANCE = 10;
+const MAX_DISTANCE = 20;
+const MIN_DISTANCE = 1;
 
 const CATEGORIES = [
   "Todas las categorías",
@@ -79,19 +90,28 @@ const CATEGORIES = [
   "Mudanzas",
   "Cuidado de mascotas",
   "Clases particulares",
-] as const
+] as const;
 
 const CATEGORY_DESCRIPTIONS = {
-  "Aseo del hogar": "Limpieza por hora o por evento para casas de estudiantes y jóvenes profesionales.",
-  "Lavado y planchado": "Lavado de ropa y planchado con retiro a domicilio. Simple, cómodo y rápido.",
-  "Ayuda académica": "Tutorías entre estudiantes en ramos como Álgebra, Finanzas o Inglés.",
-  "Reparaciones menores": "Arreglos simples: enchufes, llaves, muebles sueltos. Soluciones express.",
-  "Recados y compras": "Delegá trámites o compras urgentes. No pierdas tiempo en filas.",
-  "Ayuda creativa": "Ideas para regalos, decoración, cocina casera y soluciones fuera de lo común.",
-  Mudanzas: "Ayuda con mudanzas pequeñas, transporte de muebles y organización.",
-  "Cuidado de mascotas": "Paseo de perros, alimentación y cuidado temporal de mascotas.",
-  "Clases particulares": "Clases personalizadas de música, idiomas, deportes y más.",
-} as const
+  "Aseo del hogar":
+    "Limpieza por hora o por evento para casas de estudiantes y jóvenes profesionales.",
+  "Lavado y planchado":
+    "Lavado de ropa y planchado con retiro a domicilio. Simple, cómodo y rápido.",
+  "Ayuda académica":
+    "Tutorías entre estudiantes en ramos como Álgebra, Finanzas o Inglés.",
+  "Reparaciones menores":
+    "Arreglos simples: enchufes, llaves, muebles sueltos. Soluciones express.",
+  "Recados y compras":
+    "Delegá trámites o compras urgentes. No pierdas tiempo en filas.",
+  "Ayuda creativa":
+    "Ideas para regalos, decoración, cocina casera y soluciones fuera de lo común.",
+  Mudanzas:
+    "Ayuda con mudanzas pequeñas, transporte de muebles y organización.",
+  "Cuidado de mascotas":
+    "Paseo de perros, alimentación y cuidado temporal de mascotas.",
+  "Clases particulares":
+    "Clases personalizadas de música, idiomas, deportes y más.",
+} as const;
 
 const LOCATIONS = [
   "Todas las comunas",
@@ -122,7 +142,7 @@ const LOCATIONS = [
   "Cerro Navia",
   "Lo Prado",
   "Pudahuel",
-] as const
+] as const;
 
 const PRICE_RANGES = [
   "Cualquier precio",
@@ -130,7 +150,7 @@ const PRICE_RANGES = [
   "$5.000 - $15.000",
   "$15.000 - $30.000",
   "Más de $30.000",
-] as const
+] as const;
 
 const SORT_OPTIONS = [
   "Más recientes",
@@ -138,14 +158,15 @@ const SORT_OPTIONS = [
   "Precio: mayor a menor",
   "Más ofertas",
   "Mejor calificado",
-] as const
+] as const;
 
 // Mock data
 const MOCK_SERVICES: ServiceTaskWithLocation[] = [
   {
     id: 1,
     title: "Limpieza profunda de departamento",
-    description: "Necesito limpieza completa de departamento de 2 habitaciones. Incluye baños, cocina y aspirado.",
+    description:
+      "Necesito limpieza completa de departamento de 2 habitaciones. Incluye baños, cocina y aspirado.",
     budget: 25000,
     location: "Las Condes, Santiago",
     date: "Mié, 4 Jun",
@@ -165,7 +186,8 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
   {
     id: 2,
     title: "Compras en supermercado y farmacia",
-    description: "Necesito que hagan compras en el supermercado y recojan medicamentos en la farmacia. Lista incluida.",
+    description:
+      "Necesito que hagan compras en el supermercado y recojan medicamentos en la farmacia. Lista incluida.",
     budget: 8000,
     location: "Santiago, Chile",
     date: "Hoy",
@@ -217,6 +239,7 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
     status: "open",
     postedBy: {
       name: "Pedro Silva",
+      avatar: "/images/juan-perez.jpg",
       rating: 4.6,
       reviewCount: 12,
     },
@@ -227,7 +250,8 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
   {
     id: 5,
     title: "Lavado y planchado de ropa",
-    description: "Tengo acumulada mucha ropa para lavar y planchar. Busco servicio con retiro y entrega a domicilio.",
+    description:
+      "Tengo acumulada mucha ropa para lavar y planchar. Busco servicio con retiro y entrega a domicilio.",
     budget: 18000,
     location: "La Reina, Santiago",
     date: "Lun, 10 Jun",
@@ -236,6 +260,7 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
     status: "open",
     postedBy: {
       name: "Sofía Herrera",
+      avatar: "/images/josefa.jpg",
       rating: 4.5,
       reviewCount: 8,
     },
@@ -256,6 +281,7 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
     status: "open",
     postedBy: {
       name: "Camila Torres",
+      avatar: "/images/juan-perez.jpg",
       rating: 4.9,
       reviewCount: 15,
     },
@@ -266,7 +292,8 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
   {
     id: 7,
     title: "Ayuda con mudanza pequeña",
-    description: "Necesito ayuda para mover algunas cajas y muebles pequeños a mi nuevo departamento.",
+    description:
+      "Necesito ayuda para mover algunas cajas y muebles pequeños a mi nuevo departamento.",
     budget: 20000,
     location: "Providencia, Santiago",
     date: "Vie, 7 Jun",
@@ -275,6 +302,7 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
     status: "open",
     postedBy: {
       name: "Roberto Méndez",
+      avatar: "/images/hernan.jpg",
       rating: 4.7,
       reviewCount: 14,
     },
@@ -285,7 +313,8 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
   {
     id: 8,
     title: "Paseo de perro por una semana",
-    description: "Necesito alguien que pasee a mi perro durante una semana mientras estoy de viaje.",
+    description:
+      "Necesito alguien que pasee a mi perro durante una semana mientras estoy de viaje.",
     budget: 35000,
     location: "Las Condes, Santiago",
     date: "Lun, 10 Jun",
@@ -294,6 +323,7 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
     status: "open",
     postedBy: {
       name: "Carolina Vega",
+      avatar: "/images/josefa.jpg",
       rating: 4.9,
       reviewCount: 31,
     },
@@ -304,7 +334,8 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
   {
     id: 9,
     title: "Clases de guitarra para principiante",
-    description: "Busco alguien que me enseñe los básicos de guitarra. Tengo mi propio instrumento.",
+    description:
+      "Busco alguien que me enseñe los básicos de guitarra. Tengo mi propio instrumento.",
     budget: 15000,
     location: "Ñuñoa, Santiago",
     date: "Sáb, 8 Jun",
@@ -313,6 +344,7 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
     status: "open",
     postedBy: {
       name: "Diego Flores",
+      avatar: "/images/juan-perez.jpg",
       rating: 4.5,
       reviewCount: 7,
     },
@@ -323,7 +355,8 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
   {
     id: 10,
     title: "Reparación de bicicleta",
-    description: "Mi bicicleta tiene problemas con los frenos y cambios. Necesito alguien que sepa repararla.",
+    description:
+      "Mi bicicleta tiene problemas con los frenos y cambios. Necesito alguien que sepa repararla.",
     budget: 12000,
     location: "Santiago Centro, Chile",
     date: "Dom, 9 Jun",
@@ -332,6 +365,7 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
     status: "open",
     postedBy: {
       name: "Valentina Rojas",
+      avatar: "/images/hernan.jpg",
       rating: 4.6,
       reviewCount: 11,
     },
@@ -339,7 +373,7 @@ const MOCK_SERVICES: ServiceTaskWithLocation[] = [
     offers: 0,
     coordinates: { lat: -33.4513, lng: -70.6653 },
   },
-]
+];
 
 // Dynamic import with optimized loading
 const InteractiveMap = dynamic(() => import("@/components/interactive-map"), {
@@ -352,16 +386,18 @@ const InteractiveMap = dynamic(() => import("@/components/interactive-map"), {
       </div>
     </div>
   ),
-})
+});
 
 // Custom hooks
 const useUserLocation = () => {
-  const [userLocation, setUserLocation] = useState<ServiceLocation | null>(null)
+  const [userLocation, setUserLocation] = useState<ServiceLocation | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setUserLocation(DEFAULT_USER_LOCATION)
-      return
+      setUserLocation(DEFAULT_USER_LOCATION);
+      return;
     }
 
     navigator.geolocation.getCurrentPosition(
@@ -369,16 +405,16 @@ const useUserLocation = () => {
         setUserLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-        })
+        });
       },
       () => {
-        setUserLocation(DEFAULT_USER_LOCATION)
+        setUserLocation(DEFAULT_USER_LOCATION);
       },
-    )
-  }, [])
+    );
+  }, []);
 
-  return userLocation
-}
+  return userLocation;
+};
 
 const useFilters = () => {
   const [filters, setFilters] = useState<FilterState>({
@@ -391,11 +427,14 @@ const useFilters = () => {
     showNoOffersOnly: false,
     workType: "in-person",
     distance: DEFAULT_DISTANCE,
-  })
+  });
 
-  const updateFilter = useCallback(<K extends keyof FilterState>(key: K, value: FilterState[K]) => {
-    setFilters((prev) => ({ ...prev, [key]: value }))
-  }, [])
+  const updateFilter = useCallback(
+    <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
+      setFilters((prev) => ({ ...prev, [key]: value }));
+    },
+    [],
+  );
 
   const resetFilters = useCallback(() => {
     setFilters({
@@ -408,61 +447,70 @@ const useFilters = () => {
       showNoOffersOnly: false,
       workType: "in-person",
       distance: DEFAULT_DISTANCE,
-    })
-  }, [])
+    });
+  }, []);
 
   const activeFiltersCount = useMemo(() => {
-    let count = 0
-    if (filters.selectedCategory !== "Todas las categorías") count++
-    if (filters.selectedLocation !== "Todas las comunas") count++
-    if (filters.selectedPriceRange !== "Cualquier precio") count++
-    if (filters.showNoOffersOnly) count++
-    if (!filters.showAvailableOnly) count++
-    if (filters.workType !== "all") count++
-    if (filters.distance !== DEFAULT_DISTANCE) count++
-    return count
-  }, [filters])
+    let count = 0;
+    if (filters.selectedCategory !== "Todas las categorías") count++;
+    if (filters.selectedLocation !== "Todas las comunas") count++;
+    if (filters.selectedPriceRange !== "Cualquier precio") count++;
+    if (filters.showNoOffersOnly) count++;
+    if (!filters.showAvailableOnly) count++;
+    if (filters.workType !== "all") count++;
+    if (filters.distance !== DEFAULT_DISTANCE) count++;
+    return count;
+  }, [filters]);
 
-  return { filters, updateFilter, resetFilters, activeFiltersCount }
-}
+  return { filters, updateFilter, resetFilters, activeFiltersCount };
+};
 
 // Utility functions
 const matchesPriceRange = (budget: number, priceRange: string): boolean => {
   switch (priceRange) {
     case "Hasta $5.000":
-      return budget <= 5000
+      return budget <= 5000;
     case "$5.000 - $15.000":
-      return budget > 5000 && budget <= 15000
+      return budget > 5000 && budget <= 15000;
     case "$15.000 - $30.000":
-      return budget > 15000 && budget <= 30000
+      return budget > 15000 && budget <= 30000;
     case "Más de $30.000":
-      return budget > 30000
+      return budget > 30000;
     default:
-      return true
+      return true;
   }
-}
+};
 
-const filterServices = (services: ServiceTaskWithLocation[], filters: FilterState): ServiceTaskWithLocation[] => {
+const filterServices = (
+  services: ServiceTaskWithLocation[],
+  filters: FilterState,
+): ServiceTaskWithLocation[] => {
   return services.filter((service) => {
     const matchesSearch =
       filters.searchQuery === "" ||
       service.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
-      service.description.toLowerCase().includes(filters.searchQuery.toLowerCase())
+      service.description
+        .toLowerCase()
+        .includes(filters.searchQuery.toLowerCase());
 
     const matchesCategory =
       filters.selectedCategory === "Todas las categorías" ||
       service.category === filters.selectedCategory ||
-      filters.selectedCategory.includes(service.category)
+      filters.selectedCategory.includes(service.category);
 
     const matchesLocation =
-      filters.selectedLocation === "Todas las comunas" || service.location.includes(filters.selectedLocation)
+      filters.selectedLocation === "Todas las comunas" ||
+      service.location.includes(filters.selectedLocation);
 
     const matchesPrice =
-      filters.selectedPriceRange === "Cualquier precio" || matchesPriceRange(service.budget, filters.selectedPriceRange)
+      filters.selectedPriceRange === "Cualquier precio" ||
+      matchesPriceRange(service.budget, filters.selectedPriceRange);
 
-    const matchesAvailableOnly = !filters.showAvailableOnly || service.status === "open"
-    const matchesNoOffersOnly = !filters.showNoOffersOnly || service.offers === 0
-    const matchesWorkType = filters.workType === "all" || true // Would be based on service.workType in real data
+    const matchesAvailableOnly =
+      !filters.showAvailableOnly || service.status === "open";
+    const matchesNoOffersOnly =
+      !filters.showNoOffersOnly || service.offers === 0;
+    const matchesWorkType = filters.workType === "all" || true; // Would be based on service.workType in real data
 
     return (
       matchesSearch &&
@@ -472,17 +520,17 @@ const filterServices = (services: ServiceTaskWithLocation[], filters: FilterStat
       matchesAvailableOnly &&
       matchesNoOffersOnly &&
       matchesWorkType
-    )
-  })
-}
+    );
+  });
+};
 
 // Optimized components
 const ServiceTaskCard = memo<{
-  service: ServiceTaskWithLocation
-  onSelect: (service: ServiceTaskWithLocation) => void
-  isSelected?: boolean
+  service: ServiceTaskWithLocation;
+  onSelect: (service: ServiceTaskWithLocation) => void;
+  isSelected?: boolean;
 }>(({ service, onSelect, isSelected }) => {
-  const handleClick = useCallback(() => onSelect(service), [service, onSelect])
+  const handleClick = useCallback(() => onSelect(service), [service, onSelect]);
 
   return (
     <Card
@@ -492,7 +540,9 @@ const ServiceTaskCard = memo<{
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-medium text-sm line-clamp-2">{service.title}</h3>
-          <span className="font-bold text-lg ml-2">{formatCurrency(service.budget)}</span>
+          <span className="font-bold text-lg ml-2">
+            {formatCurrency(service.budget)}
+          </span>
         </div>
 
         <div className="space-y-1 text-sm text-muted-foreground mb-3">
@@ -512,7 +562,10 @@ const ServiceTaskCard = memo<{
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Badge variant={service.status === "open" ? "default" : "secondary"} className="text-xs">
+            <Badge
+              variant={service.status === "open" ? "default" : "secondary"}
+              className="text-xs"
+            >
               {service.status === "open" ? "Abierto" : "Asignado"}
             </Badge>
             {service.urgent && (
@@ -527,24 +580,24 @@ const ServiceTaskCard = memo<{
         </div>
       </CardContent>
     </Card>
-  )
-})
+  );
+});
 
-ServiceTaskCard.displayName = "ServiceTaskCard"
+ServiceTaskCard.displayName = "ServiceTaskCard";
 
 const ServiceDetails = memo<{
-  service: ServiceTaskWithLocation
-  onBack: () => void
+  service: ServiceTaskWithLocation;
+  onBack: () => void;
 }>(({ service, onBack }) => {
-  const [isFollowing, setIsFollowing] = useState(false)
+  const [isFollowing, setIsFollowing] = useState(false);
 
   const handleMakeOffer = useCallback(() => {
-    console.log("Making offer for service:", service.id)
-  }, [service.id])
+    console.log("Making offer for service:", service.id);
+  }, [service.id]);
 
   const toggleFollow = useCallback(() => {
-    setIsFollowing((prev) => !prev)
-  }, [])
+    setIsFollowing((prev) => !prev);
+  }, []);
 
   return (
     <div className="p-6 overflow-y-auto h-full">
@@ -558,12 +611,16 @@ const ServiceDetails = memo<{
           </div>
 
           <div className="flex items-center gap-2 mb-4">
-            <Badge variant={service.status === "open" ? "default" : "secondary"}>
+            <Badge
+              variant={service.status === "open" ? "default" : "secondary"}
+            >
               {service.status === "open" ? "ABIERTO" : "ASIGNADO"}
             </Badge>
             {service.urgent && <Badge variant="destructive">URGENTE</Badge>}
             <Button variant="outline" size="sm" onClick={toggleFollow}>
-              <Heart className={`h-4 w-4 mr-1 ${isFollowing ? "fill-current" : ""}`} />
+              <Heart
+                className={`h-4 w-4 mr-1 ${isFollowing ? "fill-current" : ""}`}
+              />
               {isFollowing ? "Siguiendo" : "Seguir"}
             </Button>
           </div>
@@ -574,18 +631,27 @@ const ServiceDetails = memo<{
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">PUBLICADO POR</span>
-                <span className="text-sm text-muted-foreground ml-auto">{service.postedTime}</span>
+                <span className="text-sm text-muted-foreground">
+                  PUBLICADO POR
+                </span>
+                <span className="text-sm text-muted-foreground ml-auto">
+                  {service.postedTime}
+                </span>
               </div>
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={service.postedBy.avatar || "/placeholder.svg"} />
-                  <AvatarFallback>{service.postedBy.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage
+                    src={service.postedBy.avatar || "/placeholder.svg"}
+                  />
+                  <AvatarFallback>
+                    {service.postedBy.name.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium">{service.postedBy.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    ⭐ {service.postedBy.rating} ({service.postedBy.reviewCount} reseñas)
+                    ⭐ {service.postedBy.rating} ({service.postedBy.reviewCount}{" "}
+                    reseñas)
                   </p>
                 </div>
               </div>
@@ -605,7 +671,9 @@ const ServiceDetails = memo<{
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">PARA REALIZAR EL</span>
+                <span className="text-sm text-muted-foreground">
+                  PARA REALIZAR EL
+                </span>
               </div>
               <p className="font-medium">{service.date}</p>
               <p className="text-muted-foreground">{service.time}</p>
@@ -613,7 +681,9 @@ const ServiceDetails = memo<{
 
             <div>
               <h3 className="font-semibold text-lg mb-2">Detalles</h3>
-              <p className="text-muted-foreground leading-relaxed">{service.description}</p>
+              <p className="text-muted-foreground leading-relaxed">
+                {service.description}
+              </p>
             </div>
           </div>
         </div>
@@ -622,8 +692,12 @@ const ServiceDetails = memo<{
           <Card>
             <CardHeader>
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">PRESUPUESTO DE LA TAREA</p>
-                <p className="text-3xl font-bold">{formatCurrency(service.budget)}</p>
+                <p className="text-sm text-muted-foreground">
+                  PRESUPUESTO DE LA TAREA
+                </p>
+                <p className="text-3xl font-bold">
+                  {formatCurrency(service.budget)}
+                </p>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -650,32 +724,40 @@ const ServiceDetails = memo<{
         </div>
       </div>
     </div>
-  )
-})
+  );
+});
 
-ServiceDetails.displayName = "ServiceDetails"
+ServiceDetails.displayName = "ServiceDetails";
 
 // Main component
 const BrowseServicesPage = () => {
-  const [selectedService, setSelectedService] = useState<ServiceTaskWithLocation | null>(null)
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [selectedService, setSelectedService] =
+    useState<ServiceTaskWithLocation | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const userLocation = useUserLocation()
-  const { filters, updateFilter, resetFilters, activeFiltersCount } = useFilters()
+  const userLocation = useUserLocation();
+  const { filters, updateFilter, resetFilters, activeFiltersCount } =
+    useFilters();
 
-  const filteredServices = useMemo(() => filterServices(MOCK_SERVICES, filters), [filters])
+  const filteredServices = useMemo(
+    () => filterServices(MOCK_SERVICES, filters),
+    [filters],
+  );
 
-  const handleSelectService = useCallback((service: ServiceTaskWithLocation) => {
-    setSelectedService(service)
-  }, [])
+  const handleSelectService = useCallback(
+    (service: ServiceTaskWithLocation) => {
+      setSelectedService(service);
+    },
+    [],
+  );
 
   const handleClearSelectedService = useCallback(() => {
-    setSelectedService(null)
-  }, [])
+    setSelectedService(null);
+  }, []);
 
   const handleCloseFilters = useCallback(() => {
-    setIsFilterOpen(false)
-  }, [])
+    setIsFilterOpen(false);
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -709,19 +791,28 @@ const BrowseServicesPage = () => {
                   )}
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
+              <SheetContent
+                side="right"
+                className="w-full sm:max-w-md flex flex-col"
+              >
                 <SheetHeader>
                   <SheetTitle>Filtros</SheetTitle>
-                  <SheetDescription>Ajusta los filtros para encontrar exactamente lo que buscas</SheetDescription>
+                  <SheetDescription>
+                    Ajusta los filtros para encontrar exactamente lo que buscas
+                  </SheetDescription>
                 </SheetHeader>
 
                 <div className="space-y-6 py-6 overflow-y-auto flex-1 max-h-[calc(100vh-200px)]">
                   {/* Category Filter */}
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">CATEGORÍA</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      CATEGORÍA
+                    </h3>
                     <Select
                       value={filters.selectedCategory}
-                      onValueChange={(value) => updateFilter("selectedCategory", value)}
+                      onValueChange={(value) =>
+                        updateFilter("selectedCategory", value)
+                      }
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Categoría" />
@@ -732,9 +823,15 @@ const BrowseServicesPage = () => {
                             <div className="flex flex-col items-start">
                               <span className="font-medium">{category}</span>
                               {category !== "Todas las categorías" &&
-                                CATEGORY_DESCRIPTIONS[category as keyof typeof CATEGORY_DESCRIPTIONS] && (
+                                CATEGORY_DESCRIPTIONS[
+                                  category as keyof typeof CATEGORY_DESCRIPTIONS
+                                ] && (
                                   <span className="text-xs text-muted-foreground mt-1 max-w-[250px]">
-                                    {CATEGORY_DESCRIPTIONS[category as keyof typeof CATEGORY_DESCRIPTIONS]}
+                                    {
+                                      CATEGORY_DESCRIPTIONS[
+                                        category as keyof typeof CATEGORY_DESCRIPTIONS
+                                      ]
+                                    }
                                   </span>
                                 )}
                             </div>
@@ -746,10 +843,14 @@ const BrowseServicesPage = () => {
 
                   {/* Location Filter */}
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">UBICACIÓN</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      UBICACIÓN
+                    </h3>
                     <Select
                       value={filters.selectedLocation}
-                      onValueChange={(value) => updateFilter("selectedLocation", value)}
+                      onValueChange={(value) =>
+                        updateFilter("selectedLocation", value)
+                      }
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Ubicación" />
@@ -766,10 +867,14 @@ const BrowseServicesPage = () => {
 
                   {/* Price Range Filter */}
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">RANGO DE PRECIO</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      RANGO DE PRECIO
+                    </h3>
                     <Select
                       value={filters.selectedPriceRange}
-                      onValueChange={(value) => updateFilter("selectedPriceRange", value)}
+                      onValueChange={(value) =>
+                        updateFilter("selectedPriceRange", value)
+                      }
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Precio" />
@@ -786,8 +891,13 @@ const BrowseServicesPage = () => {
 
                   {/* Sort By */}
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">ORDENAR POR</h3>
-                    <Select value={filters.sortBy} onValueChange={(value) => updateFilter("sortBy", value)}>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      ORDENAR POR
+                    </h3>
+                    <Select
+                      value={filters.sortBy}
+                      onValueChange={(value) => updateFilter("sortBy", value)}
+                    >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Ordenar" />
                       </SelectTrigger>
@@ -803,10 +913,16 @@ const BrowseServicesPage = () => {
 
                   {/* Work Type Selection */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-muted-foreground">TIPO DE TRABAJO</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      TIPO DE TRABAJO
+                    </h3>
                     <div className="flex gap-2">
                       <Button
-                        variant={filters.workType === "in-person" ? "default" : "outline"}
+                        variant={
+                          filters.workType === "in-person"
+                            ? "default"
+                            : "outline"
+                        }
                         size="sm"
                         onClick={() => updateFilter("workType", "in-person")}
                         className="flex-1"
@@ -814,7 +930,11 @@ const BrowseServicesPage = () => {
                         Presencial
                       </Button>
                       <Button
-                        variant={filters.workType === "remotely" ? "default" : "outline"}
+                        variant={
+                          filters.workType === "remotely"
+                            ? "default"
+                            : "outline"
+                        }
                         size="sm"
                         onClick={() => updateFilter("workType", "remotely")}
                         className="flex-1"
@@ -822,7 +942,9 @@ const BrowseServicesPage = () => {
                         Remoto
                       </Button>
                       <Button
-                        variant={filters.workType === "all" ? "default" : "outline"}
+                        variant={
+                          filters.workType === "all" ? "default" : "outline"
+                        }
                         size="sm"
                         onClick={() => updateFilter("workType", "all")}
                         className="flex-1"
@@ -834,14 +956,18 @@ const BrowseServicesPage = () => {
 
                   {/* Distance Slider */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-muted-foreground">DISTANCIA</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      DISTANCIA
+                    </h3>
                     <div className="text-center">
                       <p className="text-2xl font-bold">{filters.distance}km</p>
                     </div>
                     <div className="px-4">
                       <Slider
                         value={[filters.distance]}
-                        onValueChange={(value) => updateFilter("distance", value[0])}
+                        onValueChange={(value) =>
+                          updateFilter("distance", value[0])
+                        }
                         max={MAX_DISTANCE}
                         min={MIN_DISTANCE}
                         step={1}
@@ -852,27 +978,41 @@ const BrowseServicesPage = () => {
 
                   {/* Other Filters */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">OTROS FILTROS</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      OTROS FILTROS
+                    </h3>
 
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
-                        <h4 className="text-base font-medium">Solo tareas disponibles</h4>
-                        <p className="text-sm text-muted-foreground">Ocultar tareas que ya están asignadas</p>
+                        <h4 className="text-base font-medium">
+                          Solo tareas disponibles
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Ocultar tareas que ya están asignadas
+                        </p>
                       </div>
                       <Switch
                         checked={filters.showAvailableOnly}
-                        onCheckedChange={(checked) => updateFilter("showAvailableOnly", checked)}
+                        onCheckedChange={(checked) =>
+                          updateFilter("showAvailableOnly", checked)
+                        }
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
-                        <h4 className="text-base font-medium">Solo tareas sin ofertas</h4>
-                        <p className="text-sm text-muted-foreground">Ocultar tareas que tienen ofertas</p>
+                        <h4 className="text-base font-medium">
+                          Solo tareas sin ofertas
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Ocultar tareas que tienen ofertas
+                        </p>
                       </div>
                       <Switch
                         checked={filters.showNoOffersOnly}
-                        onCheckedChange={(checked) => updateFilter("showNoOffersOnly", checked)}
+                        onCheckedChange={(checked) =>
+                          updateFilter("showNoOffersOnly", checked)
+                        }
                       />
                     </div>
                   </div>
@@ -880,7 +1020,11 @@ const BrowseServicesPage = () => {
 
                 <SheetFooter className="flex gap-2">
                   {activeFiltersCount > 0 && (
-                    <Button variant="outline" onClick={resetFilters} className="flex-1">
+                    <Button
+                      variant="outline"
+                      onClick={resetFilters}
+                      className="flex-1"
+                    >
                       Limpiar filtros
                     </Button>
                   )}
@@ -900,10 +1044,15 @@ const BrowseServicesPage = () => {
             {/* Services List */}
             <div className="lg:col-span-1 relative z-10">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">{filteredServices.length} tareas disponibles</h2>
+                <h2 className="text-lg font-semibold">
+                  {filteredServices.length} tareas disponibles
+                </h2>
               </div>
 
-              <div className="space-y-4 overflow-y-auto pr-2" style={{ maxHeight: "calc(100vh - 180px)" }}>
+              <div
+                className="space-y-4 overflow-y-auto pr-2"
+                style={{ maxHeight: "calc(100vh - 180px)" }}
+              >
                 {filteredServices.map((service) => (
                   <ServiceTaskCard
                     key={service.id}
@@ -915,7 +1064,9 @@ const BrowseServicesPage = () => {
 
                 {filteredServices.length === 0 && (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">No se encontraron tareas que coincidan con tus filtros.</p>
+                    <p className="text-muted-foreground">
+                      No se encontraron tareas que coincidan con tus filtros.
+                    </p>
                   </div>
                 )}
               </div>
@@ -927,7 +1078,10 @@ const BrowseServicesPage = () => {
                 <Card className="h-[calc(100vh-180px)]">
                   <CardContent className="p-0 h-full">
                     {selectedService ? (
-                      <ServiceDetails service={selectedService} onBack={handleClearSelectedService} />
+                      <ServiceDetails
+                        service={selectedService}
+                        onBack={handleClearSelectedService}
+                      />
                     ) : (
                       userLocation && (
                         <InteractiveMap
@@ -948,7 +1102,7 @@ const BrowseServicesPage = () => {
 
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default BrowseServicesPage
+export default BrowseServicesPage;
