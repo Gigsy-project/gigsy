@@ -1,11 +1,19 @@
-import { Book, HelpCircle, MessageCircleIcon } from "lucide-react" // Renamed to avoid conflict
+import { Book, HelpCircle, MessageCircleIcon } from "lucide-react"
+import React from "react"
 import type { HelpCategory, FAQ } from "@/lib/types"
+
+// Define icon mapping for better type safety
+export const iconMapping = {
+  Book,
+  HelpCircle, 
+  MessageCircleIcon,
+}
 
 export const helpCategoriesData: HelpCategory[] = [
   {
     id: "getting-started",
     title: "Primeros pasos",
-    icon: <Book className="h-5 w-5" />,
+    icon: React.createElement(Book, { className: "h-5 w-5" }),
     description: "Aprende lo básico para usar AidMarkt",
     articles: [
       {
@@ -31,7 +39,7 @@ export const helpCategoriesData: HelpCategory[] = [
   {
     id: "services",
     title: "Servicios",
-    icon: <HelpCircle className="h-5 w-5" />,
+    icon: React.createElement(HelpCircle, { className: "h-5 w-5" }),
     description: "Todo sobre ofrecer y solicitar servicios",
     articles: [
       {
@@ -57,7 +65,7 @@ export const helpCategoriesData: HelpCategory[] = [
   {
     id: "payments",
     title: "Pagos y facturación",
-    icon: <MessageCircleIcon className="h-5 w-5" />, // Use renamed import
+    icon: React.createElement(MessageCircleIcon, { className: "h-5 w-5" }),
     description: "Información sobre pagos seguros",
     articles: [
       {
@@ -83,7 +91,7 @@ export const helpCategoriesData: HelpCategory[] = [
   {
     id: "safety",
     title: "Seguridad",
-    icon: <HelpCircle className="h-5 w-5" />,
+    icon: React.createElement(HelpCircle, { className: "h-5 w-5" }),
     description: "Mantente seguro en la plataforma",
     articles: [
       {
