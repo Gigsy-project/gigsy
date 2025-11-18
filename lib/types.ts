@@ -1,72 +1,103 @@
-import type React from "react"
+import type React from "react";
+// Updated types file to include ServiceTask
+
 export type HelpCategory = {
-  id: string
-  title: string
-  icon: React.ReactNode // Keep as ReactNode if icons are components
-  description: string
-  articles: HelpArticle[]
-}
+  id: string;
+  title: string;
+  icon: React.ReactNode; // Keep as ReactNode if icons are components
+  description: string;
+  articles: HelpArticle[];
+};
 
 export type HelpArticle = {
-  id: string
-  title: string
-  content: string
-  tags: string[]
-  helpful: number
-  views: number
-  categoryTitle?: string // Added for search results
-}
+  id: string;
+  title: string;
+  content: string;
+  tags: string[];
+  helpful: number;
+  views: number;
+  categoryTitle?: string; // Added for search results
+};
 
 export type FAQ = {
-  id: string
-  question: string
-  answer: string
-  category: string
-}
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+};
 
 export type Message = {
-  id: number
-  sender: "user" | "other" | "support"
-  text: string
-  timestamp: string
-  hasAttachment?: boolean
-}
+  id: number;
+  sender: "user" | "other" | "support";
+  text: string;
+  timestamp: string;
+  hasAttachment?: boolean;
+};
 
 export type Conversation = {
-  id: number
-  name: string
-  lastMessage: string
-  timestamp: string
-  unread: boolean
-  avatar?: string
-  serviceId: number
-}
+  id: number;
+  name: string;
+  lastMessage: string;
+  timestamp: string;
+  unread: boolean;
+  avatar?: string;
+  serviceId: number;
+};
 
 export type Service = {
-  id: number
-  title: string
-  date: string
-  time: string
-  location: string
-  price: string
-  status: "pending" | "confirmed" | "completed"
-  description: string
-}
+  id: number;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  price: string;
+  status: "pending" | "confirmed" | "completed";
+  description: string;
+};
 
 // Provider type for ServiceBookingModal and ProviderProfileModal
 export type Provider = {
-  id: number
-  name: string
-  avatar: string
-  rating?: number // Optional as not in all uses
-  reviews?: number // Optional
-  services: string[]
-  location: string
-  lastService?: string // Optional
-  lastServiceDate?: string // Optional
-  description?: string
-  languages?: string[]
-  experience?: string
-  verified?: boolean
-  joinDate?: string
-}
+  id: number;
+  name: string;
+  avatar: string;
+  rating?: number; // Optional as not in all uses
+  reviews?: number; // Optional
+  services: string[];
+  location: string;
+  lastService?: string; // Optional
+  lastServiceDate?: string; // Optional
+  description?: string;
+  languages?: string[];
+  experience?: string;
+  verified?: boolean;
+  joinDate?: string;
+};
+
+export type ServiceTask = {
+  id: number;
+  title: string;
+  description: string;
+  budget: number;
+  location: string;
+  date: string;
+  time: string;
+  category: string;
+  status: "open" | "assigned" | "completed" | "cancelled";
+  postedBy: {
+    name: string;
+    avatar: string;
+    rating: number;
+    reviewCount: number;
+  };
+  postedTime: string;
+  offers: number;
+  urgent?: boolean;
+};
+
+export type ValidationErrors = {
+  [key: string]: string;
+};
+
+export type FormData = {
+  [key: string]: any;
+};
