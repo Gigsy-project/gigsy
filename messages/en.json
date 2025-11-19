@@ -95,7 +95,10 @@
     "wallet": "Wallet",
     "help": "Help Center",
     "home": "Home",
-    "account": "My account"
+    "account": "My account",
+    "postTask": "Post a task",
+    "browseTasks": "Browse tasks",
+    "howItWorks": "How it works"
   },
   "services": {
     "cleaning": "Cleaning",

@@ -1,8 +1,7 @@
 "use client"
 
-import { memo, useState, useEffect } from "react"
 import { useTranslations } from 'next-intl';
-import { Link, useRouter } from '@/i18n/navigation';
+import { Link, useRouter, usePathname } from '@/i18n/navigation';
 import { LanguageSwitcher } from "./language-switcher"
 import { useAuth } from "@/hooks/use-auth"
 import { MessageSquare, User, Calendar, Wallet, Menu, LogOut, HelpCircle, LogIn } from "lucide-react"
@@ -18,35 +17,20 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ROUTES } from "@/lib/constants"
 
-const NavigationItem = memo(({ href, icon: Icon, label }: { href: string; icon: any; label: string }) => (
+const NavigationItem = ({ href, icon: Icon, label }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string }) => (
   <DropdownMenuItem asChild>
     <Link href={href} className="cursor-pointer flex items-center">
       <Icon className="h-4 w-4 mr-2" />
       {label}
     </Link>
   </DropdownMenuItem>
-))
+)
 
-NavigationItem.displayName = "NavigationItem"
-
-export const Header = memo(() => {
+export const Header = ({className}: {className?: string}) => {
   const t = useTranslations()
   const router = useRouter()
-  const { status, isLoggedIn, isGuest, logout } = useAuth()
-  const [isScrolled, setIsScrolled] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY || document.documentElement.scrollTop
-      setIsScrolled(scrollPosition > 0)
-    }
-
-    // Check initial scroll position
-    handleScroll()
-
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  const pathname = usePathname()
+  const { isLoggedIn, isGuest, logout } = useAuth()
 
   const handleLogout = () => {
     logout()
@@ -65,13 +49,46 @@ export const Header = memo(() => {
   ]
 
   return (
-    <header className={`sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 transition-shadow duration-200 ${isScrolled ? "shadow-sm" : ""}`}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <header className={`sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md supports-backdrop-filter:bg-white/60 transition-shadow duration-200 shadow-sm ${className || ""}`}>
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center gap-4 md:gap-8">
+          {/* Left side: Logo, Post Task button, Navigation links */}
+          <div className="flex items-center gap-6 md:gap-8">
             <Logo width={60} height={60} />
+            
+            {/* Post Task Button */}
+            <Button
+              onClick={() => router.push(ROUTES.requestService)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full px-6 h-10 transition-colors shadow-sm"
+            >
+              {t("nav.postTask")}
+            </Button>
+
+            {/* Navigation Links */}
+            <nav className="hidden md:flex items-center gap-8">
+              <Link
+                href={ROUTES.browseServices}
+                className={`font-medium text-sm transition-colors relative py-1 ${
+                  pathname === ROUTES.browseServices || pathname?.startsWith(ROUTES.browseServices + "/")
+                    ? "text-blue-600 font-semibold"
+                    : "text-gray-700 hover:text-gray-900"
+                }`}
+              >
+                {t("nav.browseTasks")}
+                {(pathname === ROUTES.browseServices || pathname?.startsWith(ROUTES.browseServices + "/")) && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></span>
+                )}
+              </Link>
+              <Link
+                href={ROUTES.home}
+                className="font-medium text-sm transition-colors relative py-1 text-gray-700 hover:text-gray-900"
+              >
+                {t("nav.howItWorks")}
+              </Link>
+            </nav>
           </div>
 
+          {/* Right side: Language switcher and User menu */}
           <div className="flex items-center gap-2 md:gap-4">
             <LanguageSwitcher />
 
@@ -121,6 +138,6 @@ export const Header = memo(() => {
       </div>
     </header>
   )
-})
+}
 
 Header.displayName = "Header"

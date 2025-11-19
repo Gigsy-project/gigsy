@@ -1,7 +1,15 @@
 "use client"
 import { useState, useMemo, useCallback } from "react" // Added useMemo and useCallback
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { useRouter } from "next/navigation"
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -15,6 +23,7 @@ import { helpCategoriesData, faqsData } from "./data" // Import data
 import type { Message as HelpMessage } from "@/lib/types" // Use Message from lib/types
 
 export default function HelpCenterPage() {
+  const router = useRouter()
   const [helpMessageText, setHelpMessageText] = useState("")
   const [helpView, setHelpView] = useState<"main" | "category" | "article" | "chat" | "contact">("main")
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null) // Renamed for clarity
@@ -471,8 +480,24 @@ export default function HelpCenterPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
-        <div className="container py-6">
+        <div className="container mx-auto py-6">
           <div className="max-w-4xl mx-auto">
+            <Breadcrumb className="mb-4">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink 
+                    onClick={() => router.back()}
+                    className="cursor-pointer"
+                  >
+                    Volver
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Centro de Ayuda</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <div className="mb-6">
               <h1 className="text-3xl font-bold mb-2">Centro de Ayuda</h1>
               <p className="text-muted-foreground">
@@ -483,7 +508,6 @@ export default function HelpCenterPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   )
 }

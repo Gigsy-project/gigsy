@@ -2,7 +2,15 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react" // Added useMemo, useCallback
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { useRouter } from "next/navigation"
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -10,7 +18,6 @@ import { Send, MapPin, Clock, DollarSign, ImageIcon, Star, FileUp, Paperclip, Ca
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Dialog,
   DialogContent,
@@ -31,6 +38,7 @@ import type { Conversation, Message, Service, Provider } from "@/lib/types" // I
 const DEFAULT_ACTIVE_CONVERSATION_ID = initialConversations[0]?.id || null
 
 export default function MessagesPage() {
+  const router = useRouter()
   const [activeConversationId, setActiveConversationId] = useState<number | null>(DEFAULT_ACTIVE_CONVERSATION_ID)
   const [messageText, setMessageText] = useState("")
   const [showAttachmentOptions, setShowAttachmentOptions] = useState(false)
@@ -265,12 +273,23 @@ export default function MessagesPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
-        <div className="container py-6">
-          <Tabs defaultValue="messages" className="w-full mb-6">
-            <TabsList className="grid w-full grid-cols-1">
-              <TabsTrigger value="messages">Mensajes</TabsTrigger>
-            </TabsList>
-          </Tabs>
+        <div className="container mx-auto py-6">
+          <Breadcrumb className="mb-4">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink 
+                  onClick={() => router.back()}
+                  className="cursor-pointer"
+                >
+                  Volver
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Mensajes</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-[calc(100vh-200px)] min-h-[500px]">
             {/* Conversations list */}
@@ -637,7 +656,6 @@ export default function MessagesPage() {
           </div>
         </div>
       </main>
-      <Footer />
 
       {currentProviderForBooking && (
         <ServiceBookingModal

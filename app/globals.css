@@ -105,3 +105,42 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Custom scrollbar that hides when not scrolling */
+  .scrollbar-hide-on-idle {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  
+  .scrollbar-hide-on-idle:hover,
+  .scrollbar-hide-on-idle:focus-within,
+  .scrollbar-hide-on-idle.scrolling {
+    scrollbar-color: rgb(203 213 225) transparent;
+  }
+  
+  .scrollbar-hide-on-idle::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .scrollbar-hide-on-idle::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-hide-on-idle::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .scrollbar-hide-on-idle:hover::-webkit-scrollbar-thumb,
+  .scrollbar-hide-on-idle:focus-within::-webkit-scrollbar-thumb,
+  .scrollbar-hide-on-idle.scrolling::-webkit-scrollbar-thumb {
+    background-color: rgb(203 213 225);
+  }
+  
+  /* Hide scrollbar arrows */
+  .scrollbar-hide-on-idle::-webkit-scrollbar-button {
+    display: none;
+  }
+}

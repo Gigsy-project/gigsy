@@ -1,21 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Map as MapLibreMap, Marker, Popup, NavigationControl } from "react-map-gl/maplibre";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import type { ServiceTask } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
-
-// Fix Leaflet icon issues
-const fixLeafletIcon = () => {
-  delete (L.Icon.Default.prototype as any)._getIconUrl;
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl:
-      "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-    iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-  });
-};
+import type { MapRef } from "react-map-gl/maplibre";
 
 interface ServiceLocation {
   lat: number;
@@ -39,170 +30,330 @@ const InteractiveMap = ({
   onSelectService,
   selectedService,
 }: InteractiveMapProps) => {
-  const mapRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<{ [key: number]: L.Marker }>({});
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapRef = useRef<MapRef>(null);
+  const [popupInfo, setPopupInfo] = useState<{
+    service: ServiceTaskWithLocation;
+    longitude: number;
+    latitude: number;
+  } | null>(null);
+  const [detectedLocation, setDetectedLocation] = useState<ServiceLocation | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [isFetchingFallback, setIsFetchingFallback] = useState(false);
 
-  // Initialize map
-  useEffect(() => {
-    fixLeafletIcon();
-
-    if (!mapRef.current) {
-      const map = L.map("map").setView(
-        [userLocation.lat, userLocation.lng],
-        12,
-      );
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-      }).addTo(map);
-
-      // Add user location marker
-      const userIcon = L.divIcon({
-        className: "user-location-marker",
-        html: `<div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8],
-      });
-
-      L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
-        .addTo(map)
-        .bindTooltip("Tu ubicación", { permanent: false, direction: "top" });
-
-      mapRef.current = map;
-      setMapLoaded(true);
+  // Get user location with navigator.geolocation
+  const getUserLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocalización no soportada por el navegador');
+      return;
     }
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, [userLocation]);
-
-  // Add service markers
-  useEffect(() => {
-    if (mapRef.current && mapLoaded) {
-      // Clear existing markers
-      Object.values(markersRef.current).forEach((marker) => {
-        marker.remove();
-      });
-      markersRef.current = {};
-
-      // Add new markers
-      services.forEach((service) => {
-        const { coordinates, id, title, budget, category, urgent } = service;
-
-        // Create custom marker icon
-        const markerIcon = L.divIcon({
-          className: "service-marker",
-          html: `
-            <div class="flex items-center justify-center w-8 h-8 rounded-full ${
-              urgent ? "bg-red-500" : "bg-primary"
-            } text-white font-bold shadow-lg border-2 border-white">
-              ${category.charAt(0)}
-            </div>
-          `,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16],
-        });
-
-        // Create marker
-        const marker = L.marker([coordinates.lat, coordinates.lng], {
-          icon: markerIcon,
-        })
-          .addTo(mapRef.current!)
-          .bindTooltip(
-            `
-            <div class="p-1">
-              <div class="font-bold">${title}</div>
-              <div>${formatCurrency(budget)}</div>
-            </div>
-          `,
-            { permanent: false, direction: "top" },
-          )
-          .on("click", () => {
-            onSelectService(service);
-          });
-
-        markersRef.current[id] = marker;
-      });
-
-      // Fit bounds to show all markers plus user location
-      if (services.length > 0) {
-        const bounds = L.latLngBounds([userLocation]);
-        services.forEach((service) => {
-          bounds.extend([service.coordinates.lat, service.coordinates.lng]);
-        });
-        mapRef.current.fitBounds(bounds, { padding: [50, 50] });
-      }
-    }
-  }, [services, mapLoaded, userLocation, onSelectService]);
-
-  // Highlight selected service on map
-  useEffect(() => {
-    if (
-      mapRef.current &&
-      selectedService &&
-      markersRef.current[selectedService.id]
-    ) {
-      const marker = markersRef.current[selectedService.id];
-
-      // Center map on selected marker
-      mapRef.current.setView(
-        [selectedService.coordinates.lat, selectedService.coordinates.lng],
-        14,
-      );
-
-      // Highlight the marker (you could change the icon here)
-      Object.values(markersRef.current).forEach((m) => {
-        const icon = (m as any)._icon;
-        if (icon) {
-          icon.classList.remove("selected-marker");
+  
+    setIsLocating(true);
+    setLocationError(null);
+  
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setDetectedLocation({ lat: latitude, lng: longitude });
+        setIsLocating(false);
+        setLocationError(null);
+      },
+      (error) => {
+        console.error('Error obteniendo ubicación:', error);
+        setIsLocating(false);
+        
+        let errorMessage = 'No se pudo obtener tu ubicación';
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Permiso de ubicación denegado';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Información de ubicación no disponible';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Tiempo de espera agotado';
+            break;
+          default:
+            errorMessage = 'Error desconocido al obtener ubicación';
+            break;
         }
-      });
-
-      const selectedIcon = (marker as any)._icon;
-      if (selectedIcon) {
-        selectedIcon.classList.add("selected-marker");
+        
+        setLocationError(errorMessage);
+        
+        // Fallback usando IP geolocation (sin Google APIs)
+        handleIPGeolocationFallback();
+      },
+      {
+        enableHighAccuracy: true,    // Importante: evita servicios de Google
+        timeout: 8000,               // 8 segundos timeout
+        maximumAge: 600000,          // Cache por 10 minutos
       }
+    );
+  }, []);
+  
+  // Fallback usando IP geolocation sin Google APIs
+  const handleIPGeolocationFallback = useCallback(async () => {
+    setIsFetchingFallback(true);
+    
+    try {
+      // Usar ipapi.co que no requiere API key para uso básico
+      const response = await fetch('https://ipapi.co/json/', {
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.latitude && data.longitude) {
+          setDetectedLocation({ 
+            lat: data.latitude, 
+            lng: data.longitude 
+          });
+          setLocationError(null);
+        } else {
+          setLocationError('No se pudo determinar ubicación aproximada');
+        }
+      } else {
+        setLocationError('Servicio de ubicación no disponible');
+      }
+    } catch (error) {
+      console.error('Error con fallback de geolocalización:', error);
+      setLocationError('Error al obtener ubicación aproximada');
+    } finally {
+      setIsFetchingFallback(false);
+    }
+  }, []);
+
+
+
+  useEffect(() => {
+    getUserLocation();
+  }, [getUserLocation]);
+
+  // Retry handler
+  const handleRetry = useCallback(() => {
+    getUserLocation();
+  }, [getUserLocation]);
+
+  // Use detected location if available, otherwise use provided userLocation
+  const currentUserLocation = detectedLocation || userLocation;
+
+  // Initial view state
+  const initialViewState = useMemo(
+    () => ({
+      longitude: currentUserLocation.lng,
+      latitude: currentUserLocation.lat,
+      zoom: 12,
+    }),
+    [currentUserLocation]
+  );
+
+  // Fit bounds to show all markers when services change
+  useEffect(() => {
+    if (!mapRef.current || services.length === 0) return;
+
+    const bounds = new maplibregl.LngLatBounds();
+    bounds.extend([currentUserLocation.lng, currentUserLocation.lat]);
+      services.forEach((service) => {
+      bounds.extend([service.coordinates.lng, service.coordinates.lat]);
+    });
+    
+    setTimeout(() => {
+      mapRef.current?.fitBounds(bounds, { padding: 50 });
+    }, 100);
+  }, [services, currentUserLocation]);
+
+  // Center map on selected service
+  useEffect(() => {
+    if (mapRef.current && selectedService) {
+      mapRef.current.flyTo({
+        center: [selectedService.coordinates.lng, selectedService.coordinates.lat],
+        zoom: 14,
+        duration: 500,
+      });
     }
   }, [selectedService]);
 
+  // Airtasker-style map: Clean, minimalist design with soft colors
+  // Similar to Airtasker's map design - light, modern, with clear streets and labels
+  const mapStyle = useMemo(() => {
+    // Option 1: MapTiler Streets style (similar to Airtasker) - requires API key
+    // Uncomment and add your MapTiler API key to use:
+    // return `https://api.maptiler.com/maps/streets/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`;
+    
+    // Option 2: OpenFreeMap Positron style (light, clean, Airtasker-like)
+    return "https://tiles.openfreemap.org/styles/positron";
+    
+    // Option 3: Custom Airtasker-inspired style (light colors, clean design)
+    // return {
+    //   version: 8 as const,
+    //   sources: {
+    //     'carto-positron': {
+    //       type: 'raster' as const,
+    //       tiles: [
+    //         'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+    //         'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+    //         'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+    //       ],
+    //       tileSize: 256,
+    //       attribution: '© OpenStreetMap contributors © CARTO'
+    //     }
+    //   },
+    //   layers: [
+    //     {
+    //       id: 'carto-positron-layer',
+    //       type: 'raster' as const,
+    //       source: 'carto-positron',
+    //       minzoom: 0,
+    //       maxzoom: 19
+    //     }
+    //   ],
+    //   glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf'
+    // };
+  }, []);
+
+  // Transform request for custom tile sources (if needed for authentication)
+  const transformRequest = useMemo(() => {
+    return (url: string, resourceType?: string) => {
+      void resourceType;
+      // If using MapTiler or other services that need headers
+      // if (resourceType === 'Tile' && url.includes('maptiler.com')) {
+      //   return {
+      //     url: url,
+      //     headers: {
+      //       'Authorization': `Bearer ${process.env.NEXT_PUBLIC_MAPTILER_KEY}`
+      //     }
+      //   };
+      // }
+      return { url };
+    };
+  }, []);
+
   return (
-    <div id="map" className="h-full w-full rounded-lg relative z-0">
+    <div className="h-full w-full relative z-0">
+      <MapLibreMap
+        ref={mapRef}
+        initialViewState={initialViewState}
+        style={{ width: "100%", height: "100%" }}
+        mapStyle={mapStyle}
+        transformRequest={transformRequest}
+      >
+        {/* User location marker */}
+        {!isLocating && (
+          <Marker
+            longitude={currentUserLocation.lng}
+            latitude={currentUserLocation.lat}
+            anchor="center"
+          >
+            <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg animate-pulse"></div>
+          </Marker>
+        )}
+        
+        {/* Loading indicator while detecting location */}
+        {(isLocating || isFetchingFallback) && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm text-gray-700">
+              {isFetchingFallback ? "Determinando ubicación aproximada..." : "Detectando tu ubicación..."}
+            </span>
+          </div>
+        )}
+
+        {/* Error message with retry button */}
+        {locationError && !isLocating && !isFetchingFallback && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white px-4 py-2 rounded-lg shadow-md flex items-center gap-3">
+            <span className="text-sm text-gray-600">{locationError}</span>
+            <button
+              onClick={handleRetry}
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium underline"
+              type="button"
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
+
+        {/* Service markers */}
+        {services.map((service) => {
+          const { coordinates, id, category, urgent } = service;
+          const isSelected = selectedService?.id === id;
+
+          return (
+            <Marker
+              key={id}
+              longitude={coordinates.lng}
+              latitude={coordinates.lat}
+              anchor="center"
+              onClick={(e) => {
+                e.originalEvent.stopPropagation();
+                onSelectService(service);
+                setPopupInfo({
+                  service,
+                  longitude: coordinates.lng,
+                  latitude: coordinates.lat,
+                });
+              }}
+            >
+              <div
+                className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                  urgent ? "bg-red-500" : "bg-primary"
+                } text-white font-bold shadow-lg border-2 border-white cursor-pointer transition-transform ${
+                  isSelected ? "scale-125" : "scale-100"
+                }`}
+              >
+                {category.charAt(0)}
+              </div>
+            </Marker>
+          );
+        })}
+
+        {/* Popup for service details */}
+        {popupInfo && (
+          <Popup
+            anchor="bottom"
+            longitude={popupInfo.longitude}
+            latitude={popupInfo.latitude}
+            onClose={() => setPopupInfo(null)}
+            closeButton={true}
+            closeOnClick={false}
+            className="custom-popup"
+          >
+            <div className="p-1">
+              <div className="font-bold">{popupInfo.service.title}</div>
+              <div>{formatCurrency(popupInfo.service.budget)}</div>
+            </div>
+          </Popup>
+        )}
+
+        {/* Navigation controls */}
+        <NavigationControl position="top-left" />
+      </MapLibreMap>
+
       <style jsx global>{`
-        .leaflet-container {
-          z-index: 1 !important;
+        .maplibregl-map {
+          height: 100% !important;
+          width: 100% !important;
         }
-        .leaflet-control-container {
+        .maplibregl-control-container {
           z-index: 2 !important;
         }
-        .user-location-marker {
-          z-index: 10;
-        }
-        .service-marker {
-          z-index: 9;
-        }
-        .selected-marker {
-          transform: scale(1.2);
-          z-index: 11;
-          transition: transform 0.2s ease;
-        }
-        .leaflet-tooltip {
+        .maplibregl-popup {
           font-family: inherit;
-          font-size: 0.875rem;
-          padding: 0.5rem;
-          border-radius: 0.375rem;
-          border: none;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
           z-index: 12 !important;
         }
-        .leaflet-popup {
-          z-index: 12 !important;
+        .maplibregl-popup-content {
+          border-radius: 0.375rem;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          padding: 0.5rem;
+        }
+        .maplibregl-popup-close-button {
+          font-size: 1.25rem;
+          padding: 0.25rem 0.5rem;
+        }
+        .custom-popup .maplibregl-popup-content {
+          padding: 0.5rem;
         }
       `}</style>
     </div>

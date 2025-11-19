@@ -1,15 +1,23 @@
 "use client"
 
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { useRouter } from "next/navigation"
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Clock, DollarSign, MapPin } from "lucide-react"
 
 export default function CalendarPage() {
+  const router = useRouter()
   const [date, setDate] = useState<Date | undefined>(new Date())
 
   // Mock data for appointments
@@ -66,132 +74,136 @@ export default function CalendarPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1 py-8">
-        <div className="container">
+        <div className="container mx-auto">
+          <Breadcrumb className="mb-4">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink 
+                  onClick={() => router.back()}
+                  className="cursor-pointer"
+                >
+                  Volver
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Calendario</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           <h1 className="text-3xl font-bold mb-6">Calendario</h1>
 
-          <Tabs defaultValue="calendar" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="calendar">Calendario</TabsTrigger>
-              <TabsTrigger value="upcoming">Próximos servicios</TabsTrigger>
-            </TabsList>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <Card className="md:col-span-1">
+              <CardHeader>
+                <CardTitle>Mayo 2025</CardTitle>
+                <CardDescription>Selecciona una fecha para ver los servicios</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  className="w-full rounded-md border"
+                  modifiers={{
+                    withAppointment: (date) => isDayWithAppointment(date),
+                  }}
+                  modifiersClassNames={{
+                    withAppointment: "bg-primary/10 font-bold text-primary",
+                  }}
+                />
+              </CardContent>
+            </Card>
 
-            <TabsContent value="calendar">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="md:col-span-1">
-                  <CardHeader>
-                    <CardTitle>Mayo 2025</CardTitle>
-                    <CardDescription>Selecciona una fecha para ver los servicios</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      className="rounded-md border"
-                      modifiers={{
-                        withAppointment: (date) => isDayWithAppointment(date),
-                      }}
-                      modifiersClassNames={{
-                        withAppointment: "bg-primary/10 font-bold text-primary",
-                      }}
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card className="md:col-span-2">
-                  <CardHeader>
-                    <CardTitle>
-                      {date ? date.toLocaleDateString("es-ES", { dateStyle: "full" }) : "Selecciona una fecha"}
-                    </CardTitle>
-                    <CardDescription>
-                      {selectedDateAppointments.length
-                        ? `${selectedDateAppointments.length} servicios programados`
-                        : "No hay servicios programados para esta fecha"}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {selectedDateAppointments.map((appointment) => (
-                        <div key={appointment.id} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-medium text-lg">{appointment.title}</h3>
-                              <div className="flex items-center text-muted-foreground mt-1">
-                                <Clock className="h-4 w-4 mr-1" />
-                                <span className="text-sm">{appointment.time}</span>
-                              </div>
-                              <div className="flex items-center text-muted-foreground mt-1">
-                                <MapPin className="h-4 w-4 mr-1" />
-                                <span className="text-sm">{appointment.location}</span>
-                              </div>
-                              <div className="flex items-center text-green-600 mt-1">
-                                <DollarSign className="h-4 w-4 mr-1" />
-                                <span className="text-sm font-medium">{appointment.earnings}</span>
-                              </div>
-                            </div>
-                            <Badge
-                              variant={appointment.status === "confirmed" ? "default" : "outline"}
-                              className={appointment.status === "confirmed" ? "bg-green-500" : ""}
-                            >
-                              {appointment.status === "confirmed" ? "Confirmado" : "Pendiente"}
-                            </Badge>
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>
+                  {date ? date.toLocaleDateString("es-ES", { dateStyle: "full" }) : "Selecciona una fecha"}
+                </CardTitle>
+                <CardDescription>
+                  {selectedDateAppointments.length
+                    ? `${selectedDateAppointments.length} servicios programados`
+                    : "No hay servicios programados para esta fecha"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {selectedDateAppointments.map((appointment) => (
+                    <div key={appointment.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium text-lg">{appointment.title}</h3>
+                          <div className="flex items-center text-muted-foreground mt-1">
+                            <Clock className="h-4 w-4 mr-1" />
+                            <span className="text-sm">{appointment.time}</span>
+                          </div>
+                          <div className="flex items-center text-muted-foreground mt-1">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            <span className="text-sm">{appointment.location}</span>
+                          </div>
+                          <div className="flex items-center text-green-600 mt-1">
+                            <DollarSign className="h-4 w-4 mr-1" />
+                            <span className="text-sm font-medium">{appointment.earnings}</span>
                           </div>
                         </div>
-                      ))}
+                        <Badge
+                          variant={appointment.status === "confirmed" ? "default" : "outline"}
+                          className={appointment.status === "confirmed" ? "bg-green-500" : ""}
+                        >
+                          {appointment.status === "confirmed" ? "Confirmado" : "Pendiente"}
+                        </Badge>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-            <TabsContent value="upcoming">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Próximos servicios</CardTitle>
-                  <CardDescription>Todos tus servicios programados</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {appointments
-                      .sort((a, b) => a.date.getTime() - b.date.getTime())
-                      .map((appointment) => (
-                        <div key={appointment.id} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-medium text-lg">{appointment.title}</h3>
-                              <p className="text-muted-foreground">
-                                {appointment.date.toLocaleDateString("es-ES", { dateStyle: "long" })}
-                              </p>
-                              <div className="flex items-center text-muted-foreground mt-1">
-                                <Clock className="h-4 w-4 mr-1" />
-                                <span className="text-sm">{appointment.time}</span>
-                              </div>
-                              <div className="flex items-center text-muted-foreground mt-1">
-                                <MapPin className="h-4 w-4 mr-1" />
-                                <span className="text-sm">{appointment.location}</span>
-                              </div>
-                              <div className="flex items-center text-green-600 mt-1">
-                                <DollarSign className="h-4 w-4 mr-1" />
-                                <span className="text-sm font-medium">{appointment.earnings}</span>
-                              </div>
-                            </div>
-                            <Badge
-                              variant={appointment.status === "confirmed" ? "default" : "outline"}
-                              className={appointment.status === "confirmed" ? "bg-green-500" : ""}
-                            >
-                              {appointment.status === "confirmed" ? "Confirmado" : "Pendiente"}
-                            </Badge>
+          <Card>
+            <CardHeader>
+              <CardTitle>Próximos servicios</CardTitle>
+              <CardDescription>Todos tus servicios programados</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {appointments
+                  .sort((a, b) => a.date.getTime() - b.date.getTime())
+                  .map((appointment) => (
+                    <div key={appointment.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium text-lg">{appointment.title}</h3>
+                          <p className="text-muted-foreground">
+                            {appointment.date.toLocaleDateString("es-ES", { dateStyle: "long" })}
+                          </p>
+                          <div className="flex items-center text-muted-foreground mt-1">
+                            <Clock className="h-4 w-4 mr-1" />
+                            <span className="text-sm">{appointment.time}</span>
+                          </div>
+                          <div className="flex items-center text-muted-foreground mt-1">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            <span className="text-sm">{appointment.location}</span>
+                          </div>
+                          <div className="flex items-center text-green-600 mt-1">
+                            <DollarSign className="h-4 w-4 mr-1" />
+                            <span className="text-sm font-medium">{appointment.earnings}</span>
                           </div>
                         </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                        <Badge
+                          variant={appointment.status === "confirmed" ? "default" : "outline"}
+                          className={appointment.status === "confirmed" ? "bg-green-500" : ""}
+                        >
+                          {appointment.status === "confirmed" ? "Confirmado" : "Pendiente"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
-      <Footer />
     </div>
   )
 }

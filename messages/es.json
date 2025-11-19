@@ -95,7 +95,10 @@
     "wallet": "Billetera",
     "help": "Centro de Ayuda",
     "home": "Inicio",
-    "account": "Mi cuenta"
+    "account": "Mi cuenta",
+    "postTask": "Publicar tarea",
+    "browseTasks": "Buscar tareas",
+    "howItWorks": "Cómo funciona"
   },
   "services": {
     "cleaning": "Aseo",

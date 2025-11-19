@@ -1,7 +1,15 @@
 "use client"
 
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { useRouter } from "next/navigation"
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,6 +17,7 @@ import { ArrowUpRight, Download, TrendingUp } from "lucide-react"
 import { InteractiveChart } from "@/components/interactive-chart"
 
 export default function WalletPage() {
+  const router = useRouter()
   // Enhanced data for the interactive chart
   const chartData = [
     { month: "Enero", shortMonth: "ene", amount: 65000, services: 3, avgRating: 4.5 },
@@ -23,7 +32,23 @@ export default function WalletPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1 py-8">
-        <div className="container">
+        <div className="container mx-auto">
+          <Breadcrumb className="mb-4">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink 
+                  onClick={() => router.back()}
+                  className="cursor-pointer"
+                >
+                  Volver
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Billetera</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           <h1 className="text-3xl font-bold mb-6">Billetera</h1>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -127,7 +152,6 @@ export default function WalletPage() {
           </Tabs>
         </div>
       </main>
-      <Footer />
     </div>
   )
 }

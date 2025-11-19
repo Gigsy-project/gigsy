@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback, memo, useEffect } from "react";
+import { useState, useMemo, useCallback, memo, useEffect, useRef } from "react";
 import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -33,6 +32,7 @@ import {
   User,
   Loader2,
   Filter,
+  Star,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { ServiceTask } from "@/lib/types";
@@ -47,6 +47,11 @@ import {
   SheetTrigger,
   SheetFooter,
 } from "@/components/ui/sheet";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import dynamic from "next/dynamic";
 
 // Types
@@ -534,49 +539,72 @@ const ServiceTaskCard = memo<{
 
   return (
     <Card
-      className={`cursor-pointer hover:shadow-md transition-shadow ${isSelected ? "border-primary border-2" : ""}`}
+      className={`cursor-pointer border transition-all shadow-sm hover:shadow rounded-lg !py-0 ${
+        isSelected 
+          ? "bg-blue-50 border-blue-500 border-2 shadow-md" 
+          : "bg-white border-gray-200 hover:border-gray-300"
+      }`}
       onClick={handleClick}
     >
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-medium text-sm line-clamp-2">{service.title}</h3>
-          <span className="font-bold text-lg ml-2">
-            {formatCurrency(service.budget)}
-          </span>
-        </div>
+      <CardContent className="!p-5">
+        <div className="flex items-start gap-3">
+          {/* Avatar */}
+          <Avatar className="h-10 w-10 shrink-0">
+            <AvatarImage
+              src={service.postedBy.avatar || "/placeholder-user.jpg"}
+            />
+            <AvatarFallback className="bg-gray-100 text-gray-400">
+              {service.postedBy.name.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
 
-        <div className="space-y-1 text-sm text-muted-foreground mb-3">
-          <div className="flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            <span>{service.location}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            <span>{service.date}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            <span>{service.time}</span>
-          </div>
-        </div>
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            {/* Title and Price */}
+            <div className="flex justify-between items-start mb-3 gap-2">
+              <h3 className="font-semibold text-base text-gray-900 line-clamp-2 leading-snug">
+                {service.title}
+              </h3>
+              <span className="font-bold text-lg text-gray-900 whitespace-nowrap ml-2">
+                {formatCurrency(service.budget)}
+              </span>
+            </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Badge
-              variant={service.status === "open" ? "default" : "secondary"}
-              className="text-xs"
-            >
-              {service.status === "open" ? "Abierto" : "Asignado"}
-            </Badge>
-            {service.urgent && (
-              <Badge variant="destructive" className="text-xs">
-                URGENTE
-              </Badge>
-            )}
+            {/* Details with icons */}
+            <div className="space-y-1.5 text-sm text-gray-600 mb-4">
+              <div className="flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                <span className="truncate">{service.location}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                <span>{service.date}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                <span>{service.time}</span>
+              </div>
+            </div>
+
+            {/* Status and Offers */}
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClick();
+                }}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium hover:underline transition-colors"
+              >
+                {service.status === "open" ? "Abierto" : "Asignado"}
+              </button>
+              {service.offers > 0 && (
+                <span className="text-sm text-gray-500">
+                  • {service.offers} {service.offers === 1 ? "oferta" : "ofertas"}
+                </span>
+              )}
+            </div>
           </div>
-          <span className="text-xs text-muted-foreground">
-            {service.offers} {service.offers === 1 ? "oferta" : "ofertas"}
-          </span>
         </div>
       </CardContent>
     </Card>
@@ -600,8 +628,8 @@ const ServiceDetails = memo<{
   }, []);
 
   return (
-    <div className="p-6 overflow-y-auto h-full">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="p-6 overflow-y-auto h-full flex flex-col">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
         <div className="lg:col-span-2">
           <div className="mb-6">
             <Button variant="ghost" onClick={onBack} className="mb-4">
@@ -613,75 +641,149 @@ const ServiceDetails = memo<{
           <div className="flex items-center gap-2 mb-4">
             <Badge
               variant={service.status === "open" ? "default" : "secondary"}
+              className="h-8 px-3 flex items-center justify-center"
             >
               {service.status === "open" ? "ABIERTO" : "ASIGNADO"}
             </Badge>
-            {service.urgent && <Badge variant="destructive">URGENTE</Badge>}
-            <Button variant="outline" size="sm" onClick={toggleFollow}>
+            {service.urgent && (
+              <Badge 
+                variant="destructive" 
+                className="h-8 px-3 flex items-center justify-center"
+              >
+                URGENTE
+              </Badge>
+            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={toggleFollow}
+              className="h-8 px-3"
+            >
               <Heart
-                className={`h-4 w-4 mr-1 ${isFollowing ? "fill-current" : ""}`}
+                className={`h-4 w-4 mr-1.5 ${isFollowing ? "fill-current text-red-500" : ""}`}
               />
               {isFollowing ? "Siguiendo" : "Seguir"}
             </Button>
           </div>
 
-          <h1 className="text-2xl font-bold mb-4">{service.title}</h1>
+          <h1 className="text-4xl font-bold mb-6 text-gray-900 leading-tight">{service.title}</h1>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
+            {/* Posted By Section */}
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  PUBLICADO POR
-                </span>
-                <span className="text-sm text-muted-foreground ml-auto">
-                  {service.postedTime}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
+              <div className="flex items-center gap-3 mb-3">
+                <Avatar className="h-12 w-12 border border-gray-200">
                   <AvatarImage
                     src={service.postedBy.avatar || "/placeholder.svg"}
                   />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-gray-100 text-gray-500 font-medium text-lg">
                     {service.postedBy.name.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{service.postedBy.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    ⭐ {service.postedBy.rating} ({service.postedBy.reviewCount}{" "}
-                    reseñas)
-                  </p>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <button 
+                        type="button"
+                        className="font-semibold text-base text-gray-900 hover:text-blue-600 transition-colors cursor-pointer text-left"
+                      >
+                        {service.postedBy.name}
+                      </button>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80 p-6">
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-1">
+                            {service.postedBy.name}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            {service.location}
+                          </p>
+                        </div>
+                        
+                        {/* Star Rating */}
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: 5 }, (_, i) => {
+                              const starIndex = i;
+                              const rating = service.postedBy.rating;
+                              const filled = starIndex < rating;
+                              
+                              return (
+                                <Star
+                                  key={`star-${starIndex}-${service.postedBy.name}`}
+                                  className={`h-5 w-5 ${
+                                    filled
+                                      ? "fill-gray-400 text-gray-400"
+                                      : "fill-none text-gray-300"
+                                  }`}
+                                />
+                              );
+                            })}
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            ({service.postedBy.reviewCount} {service.postedBy.reviewCount === 1 ? "reseña" : "reseñas"})
+                          </span>
+                        </div>
+
+                        <div className="pt-2 border-t border-gray-200">
+                          <Button 
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-10 rounded-lg"
+                            onClick={() => {
+                              // Navigate to profile page
+                              window.location.href = `/profile/${service.postedBy.name}`;
+                            }}
+                          >
+                            Ver perfil público
+                          </Button>
+                        </div>
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <div className="flex items-center gap-2 text-sm text-gray-500 mt-0.5">
+                    <span>Publicado {service.postedTime}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">UBICACIÓN</span>
-                <Button variant="link" size="sm" className="ml-auto p-0">
-                  Ver mapa
-                </Button>
+            {/* Location Section */}
+            <div className="flex items-start gap-3">
+              <div className="bg-gray-100 p-2 rounded-lg shrink-0 mt-0.5">
+                <MapPin className="h-5 w-5 text-gray-600" />
               </div>
-              <p className="font-medium">{service.location}</p>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">UBICACIÓN</span>
+                  <Button variant="link" size="sm" className="h-auto p-0 text-blue-600 hover:text-blue-700 font-medium">
+                    Ver mapa
+                  </Button>
+                </div>
+                <p className="font-medium text-gray-900 text-base">{service.location}</p>
+              </div>
             </div>
 
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  PARA REALIZAR EL
+            {/* Date/Time Section */}
+            <div className="flex items-start gap-3">
+              <div className="bg-gray-100 p-2 rounded-lg shrink-0 mt-0.5">
+                <Calendar className="h-5 w-5 text-gray-600" />
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide block mb-1">
+                  FECHA DE REALIZACIÓN
                 </span>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-gray-900 text-base capitalize">{service.date}</p>
+                  <span className="text-gray-300">•</span>
+                  <p className="text-gray-600">{service.time}</p>
+                </div>
               </div>
-              <p className="font-medium">{service.date}</p>
-              <p className="text-muted-foreground">{service.time}</p>
             </div>
 
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Detalles</h3>
-              <p className="text-muted-foreground leading-relaxed">
+            {/* Details Section */}
+            <div className="pt-4 border-t border-gray-100">
+              <h3 className="font-semibold text-lg mb-3 text-gray-900">Detalles</h3>
+              <p className="text-gray-600 leading-relaxed text-base">
                 {service.description}
               </p>
             </div>
@@ -689,30 +791,36 @@ const ServiceDetails = memo<{
         </div>
 
         <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">
+          <Card className="bg-white border border-gray-200 shadow-sm rounded-xl !gap-2 !py-2">
+            <CardHeader className="pb-2 pt-6 px-6">
+              <div className="text-center">
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
                   PRESUPUESTO DE LA TAREA
                 </p>
-                <p className="text-3xl font-bold">
+                <p className="text-3xl font-bold text-gray-900 tracking-tight">
                   {formatCurrency(service.budget)}
                 </p>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Button className="w-full" size="lg" onClick={handleMakeOffer}>
+            <CardContent className="space-y-2.5 px-5 pb-5">
+              <Button 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-10 rounded-lg shadow-sm text-sm" 
+                onClick={handleMakeOffer}
+              >
                 Hacer una oferta
               </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium h-10 rounded-lg text-sm"
+                  >
                     Más opciones
-                    <ChevronDown className="h-4 w-4 ml-2" />
+                    <ChevronDown className="h-3.5 w-3.5 ml-2" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full z-[9999]">
+                <DropdownMenuContent className="w-full z-9999">
                   <DropdownMenuItem>
                     <Flag className="h-4 w-4 mr-2" />
                     Reportar esta tarea
@@ -734,6 +842,8 @@ const BrowseServicesPage = () => {
   const [selectedService, setSelectedService] =
     useState<ServiceTaskWithLocation | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const userLocation = useUserLocation();
   const { filters, updateFilter, resetFilters, activeFiltersCount } =
@@ -760,32 +870,32 @@ const BrowseServicesPage = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
+    <div className="flex h-screen flex-col overflow-hidden">
+      <Header/>
 
       {/* Search and Filters Bar */}
-      <div className="border-t-0 border-b bg-background/95 backdrop-blur sticky top-14 z-40 -mt-[1px]">
-        <div className="container py-4">
+      <div className="border-b border-gray-200 bg-white/95 backdrop-blur shrink-0 z-50">
+        <div className="container mx-auto max-w-7xl py-4 px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row gap-4 items-center">
             {/* Search Bar */}
             <div className="relative flex-1 w-full">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
                 placeholder="Buscar una tarea"
                 value={filters.searchQuery}
                 onChange={(e) => updateFilter("searchQuery", e.target.value)}
-                className="pl-12 h-12 text-base"
+                className="pl-12 h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 bg-white"
               />
             </div>
 
             {/* Filters Button */}
             <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
               <SheetTrigger asChild>
-                <Button className="h-12 px-6 gap-2 text-base">
+                <Button className="h-12 px-6 gap-2 text-base bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm">
                   <Filter className="h-5 w-5" />
                   Filtros
                   {activeFiltersCount > 0 && (
-                    <Badge variant="secondary" className="ml-1">
+                    <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 border-0">
                       {activeFiltersCount}
                     </Badge>
                   )}
@@ -793,19 +903,19 @@ const BrowseServicesPage = () => {
               </SheetTrigger>
               <SheetContent
                 side="right"
-                className="w-full sm:max-w-md flex flex-col"
+                className="w-full sm:max-w-md flex flex-col bg-white p-0"
               >
-                <SheetHeader>
-                  <SheetTitle>Filtros</SheetTitle>
-                  <SheetDescription>
+                <SheetHeader className="pb-6 px-6 pt-6 border-b border-gray-200">
+                  <SheetTitle className="text-xl font-semibold text-gray-900">Filtros</SheetTitle>
+                  <SheetDescription className="text-sm text-gray-600 mt-2">
                     Ajusta los filtros para encontrar exactamente lo que buscas
                   </SheetDescription>
                 </SheetHeader>
 
-                <div className="space-y-6 py-6 overflow-y-auto flex-1 max-h-[calc(100vh-200px)]">
+                <div className="space-y-8 py-6 overflow-y-auto flex-1 min-h-0 px-6">
                   {/* Category Filter */}
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       CATEGORÍA
                     </h3>
                     <Select
@@ -842,8 +952,8 @@ const BrowseServicesPage = () => {
                   </div>
 
                   {/* Location Filter */}
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       UBICACIÓN
                     </h3>
                     <Select
@@ -866,8 +976,8 @@ const BrowseServicesPage = () => {
                   </div>
 
                   {/* Price Range Filter */}
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       RANGO DE PRECIO
                     </h3>
                     <Select
@@ -890,8 +1000,8 @@ const BrowseServicesPage = () => {
                   </div>
 
                   {/* Sort By */}
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       ORDENAR POR
                     </h3>
                     <Select
@@ -913,7 +1023,7 @@ const BrowseServicesPage = () => {
 
                   {/* Work Type Selection */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-muted-foreground">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       TIPO DE TRABAJO
                     </h3>
                     <div className="flex gap-2">
@@ -955,12 +1065,12 @@ const BrowseServicesPage = () => {
                   </div>
 
                   {/* Distance Slider */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-muted-foreground">
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       DISTANCIA
                     </h3>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold">{filters.distance}km</p>
+                    <div className="text-center py-2">
+                      <p className="text-2xl font-bold text-gray-900">{filters.distance} km</p>
                     </div>
                     <div className="px-4">
                       <Slider
@@ -978,57 +1088,64 @@ const BrowseServicesPage = () => {
 
                   {/* Other Filters */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       OTROS FILTROS
                     </h3>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <h4 className="text-base font-medium">
-                          Solo tareas disponibles
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          Ocultar tareas que ya están asignadas
-                        </p>
+                    <div className="space-y-4">
+                      <div className="flex items-start justify-between gap-4 p-4 rounded-lg border border-gray-100 bg-gray-50/50">
+                        <div className="space-y-1 flex-1">
+                          <h4 className="text-sm font-semibold text-gray-900">
+                            Solo tareas disponibles
+                          </h4>
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            Ocultar tareas que ya están asignadas
+                          </p>
+                        </div>
+                        <Switch
+                          checked={filters.showAvailableOnly}
+                          onCheckedChange={(checked) =>
+                            updateFilter("showAvailableOnly", checked)
+                          }
+                          className="mt-0.5"
+                        />
                       </div>
-                      <Switch
-                        checked={filters.showAvailableOnly}
-                        onCheckedChange={(checked) =>
-                          updateFilter("showAvailableOnly", checked)
-                        }
-                      />
-                    </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <h4 className="text-base font-medium">
-                          Solo tareas sin ofertas
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          Ocultar tareas que tienen ofertas
-                        </p>
+                      <div className="flex items-start justify-between gap-4 p-4 rounded-lg border border-gray-100 bg-gray-50/50">
+                        <div className="space-y-1 flex-1">
+                          <h4 className="text-sm font-semibold text-gray-900">
+                            Solo tareas sin ofertas
+                          </h4>
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            Ocultar tareas que tienen ofertas
+                          </p>
+                        </div>
+                        <Switch
+                          checked={filters.showNoOffersOnly}
+                          onCheckedChange={(checked) =>
+                            updateFilter("showNoOffersOnly", checked)
+                          }
+                          className="mt-0.5"
+                        />
                       </div>
-                      <Switch
-                        checked={filters.showNoOffersOnly}
-                        onCheckedChange={(checked) =>
-                          updateFilter("showNoOffersOnly", checked)
-                        }
-                      />
                     </div>
                   </div>
                 </div>
 
-                <SheetFooter className="flex gap-2">
+                <SheetFooter className="flex gap-3 pt-4 px-6 pb-6 border-t border-gray-200 mt-auto shrink-0">
                   {activeFiltersCount > 0 && (
                     <Button
                       variant="outline"
                       onClick={resetFilters}
-                      className="flex-1"
+                      className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
                     >
                       Limpiar filtros
                     </Button>
                   )}
-                  <Button onClick={handleCloseFilters} className="flex-1">
+                  <Button 
+                    onClick={handleCloseFilters} 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                  >
                     Aplicar filtros
                   </Button>
                 </SheetFooter>
@@ -1038,20 +1155,33 @@ const BrowseServicesPage = () => {
         </div>
       </div>
 
-      <main className="flex-1">
-        <div className="container py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <main className="flex-1 bg-gray-50/50 overflow-hidden">
+        <div className="container mx-auto max-w-7xl h-full px-4 sm:px-6 lg:px-8 py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
             {/* Services List */}
-            <div className="lg:col-span-1 relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">
+            <div className="lg:col-span-1 relative z-10 flex flex-col h-full overflow-hidden">
+              <div className="flex items-center justify-between mb-4 shrink-0">
+                <h2 className="text-base font-semibold text-gray-900">
                   {filteredServices.length} tareas disponibles
                 </h2>
               </div>
 
-              <div
-                className="space-y-4 overflow-y-auto pr-2"
-                style={{ maxHeight: "calc(100vh - 180px)" }}
+              <div 
+                ref={scrollContainerRef}
+                className="space-y-3 overflow-y-auto pr-2 flex-1 min-h-0 scrollbar-hide-on-idle"
+                onScroll={() => {
+                  if (scrollContainerRef.current) {
+                    scrollContainerRef.current.classList.add('scrolling');
+                    if (scrollTimeoutRef.current) {
+                      clearTimeout(scrollTimeoutRef.current);
+                    }
+                    scrollTimeoutRef.current = setTimeout(() => {
+                      if (scrollContainerRef.current) {
+                        scrollContainerRef.current.classList.remove('scrolling');
+                      }
+                    }, 1000);
+                  }
+                }}
               >
                 {filteredServices.map((service) => (
                   <ServiceTaskCard
@@ -1063,8 +1193,8 @@ const BrowseServicesPage = () => {
                 ))}
 
                 {filteredServices.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 text-sm">
                       No se encontraron tareas que coincidan con tus filtros.
                     </p>
                   </div>
@@ -1073,34 +1203,30 @@ const BrowseServicesPage = () => {
             </div>
 
             {/* Map */}
-            <div className="lg:col-span-2 relative z-0">
-              <div className="sticky top-[180px]">
-                <Card className="h-[calc(100vh-180px)]">
-                  <CardContent className="p-0 h-full">
-                    {selectedService ? (
-                      <ServiceDetails
-                        service={selectedService}
-                        onBack={handleClearSelectedService}
+            <div className="lg:col-span-2 relative z-0 h-full overflow-hidden">
+              <Card className="p-0 h-full bg-white border border-gray-200 shadow-sm">
+                <CardContent className="p-0 h-full rounded-xl overflow-hidden">
+                  {selectedService ? (
+                    <ServiceDetails
+                      service={selectedService}
+                      onBack={handleClearSelectedService}
+                    />
+                  ) : (
+                    userLocation && (
+                      <InteractiveMap
+                        services={filteredServices}
+                        userLocation={userLocation}
+                        onSelectService={handleSelectService}
+                        selectedService={selectedService}
                       />
-                    ) : (
-                      userLocation && (
-                        <InteractiveMap
-                          services={filteredServices}
-                          userLocation={userLocation}
-                          onSelectService={handleSelectService}
-                          selectedService={selectedService}
-                        />
-                      )
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+                    )
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

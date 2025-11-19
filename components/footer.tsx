@@ -7,7 +7,7 @@ import { AppStoreButton, GooglePlayButton } from "./base/buttons/app-store-butto
 export function Footer() {
   const t = useTranslations()
   return (
-    <footer className="bg-gray-900 text-white py-12">
+    <footer className="bg-gray-900 text-white py-12 mx-2 mb-2 rounded-xl">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">

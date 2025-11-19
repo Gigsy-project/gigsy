@@ -118,6 +118,7 @@ const useUserCity = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords
+        console.log("Ubicación obtenida:", latitude, longitude)
         getCityFromLocation(latitude, longitude)
       },
       (error) => {
@@ -166,20 +167,7 @@ export default function HomePage() {
       description: t("hero.features.protectedDesc"),
     },
   ]
-
-  // Show loading state while checking auth
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </main>
-        <Footer />
-      </div>
-    )
-  }
-
+  
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -191,6 +179,11 @@ export default function HomePage() {
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[600px] lg:min-h-[700px] pt-4 lg:pt-6 pb-12 lg:pb-16">
               {/* Left Section - Content and Form */}
               <div className="space-y-6">
+                {/* Main Heading */}
+                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight">
+                  {t("hero.title")}
+                </h1>
+
                 {/* Location Indicator */}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <MapPin className="h-4 w-4" />
@@ -212,11 +205,6 @@ export default function HomePage() {
                     </>
                   )}
                 </div>
-
-                {/* Main Heading */}
-                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight">
-                  {t("hero.title")}
-                </h1>
 
                 {/* Service Request Form */}
                 <div className="space-y-4 pt-4">

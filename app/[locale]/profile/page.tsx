@@ -2,14 +2,22 @@
 
 import { useState } from "react"
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { useRouter } from "next/navigation"
+import { Link } from "@/i18n/navigation"
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Briefcase, Globe, Heart, MapPin, Shield, Star, Edit } from "lucide-react"
-import Link from "next/link"
 import { ProviderProfileModal } from "@/components/provider-profile-modal"
 
 // Mock data for CV sections
@@ -144,6 +152,7 @@ const favoriteProviders = [
 ]
 
 export default function ProfilePage() {
+  const router = useRouter()
   const [favorites, setFavorites] = useState(favoriteProviders)
   const [selectedProvider, setSelectedProvider] = useState<(typeof favoriteProviders)[0] | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -173,7 +182,23 @@ export default function ProfilePage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1 py-8">
-        <div className="container">
+        <div className="container mx-auto">
+          <Breadcrumb className="mb-4">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink 
+                  onClick={() => router.back()}
+                  className="cursor-pointer"
+                >
+                  Volver
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Perfil</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           <Card className="mb-8">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row gap-6 items-start">
@@ -608,7 +633,6 @@ export default function ProfilePage() {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   )
 }
