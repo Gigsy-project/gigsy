@@ -33,6 +33,7 @@ import {
   Loader2,
   Filter,
   Star,
+  Shield,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { ServiceTask } from "@/lib/types";
@@ -47,6 +48,16 @@ import {
   SheetTrigger,
   SheetFooter,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   HoverCard,
   HoverCardContent,
@@ -616,222 +627,322 @@ ServiceTaskCard.displayName = "ServiceTaskCard";
 const ServiceDetails = memo<{
   service: ServiceTaskWithLocation;
   onBack: () => void;
-}>(({ service, onBack }) => {
+  onViewOnMap: () => void;
+}>(({ service, onBack, onViewOnMap }) => {
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [offerAmount, setOfferAmount] = useState(service.budget.toString());
+  const [offerMessage, setOfferMessage] = useState("");
 
-  const handleMakeOffer = useCallback(() => {
-    console.log("Making offer for service:", service.id);
-  }, [service.id]);
+  const handleMakeOfferClick = useCallback(() => {
+    setIsOfferModalOpen(true);
+  }, []);
+
+  const handleSubmitOffer = useCallback(() => {
+    // Logic to submit offer would go here
+    console.log("Submitting offer:", { serviceId: service.id, amount: offerAmount, message: offerMessage });
+    setIsOfferModalOpen(false);
+    setOfferMessage("");
+  }, [service.id, offerAmount, offerMessage]);
 
   const toggleFollow = useCallback(() => {
     setIsFollowing((prev) => !prev);
   }, []);
 
   return (
-    <div className="p-6 overflow-y-auto h-full flex flex-col">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-        <div className="lg:col-span-2">
-          <div className="mb-6">
-            <Button variant="ghost" onClick={onBack} className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver al mapa
-            </Button>
-          </div>
+    <>
+      <div className="p-6 overflow-y-auto h-full flex flex-col">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+          <div className="lg:col-span-2">
+            <div className="mb-6">
+              <Button variant="ghost" onClick={onBack} className="mb-4">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Volver al mapa
+              </Button>
+            </div>
 
-          <div className="flex items-center gap-2 mb-4">
-            <Badge
-              variant={service.status === "open" ? "default" : "secondary"}
-              className="h-8 px-3 flex items-center justify-center"
-            >
-              {service.status === "open" ? "ABIERTO" : "ASIGNADO"}
-            </Badge>
-            {service.urgent && (
-              <Badge 
-                variant="destructive" 
+            <div className="flex items-center gap-2 mb-4">
+              <Badge
+                variant={service.status === "open" ? "default" : "secondary"}
                 className="h-8 px-3 flex items-center justify-center"
               >
-                URGENTE
+                {service.status === "open" ? "ABIERTO" : "ASIGNADO"}
               </Badge>
-            )}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={toggleFollow}
-              className="h-8 px-3"
-            >
-              <Heart
-                className={`h-4 w-4 mr-1.5 ${isFollowing ? "fill-current text-red-500" : ""}`}
-              />
-              {isFollowing ? "Siguiendo" : "Seguir"}
-            </Button>
-          </div>
+              {service.urgent && (
+                <Badge 
+                  variant="destructive" 
+                  className="h-8 px-3 flex items-center justify-center"
+                >
+                  URGENTE
+                </Badge>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={toggleFollow}
+                className="h-8 px-3"
+              >
+                <Heart
+                  className={`h-4 w-4 mr-1.5 ${isFollowing ? "fill-current text-red-500" : ""}`}
+                />
+                {isFollowing ? "Siguiendo" : "Seguir"}
+              </Button>
+            </div>
 
-          <h1 className="text-4xl font-bold mb-6 text-gray-900 leading-tight">{service.title}</h1>
+            <h1 className="text-4xl font-bold mb-6 text-gray-900 leading-tight">{service.title}</h1>
 
-          <div className="space-y-8">
-            {/* Posted By Section */}
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <Avatar className="h-12 w-12 border border-gray-200">
-                  <AvatarImage
-                    src={service.postedBy.avatar || "/placeholder.svg"}
-                  />
-                  <AvatarFallback className="bg-gray-100 text-gray-500 font-medium text-lg">
-                    {service.postedBy.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <button 
-                        type="button"
-                        className="font-semibold text-base text-gray-900 hover:text-blue-600 transition-colors cursor-pointer text-left"
-                      >
-                        {service.postedBy.name}
-                      </button>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80 p-6">
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900 mb-1">
-                            {service.postedBy.name}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            {service.location}
-                          </p>
-                        </div>
-                        
-                        {/* Star Rating */}
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1">
-                            {Array.from({ length: 5 }, (_, i) => {
-                              const starIndex = i;
-                              const rating = service.postedBy.rating;
-                              const filled = starIndex < rating;
-                              
-                              return (
-                                <Star
-                                  key={`star-${starIndex}-${service.postedBy.name}`}
-                                  className={`h-5 w-5 ${
-                                    filled
-                                      ? "fill-gray-400 text-gray-400"
-                                      : "fill-none text-gray-300"
-                                  }`}
-                                />
-                              );
-                            })}
+            <div className="space-y-8">
+              {/* Posted By Section */}
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <Avatar className="h-12 w-12 border border-gray-200">
+                    <AvatarImage
+                      src={service.postedBy.avatar || "/placeholder.svg"}
+                    />
+                    <AvatarFallback className="bg-gray-100 text-gray-500 font-medium text-lg">
+                      {service.postedBy.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <button 
+                          type="button"
+                          className="font-semibold text-base text-gray-900 hover:text-blue-600 transition-colors cursor-pointer text-left"
+                        >
+                          {service.postedBy.name}
+                        </button>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-80 p-6">
+                        <div className="space-y-4">
+                          <div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-1">
+                              {service.postedBy.name}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              {service.location}
+                            </p>
                           </div>
-                          <span className="text-sm text-gray-600">
-                            ({service.postedBy.reviewCount} {service.postedBy.reviewCount === 1 ? "reseña" : "reseñas"})
-                          </span>
-                        </div>
+                          
+                          {/* Star Rating */}
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              {Array.from({ length: 5 }, (_, i) => {
+                                const starIndex = i;
+                                const rating = service.postedBy.rating;
+                                const filled = starIndex < rating;
+                                
+                                return (
+                                  <Star
+                                    key={`star-${starIndex}-${service.postedBy.name}`}
+                                    className={`h-5 w-5 ${
+                                      filled
+                                        ? "fill-gray-400 text-gray-400"
+                                        : "fill-none text-gray-300"
+                                    }`}
+                                  />
+                                );
+                              })}
+                            </div>
+                            <span className="text-sm text-gray-600">
+                              ({service.postedBy.reviewCount} {service.postedBy.reviewCount === 1 ? "reseña" : "reseñas"})
+                            </span>
+                          </div>
 
-                        <div className="pt-2 border-t border-gray-200">
-                          <Button 
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-10 rounded-lg"
-                            onClick={() => {
-                              // Navigate to profile page
-                              window.location.href = `/profile/${service.postedBy.name}`;
-                            }}
-                          >
-                            Ver perfil público
-                          </Button>
+                          <div className="pt-2 border-t border-gray-200">
+                            <Button 
+                              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-10 rounded-lg"
+                              onClick={() => {
+                                // Navigate to profile page
+                                window.location.href = `/profile/${service.postedBy.name}`;
+                              }}
+                            >
+                              Ver perfil público
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mt-0.5">
-                    <span>Publicado {service.postedTime}</span>
+                      </HoverCardContent>
+                    </HoverCard>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mt-0.5">
+                      <span>Publicado {service.postedTime}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Location Section */}
-            <div className="flex items-start gap-3">
-              <div className="bg-gray-100 p-2 rounded-lg shrink-0 mt-0.5">
-                <MapPin className="h-5 w-5 text-gray-600" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">UBICACIÓN</span>
-                  <Button variant="link" size="sm" className="h-auto p-0 text-blue-600 hover:text-blue-700 font-medium">
-                    Ver mapa
-                  </Button>
+              {/* Location Section */}
+              <div className="flex items-start gap-3">
+                <div className="bg-gray-100 p-2 rounded-lg shrink-0 mt-0.5">
+                  <MapPin className="h-5 w-5 text-gray-600" />
                 </div>
-                <p className="font-medium text-gray-900 text-base">{service.location}</p>
-              </div>
-            </div>
-
-            {/* Date/Time Section */}
-            <div className="flex items-start gap-3">
-              <div className="bg-gray-100 p-2 rounded-lg shrink-0 mt-0.5">
-                <Calendar className="h-5 w-5 text-gray-600" />
-              </div>
-              <div>
-                <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide block mb-1">
-                  FECHA DE REALIZACIÓN
-                </span>
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-gray-900 text-base capitalize">{service.date}</p>
-                  <span className="text-gray-300">•</span>
-                  <p className="text-gray-600">{service.time}</p>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">UBICACIÓN</span>
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      className="h-auto p-0 text-blue-600 hover:text-blue-700 font-medium"
+                      onClick={onViewOnMap}
+                    >
+                      Ver mapa
+                    </Button>
+                  </div>
+                  <p className="font-medium text-gray-900 text-base">{service.location}</p>
                 </div>
               </div>
-            </div>
 
-            {/* Details Section */}
-            <div className="pt-4 border-t border-gray-100">
-              <h3 className="font-semibold text-lg mb-3 text-gray-900">Detalles</h3>
-              <p className="text-gray-600 leading-relaxed text-base">
-                {service.description}
-              </p>
+              {/* Date/Time Section */}
+              <div className="flex items-start gap-3">
+                <div className="bg-gray-100 p-2 rounded-lg shrink-0 mt-0.5">
+                  <Calendar className="h-5 w-5 text-gray-600" />
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide block mb-1">
+                    FECHA DE REALIZACIÓN
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-gray-900 text-base capitalize">{service.date}</p>
+                    <span className="text-gray-300">•</span>
+                    <p className="text-gray-600">{service.time}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Details Section */}
+              <div className="pt-4 border-t border-gray-100">
+                <h3 className="font-semibold text-lg mb-3 text-gray-900">Detalles</h3>
+                <p className="text-gray-600 leading-relaxed text-base">
+                  {service.description}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="space-y-4">
-          <Card className="bg-white border border-gray-200 shadow-sm rounded-xl !gap-2 !py-2">
-            <CardHeader className="pb-2 pt-6 px-6">
-              <div className="text-center">
-                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                  PRESUPUESTO DE LA TAREA
-                </p>
-                <p className="text-3xl font-bold text-gray-900 tracking-tight">
-                  {formatCurrency(service.budget)}
-                </p>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2.5 px-5 pb-5">
-              <Button 
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-10 rounded-lg shadow-sm text-sm" 
-                onClick={handleMakeOffer}
-              >
-                Hacer una oferta
-              </Button>
+          <div className="space-y-4">
+            <Card className="bg-white border border-gray-200 shadow-sm rounded-xl !gap-2 !py-2">
+              <CardHeader className="pb-2 pt-6 px-6">
+                <div className="text-center">
+                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                    PRESUPUESTO DE LA TAREA
+                  </p>
+                  <p className="text-3xl font-bold text-gray-900 tracking-tight">
+                    {formatCurrency(service.budget)}
+                  </p>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2.5 px-5 pb-5">
+                <Button 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-10 rounded-lg shadow-sm text-sm" 
+                  onClick={handleMakeOfferClick}
+                >
+                  Hacer una oferta
+                </Button>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="w-full bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium h-10 rounded-lg text-sm"
-                  >
-                    Más opciones
-                    <ChevronDown className="h-3.5 w-3.5 ml-2" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full z-9999">
-                  <DropdownMenuItem>
-                    <Flag className="h-4 w-4 mr-2" />
-                    Reportar esta tarea
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </CardContent>
-          </Card>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="w-full bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium h-10 rounded-lg text-sm"
+                    >
+                      Más opciones
+                      <ChevronDown className="h-3.5 w-3.5 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-full z-9999">
+                    <DropdownMenuItem>
+                      <Flag className="h-4 w-4 mr-2" />
+                      Reportar esta tarea
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Make Offer Modal */}
+      <Dialog open={isOfferModalOpen} onOpenChange={setIsOfferModalOpen}>
+        <DialogContent className="sm:max-w-md bg-white p-0 gap-0 overflow-hidden rounded-xl">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-100">
+            <DialogTitle className="text-xl font-bold text-gray-900">Hacer una oferta</DialogTitle>
+            <DialogDescription>
+              Envía tu propuesta para esta tarea
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="p-6 space-y-6">
+            {/* Task Summary Card */}
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 flex items-start gap-3">
+              <div className="bg-white p-2 rounded-md border border-gray-200 shrink-0">
+                <User className="h-5 w-5 text-gray-500" />
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 text-sm line-clamp-1">{service.title}</h4>
+                <p className="text-xs text-gray-500 mt-1">
+                  Presupuesto del cliente: <span className="font-semibold text-gray-700">{formatCurrency(service.budget)}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Offer Amount */}
+            <div className="space-y-3">
+              <Label htmlFor="amount" className="text-sm font-semibold text-gray-700">
+                Tu oferta ($)
+              </Label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-lg">$</span>
+                <Input
+                  id="amount"
+                  type="number"
+                  value={offerAmount}
+                  onChange={(e) => setOfferAmount(e.target.value)}
+                  className="pl-8 text-lg h-12 font-semibold text-gray-900 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="0"
+                />
+              </div>
+              <p className="text-[11px] text-gray-500 flex items-center gap-1">
+                <Shield className="h-3 w-3" />
+                Pago seguro a través de la plataforma
+              </p>
+            </div>
+
+            {/* Offer Message */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="message" className="text-sm font-semibold text-gray-700">
+                  Mensaje
+                </Label>
+                <span className="text-[10px] text-gray-400 uppercase font-medium tracking-wide">Opcional</span>
+              </div>
+              <Textarea
+                id="message"
+                value={offerMessage}
+                onChange={(e) => setOfferMessage(e.target.value)}
+                placeholder="Hola, me interesa tu tarea. Tengo experiencia en..."
+                className="min-h-[100px] resize-none text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-row">
+            <Button
+              variant="outline"
+              onClick={() => setIsOfferModalOpen(false)}
+              className="flex-1 sm:flex-none border-gray-300 text-gray-700 hover:bg-white hover:text-gray-900"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSubmitOffer}
+              className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm"
+            >
+              Enviar oferta
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 });
 
@@ -841,6 +952,8 @@ ServiceDetails.displayName = "ServiceDetails";
 const BrowseServicesPage = () => {
   const [selectedService, setSelectedService] =
     useState<ServiceTaskWithLocation | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [flyToServiceTrigger, setFlyToServiceTrigger] = useState<number>(0);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -857,12 +970,20 @@ const BrowseServicesPage = () => {
   const handleSelectService = useCallback(
     (service: ServiceTaskWithLocation) => {
       setSelectedService(service);
+      setShowDetails(true);
     },
     [],
   );
 
   const handleClearSelectedService = useCallback(() => {
     setSelectedService(null);
+    setShowDetails(false);
+  }, []);
+
+  const handleViewOnMap = useCallback(() => {
+    setShowDetails(false);
+    // Trigger flyTo immediately by updating timestamp
+    setFlyToServiceTrigger(Date.now());
   }, []);
 
   const handleCloseFilters = useCallback(() => {
@@ -912,9 +1033,9 @@ const BrowseServicesPage = () => {
                   </SheetDescription>
                 </SheetHeader>
 
-                <div className="space-y-8 py-6 overflow-y-auto flex-1 min-h-0 px-6">
+                <div className="flex flex-col py-6 overflow-y-auto flex-1 min-h-0 px-6">
                   {/* Category Filter */}
-                  <div className="space-y-3">
+                  <div className="space-y-3 mb-8">
                     <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       CATEGORÍA
                     </h3>
@@ -952,7 +1073,7 @@ const BrowseServicesPage = () => {
                   </div>
 
                   {/* Location Filter */}
-                  <div className="space-y-3">
+                  <div className="space-y-3 mb-8">
                     <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       UBICACIÓN
                     </h3>
@@ -976,7 +1097,7 @@ const BrowseServicesPage = () => {
                   </div>
 
                   {/* Price Range Filter */}
-                  <div className="space-y-3">
+                  <div className="space-y-3 mb-8">
                     <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       RANGO DE PRECIO
                     </h3>
@@ -1000,7 +1121,7 @@ const BrowseServicesPage = () => {
                   </div>
 
                   {/* Sort By */}
-                  <div className="space-y-3">
+                  <div className="space-y-3 mb-8">
                     <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       ORDENAR POR
                     </h3>
@@ -1022,7 +1143,7 @@ const BrowseServicesPage = () => {
                   </div>
 
                   {/* Work Type Selection */}
-                  <div className="space-y-3">
+                  <div className="space-y-3 mb-8">
                     <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       TIPO DE TRABAJO
                     </h3>
@@ -1064,25 +1185,35 @@ const BrowseServicesPage = () => {
                     </div>
                   </div>
 
-                  {/* Distance Slider */}
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      DISTANCIA
-                    </h3>
-                    <div className="text-center py-2">
-                      <p className="text-2xl font-bold text-gray-900">{filters.distance} km</p>
-                    </div>
-                    <div className="px-4">
-                      <Slider
-                        value={[filters.distance]}
-                        onValueChange={(value) =>
-                          updateFilter("distance", value[0])
-                        }
-                        max={MAX_DISTANCE}
-                        min={MIN_DISTANCE}
-                        step={1}
-                        className="w-full"
-                      />
+                  {/* Distance Slider - Animated */}
+                  <div
+                    className={`grid transition-all duration-300 ease-in-out ${
+                      filters.workType !== "remotely"
+                        ? "grid-rows-[1fr] opacity-100 mb-8"
+                        : "grid-rows-[0fr] opacity-0 mb-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden min-h-0">
+                      <div className="space-y-4 pt-1 px-1">
+                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          DISTANCIA
+                        </h3>
+                        <div className="text-center py-2">
+                          <p className="text-2xl font-bold text-gray-900">{filters.distance} km</p>
+                        </div>
+                        <div className="px-4 pb-2">
+                          <Slider
+                            value={[filters.distance]}
+                            onValueChange={(value) =>
+                              updateFilter("distance", value[0])
+                            }
+                            max={MAX_DISTANCE}
+                            min={MIN_DISTANCE}
+                            step={1}
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -1205,21 +1336,29 @@ const BrowseServicesPage = () => {
             {/* Map */}
             <div className="lg:col-span-2 relative z-0 h-full overflow-hidden">
               <Card className="p-0 h-full bg-white border border-gray-200 shadow-sm">
-                <CardContent className="p-0 h-full rounded-xl overflow-hidden">
-                  {selectedService ? (
-                    <ServiceDetails
-                      service={selectedService}
-                      onBack={handleClearSelectedService}
-                    />
-                  ) : (
-                    userLocation && (
+                <CardContent className="p-0 h-full rounded-xl overflow-hidden relative">
+                  {/* Keep map mounted but hidden when showing details */}
+                  <div className={showDetails ? "hidden" : "h-full"}>
+                    {userLocation && (
                       <InteractiveMap
                         services={filteredServices}
                         userLocation={userLocation}
                         onSelectService={handleSelectService}
                         selectedService={selectedService}
+                        flyToServiceTrigger={flyToServiceTrigger}
                       />
-                    )
+                    )}
+                  </div>
+                  
+                  {/* Show details overlay when selected */}
+                  {showDetails && selectedService && (
+                    <div className="absolute inset-0 bg-white z-10">
+                      <ServiceDetails
+                        service={selectedService}
+                        onBack={handleClearSelectedService}
+                        onViewOnMap={handleViewOnMap}
+                      />
+                    </div>
                   )}
                 </CardContent>
               </Card>

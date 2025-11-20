@@ -102,7 +102,7 @@ export default function RequestServicePage() {
       <div className="flex min-h-screen flex-col">
         <Header />
         <main className="flex-1 py-8">
-          <div className="container max-w-4xl">
+          <div className="container max-w-4xl mx-auto">
             <div className="mb-6">
               <Link href="/" className="flex items-center text-primary hover:underline">
                 <ArrowLeft className="h-4 w-4 mr-1" />
