@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Header } from "@/components/header"
+import { Header } from "@/components/header";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -8,28 +8,40 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
   BreadcrumbPage,
-} from "@/components/ui/breadcrumb"
-import { Calendar } from "@/components/ui/calendar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Clock, DollarSign, MapPin, Calendar as CalendarIcon, MoreVertical } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/breadcrumb";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Clock,
+  DollarSign,
+  MapPin,
+  Calendar as CalendarIcon,
+  MoreVertical,
+} from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@/components/ui/resizable"
+} from "@/components/ui/resizable";
 
 export default function CalendarPage() {
-  const [date, setDate] = useState<Date | undefined>(new Date())
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   // Mock data for appointments
   const appointments = [
@@ -99,8 +111,8 @@ export default function CalendarPage() {
       status: "pending",
       earnings: "$120.000 CLP",
     },
-     // Keeping some of the old data for variety
-     {
+    // Keeping some of the old data for variety
+    {
       id: 1,
       title: "Limpieza de casa",
       date: new Date(2025, 4, 20), // May 20, 2025
@@ -118,7 +130,7 @@ export default function CalendarPage() {
       status: "completed",
       earnings: "$40.000 CLP",
     },
-  ]
+  ];
 
   // Filter appointments for the selected date
   const selectedDateAppointments = appointments.filter(
@@ -127,12 +139,12 @@ export default function CalendarPage() {
       appointment.date.getDate() === date.getDate() &&
       appointment.date.getMonth() === date.getMonth() &&
       appointment.date.getFullYear() === date.getFullYear(),
-  )
+  );
 
   // Upcoming appointments (from today onwards)
   const upcomingAppointments = appointments
     .filter((appointment) => appointment.date >= new Date())
-    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   // Function to highlight dates with appointments
   const isDayWithAppointment = (day: Date) => {
@@ -141,13 +153,21 @@ export default function CalendarPage() {
         appointment.date.getDate() === day.getDate() &&
         appointment.date.getMonth() === day.getMonth() &&
         appointment.date.getFullYear() === day.getFullYear(),
-    )
-  }
+    );
+  };
 
-  const AppointmentCard = ({ appointment, showDate = false }: { appointment: any; showDate?: boolean }) => (
+  const AppointmentCard = ({
+    appointment,
+    showDate = false,
+  }: {
+    appointment: any;
+    showDate?: boolean;
+  }) => (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base font-medium">{appointment.title}</CardTitle>
+        <CardTitle className="text-base font-medium">
+          {appointment.title}
+        </CardTitle>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -157,7 +177,9 @@ export default function CalendarPage() {
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Ver detalles</DropdownMenuItem>
             <DropdownMenuItem>Reprogramar</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">Cancelar</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive">
+              Cancelar
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </CardHeader>
@@ -165,7 +187,11 @@ export default function CalendarPage() {
         {showDate && (
           <div className="flex items-center text-sm text-muted-foreground mb-2">
             <CalendarIcon className="h-4 w-4 mr-2" />
-            <span>{appointment.date.toLocaleDateString("es-ES", { dateStyle: "long" })}</span>
+            <span>
+              {appointment.date.toLocaleDateString("es-ES", {
+                dateStyle: "long",
+              })}
+            </span>
           </div>
         )}
         <div className="flex items-center text-sm text-muted-foreground">
@@ -184,14 +210,18 @@ export default function CalendarPage() {
           </div>
           <Badge
             variant={appointment.status === "confirmed" ? "default" : "outline"}
-            className={appointment.status === "confirmed" ? "bg-green-100 text-green-800" : ""}
+            className={
+              appointment.status === "confirmed"
+                ? "bg-green-100 text-green-800"
+                : ""
+            }
           >
             {appointment.status === "confirmed" ? "Confirmado" : "Pendiente"}
           </Badge>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -216,7 +246,10 @@ export default function CalendarPage() {
               </Breadcrumb>
             </div>
           </div>
-          <ResizablePanelGroup direction="horizontal" className="rounded-lg border">
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="rounded-lg border"
+          >
             <ResizablePanel defaultSize={60}>
               <div className="flex h-full flex-col p-6">
                 <Calendar
@@ -231,27 +264,42 @@ export default function CalendarPage() {
                     withAppointment: "relative",
                   }}
                   components={{
-                    DayContent: (props) => {
-                      const hasAppointment = isDayWithAppointment(props.date)
+                    DayButton: (props) => {
+                      const hasAppointment = isDayWithAppointment(
+                        props.day.date,
+                      );
                       return (
-                        <div className="relative">
-                          {props.date.getDate()}
+                        <Button
+                          {...props}
+                          variant="ghost"
+                          size="icon"
+                          className={`${props.className} relative`}
+                        >
+                          {props.day.date.getDate()}
                           {hasAppointment && (
                             <div className="absolute bottom-1 left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-primary" />
                           )}
-                        </div>
-                      )
+                        </Button>
+                      );
                     },
                   }}
                 />
                 <Separator className="my-6" />
                 <div className="flex-1">
-                  <h2 className="text-lg font-semibold mb-4">Próximos servicios</h2>
+                  <h2 className="text-lg font-semibold mb-4">
+                    Próximos servicios
+                  </h2>
                   <div className="space-y-4">
                     {upcomingAppointments.length > 0 ? (
-                      upcomingAppointments.slice(0, 3).map((appointment) => (
-                        <AppointmentCard key={appointment.id} appointment={appointment} showDate />
-                      ))
+                      upcomingAppointments
+                        .slice(0, 3)
+                        .map((appointment) => (
+                          <AppointmentCard
+                            key={appointment.id}
+                            appointment={appointment}
+                            showDate
+                          />
+                        ))
                     ) : (
                       <p className="text-sm text-muted-foreground">
                         No tienes servicios programados.
@@ -265,12 +313,17 @@ export default function CalendarPage() {
             <ResizablePanel defaultSize={40}>
               <div className="flex h-full flex-col p-6">
                 <h2 className="text-lg font-semibold mb-4">
-                  {date ? date.toLocaleDateString("es-ES", { dateStyle: "long" }) : "Selecciona una fecha"}
+                  {date
+                    ? date.toLocaleDateString("es-ES", { dateStyle: "long" })
+                    : "Selecciona una fecha"}
                 </h2>
                 {selectedDateAppointments.length > 0 ? (
                   <div className="space-y-4">
                     {selectedDateAppointments.map((appointment) => (
-                      <AppointmentCard key={appointment.id} appointment={appointment} />
+                      <AppointmentCard
+                        key={appointment.id}
+                        appointment={appointment}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -287,5 +340,5 @@ export default function CalendarPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

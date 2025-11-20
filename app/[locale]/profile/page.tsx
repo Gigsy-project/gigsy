@@ -40,10 +40,13 @@ import {
   DollarSign,
   Clock,
   CheckCircle,
+  CreditCard,
+  Plus,
 } from "lucide-react";
 import { ProviderProfileModal } from "@/components/provider-profile-modal";
 import type { Provider } from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
+import { CardBank } from "@/components/card-bank";
 
 // Mock data for CV sections
 const experienceData = [
@@ -196,6 +199,8 @@ export default function ProfilePage() {
         return <ReviewsSection />;
       case "favorites":
         return <FavoritesSection onProviderClick={handleProviderClick} />;
+      case "cards":
+        return <CardsSection />;
       default:
         return null;
     }
@@ -257,6 +262,7 @@ const ProfileSidebar = ({
     { id: "services", label: "Servicios", icon: Briefcase },
     { id: "reviews", label: "Reseñas", icon: Star },
     { id: "favorites", label: "Favoritos", icon: Heart },
+    { id: "cards", label: "Tarjetas", icon: CreditCard },
   ];
   return (
     <Card className="sticky top-24">
@@ -718,6 +724,170 @@ const FavoritesSection = ({
               futuro.
             </p>
             <Button variant="outline">Explorar oferentes</Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+// Mock data for user cards
+interface UserCard {
+  id: number;
+  cardNumber: string;
+  expiryDate: string;
+  cvv: string;
+  cardName: string;
+  isDefault: boolean;
+}
+
+const userCardsData: UserCard[] = [
+  {
+    id: 1,
+    cardNumber: "4757 7447 1880 1226",
+    expiryDate: "12/25",
+    cvv: "123",
+    cardName: "Diego Letelier",
+    isDefault: true,
+  },
+];
+
+const CardsSection = () => {
+  const [cards, setCards] = useState<UserCard[]>(userCardsData);
+  const [showAddCard, setShowAddCard] = useState(false);
+
+  const handleRemoveCard = (id: number) => {
+    setCards(cards.filter((card) => card.id !== id));
+  };
+
+  const handleSetDefaultCard = (id: number) => {
+    setCards(
+      cards.map((card) => ({
+        ...card,
+        isDefault: card.id === id,
+      }))
+    );
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Mis Tarjetas</CardTitle>
+            <CardDescription>
+              Administra tus métodos de pago para realizar transacciones de forma segura.
+            </CardDescription>
+          </div>
+          <Button onClick={() => setShowAddCard(!showAddCard)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Agregar tarjeta
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {cards.length > 0 ? (
+          <div className="space-y-6">
+            {cards.map((card) => (
+              <Card
+                key={card.id}
+                className={`overflow-hidden transition-all hover:shadow-md ${
+                  card.isDefault ? "border-blue-500 border-2" : ""
+                }`}
+              >
+                <CardContent className="p-6">
+                  <div className="grid lg:grid-cols-[1fr_400px] gap-6 items-center">
+                    {/* Card Info */}
+                    <div className="space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-3 mb-2">
+                            <CreditCard className="h-5 w-5 text-blue-600" />
+                            <h3 className="font-semibold text-lg">
+                              Tarjeta terminada en {card.cardNumber.slice(-4)}
+                            </h3>
+                          </div>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span className="font-medium">Tipo:</span>
+                              <Badge
+                                variant={card.cardType === "Credit" ? "default" : "secondary"}
+                                className="text-xs"
+                              >
+                                {card.cardType === "Credit" ? "Crédito" : "Débito"}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span className="font-medium">Vencimiento:</span>
+                              <span>{card.expiryDate}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span className="font-medium">Titular:</span>
+                              <span>{card.cardName}</span>
+                            </div>
+                          </div>
+                        </div>
+                        {card.isDefault && (
+                          <Badge className="bg-green-100 text-green-800 border-green-200">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Predeterminada
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-wrap gap-3 pt-4 border-t">
+                        {!card.isDefault && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSetDefaultCard(card.id)}
+                            className="gap-2"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                            Establecer como predeterminada
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                          onClick={() => handleRemoveCard(card.id)}
+                        >
+                          Eliminar
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Card Preview */}
+                    <div className="flex justify-center lg:justify-end">
+                      <div className="w-full max-w-[400px] scale-90 lg:scale-100">
+                        <CardBank
+                          initialNumber={card.cardNumber}
+                          initialExpiry={card.expiryDate}
+                          initialCvv={card.cvv}
+                          initialName={card.cardName}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <CreditCard className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+            <h3 className="text-xl font-medium mb-2">
+              No tienes tarjetas asociadas
+            </h3>
+            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+              Agrega una tarjeta de débito o crédito para realizar pagos de forma rápida y segura.
+            </p>
+            <Button onClick={() => setShowAddCard(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Agregar tarjeta
+            </Button>
           </div>
         )}
       </CardContent>
