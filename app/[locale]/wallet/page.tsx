@@ -19,6 +19,7 @@ import {
   Briefcase,
   Star,
   Plus,
+  Clock,
 } from "lucide-react"
 import { InteractiveChart } from "@/components/interactive-chart"
 import { Separator } from "@/components/ui/separator"
