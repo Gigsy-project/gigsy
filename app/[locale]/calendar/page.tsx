@@ -33,50 +33,81 @@ export default function CalendarPage() {
 
   // Mock data for appointments
   const appointments = [
+    // Past appointment for demonstration
     {
+      id: 9,
+      title: "Instalación de software",
+      date: new Date(2025, 3, 15), // April 15, 2025 (past)
+      time: "11:00 - 13:00",
+      location: "Remoto",
+      status: "completed",
+      earnings: "$25.000 CLP",
+    },
+    // Appointments for August 3rd, 2025
+    {
+      id: 11,
+      title: "Consultoría de diseño",
+      date: new Date(2025, 7, 3), // August 3, 2025
+      time: "10:00 - 11:00",
+      location: "Online",
+      status: "confirmed",
+      earnings: "$30.000 CLP",
+    },
+    {
+      id: 12,
+      title: "Revisión de proyecto",
+      date: new Date(2025, 7, 3), // August 3, 2025
+      time: "15:00 - 16:30",
+      location: "Oficina del Cliente, Santiago",
+      status: "confirmed",
+      earnings: "$40.000 CLP",
+    },
+    // Upcoming appointments from today (November 20, 2025) onwards
+    {
+      id: 13,
+      title: "Limpieza de oficina",
+      date: new Date(2025, 10, 21), // November 21, 2025
+      time: "09:00 - 12:00",
+      location: "Providencia, Santiago",
+      status: "confirmed",
+      earnings: "$45.000 CLP",
+    },
+    {
+      id: 14,
+      title: "Catering para evento",
+      date: new Date(2025, 10, 27), // November 27, 2025
+      time: "18:00 - 22:00",
+      location: "Las Condes, Santiago",
+      status: "pending",
+      earnings: "$150.000 CLP",
+    },
+    {
+      id: 15,
+      title: "Mantenimiento de jardín",
+      date: new Date(2025, 11, 5), // December 5, 2025
+      time: "10:00 - 14:00",
+      location: "La Reina, Santiago",
+      status: "confirmed",
+      earnings: "$60.000 CLP",
+    },
+    {
+      id: 16,
+      title: "Fotografía de producto",
+      date: new Date(2025, 11, 15), // December 15, 2025
+      time: "13:00 - 17:00",
+      location: "Estudio, Santiago",
+      status: "pending",
+      earnings: "$120.000 CLP",
+    },
+     // Keeping some of the old data for variety
+     {
       id: 1,
       title: "Limpieza de casa",
       date: new Date(2025, 4, 20), // May 20, 2025
       time: "10:00 - 12:00",
       location: "Providencia, Santiago",
-      status: "confirmed",
+      status: "completed",
       earnings: "$35.000 CLP",
-    },
-    {
-      id: 2,
-      title: "Mudanza",
-      date: new Date(2025, 4, 24), // May 24, 2025
-      time: "14:00 - 18:00",
-      location: "Las Condes, Santiago",
-      status: "pending",
-      earnings: "$45.000 CLP",
-    },
-    {
-      id: 3,
-      title: "Reparación de mueble",
-      date: new Date(2025, 4, 28), // May 28, 2025
-      time: "09:00 - 11:00",
-      location: "Ñuñoa, Santiago",
-      status: "confirmed",
-      earnings: "$28.000 CLP",
-    },
-    {
-      id: 4,
-      title: "Clases de guitarra",
-      date: new Date(2025, 4, 20), // May 20, 2025
-      time: "18:00 - 19:00",
-      location: "Online",
-      status: "confirmed",
-      earnings: "$15.000 CLP",
-    },
-    {
-      id: 5,
-      title: "Clases de cocina",
-      date: new Date(2025, 4, 20), // May 20, 2025
-      time: "14:00 - 16:00",
-      location: "Vitacura, Santiago",
-      status: "pending",
-      earnings: "$20.000 CLP",
     },
     {
       id: 6,
@@ -84,44 +115,8 @@ export default function CalendarPage() {
       date: new Date(2025, 5, 5), // June 5, 2025
       time: "09:00 - 13:00",
       location: "Lo Barnechea, Santiago",
-      status: "confirmed",
-      earnings: "$40.000 CLP",
-    },
-    {
-      id: 7,
-      title: "Paseo de perros",
-      date: new Date(2025, 5, 5), // June 5, 2025
-      time: "17:00 - 18:00",
-      location: "Parque Araucano, Santiago",
-      status: "pending",
-      earnings: "$10.000 CLP",
-    },
-    {
-      id: 8,
-      title: "Cuidado de niños",
-      date: new Date(2025, 6, 1), // July 1, 2025
-      time: "10:00 - 17:00",
-      location: "Huechuraba, Santiago",
-      status: "confirmed",
-      earnings: "$50.000 CLP",
-    },
-    {
-      id: 9,
-      title: "Instalación de software",
-      date: new Date(2025, 3, 15), // April 15, 2025 (past appointment)
-      time: "11:00 - 13:00",
-      location: "Remoto",
       status: "completed",
-      earnings: "$25.000 CLP",
-    },
-    {
-      id: 10,
-      title: "Soporte técnico",
-      date: new Date(2025, 5, 10), // June 10, 2025
-      time: "16:00 - 17:00",
-      location: "Ñuñoa, Santiago",
-      status: "pending",
-      earnings: "$18.000 CLP",
+      earnings: "$40.000 CLP",
     },
   ]
 
