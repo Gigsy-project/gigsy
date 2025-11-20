@@ -1,7 +1,6 @@
 "use client"
 
 import { Header } from "@/components/header"
-import { useRouter } from "next/navigation"
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -10,14 +9,21 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowUpRight, Download, TrendingUp } from "lucide-react"
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Download,
+  DollarSign,
+  Briefcase,
+  Star,
+  Plus,
+} from "lucide-react"
 import { InteractiveChart } from "@/components/interactive-chart"
+import { Separator } from "@/components/ui/separator"
 
 export default function WalletPage() {
-  const router = useRouter()
   // Enhanced data for the interactive chart
   const chartData = [
     { month: "Enero", shortMonth: "ene", amount: 65000, services: 3, avgRating: 4.5 },
@@ -28,128 +34,200 @@ export default function WalletPage() {
     { month: "Junio", shortMonth: "jun", amount: 105000, services: 5, avgRating: 4.7 },
   ]
 
-  return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 py-8">
-        <div className="container mx-auto">
-          <Breadcrumb className="mb-4">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink 
-                  onClick={() => router.back()}
-                  className="cursor-pointer"
-                >
-                  Volver
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Billetera</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <h1 className="text-3xl font-bold mb-6">Billetera</h1>
+  // Mock data for transactions
+  const transactions = [
+    {
+      id: 1,
+      type: "income",
+      title: "Servicio de limpieza",
+      date: "15 de mayo, 2025",
+      amount: "+$35.000 CLP",
+      status: "Completado",
+    },
+    {
+      id: 2,
+      type: "withdrawal",
+      title: "Retiro a cuenta bancaria",
+      date: "12 de mayo, 2025",
+      amount: "-$50.000 CLP",
+      status: "Procesado",
+    },
+    {
+      id: 3,
+      type: "income",
+      title: "Reparación de mueble",
+      date: "10 de mayo, 2025",
+      amount: "+$28.000 CLP",
+      status: "Completado",
+    },
+    {
+      id: 4,
+      type: "income",
+      title: "Jardinería",
+      date: "5 de mayo, 2025",
+      amount: "+$40.000 CLP",
+      status: "Completado",
+    },
+    {
+      id: 5,
+      type: "pending",
+      title: "Servicio de mudanza",
+      date: "20 de mayo, 2025",
+      amount: "+$75.000 CLP",
+      status: "Pendiente",
+    },
+  ]
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Saldo disponible</CardDescription>
-                <CardTitle className="text-3xl">$125.000 CLP</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <div className="text-sm text-muted-foreground">
-                    <span className="flex items-center text-green-600">
-                      <TrendingUp className="h-4 w-4 mr-1" />
-                      +15,3% este mes
-                    </span>
-                  </div>
-                  <Button size="sm" variant="outline">
-                    Retirar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+  const totalIncome = chartData.reduce((acc, item) => acc + item.amount, 0)
+  const totalServices = chartData.reduce((acc, item) => acc + item.services, 0)
+  const avgRating = (
+    chartData.reduce((acc, item) => acc + item.avgRating, 0) / chartData.length
+  ).toFixed(1)
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Ingresos totales</CardDescription>
-                <CardTitle className="text-3xl">$450.000 CLP</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <div className="text-sm text-muted-foreground">Desde enero 2025</div>
-                  <Button size="sm" variant="outline">
-                    <Download className="h-4 w-4 mr-1" />
-                    Exportar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+  const StatCard = ({
+    icon: Icon,
+    title,
+    value,
+    description,
+  }: {
+    icon: React.ElementType
+    title: string
+    value: string
+    description?: string
+  }) => (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+      </CardContent>
+    </Card>
+  )
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Servicios completados</CardDescription>
-                <CardTitle className="text-3xl">12</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <div className="text-sm text-muted-foreground">Calificación promedio: 4.8/5</div>
-                  <Button size="sm" variant="outline">
-                    Ver detalles
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+  const TransactionItem = ({ transaction }: { transaction: any }) => {
+    const iconMap = {
+      income: <ArrowUpRight className="h-5 w-5 text-green-500" />,
+      withdrawal: <ArrowDownLeft className="h-5 w-5 text-red-500" />,
+      pending: <Clock className="h-5 w-5 text-yellow-500" />,
+    }
+    const colorMap = {
+      income: "text-green-500",
+      withdrawal: "text-red-500",
+      pending: "text-yellow-500",
+    }
+    return (
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div
+            className={`h-10 w-10 rounded-full flex items-center justify-center bg-muted`}
+          >
+            {iconMap[transaction.type as keyof typeof iconMap]}
           </div>
+          <div>
+            <p className="font-medium">{transaction.title}</p>
+            <p className="text-sm text-muted-foreground">{transaction.date}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className={`font-semibold ${colorMap[transaction.type as keyof typeof colorMap]}`}>
+            {transaction.amount}
+          </p>
+          <p className="text-sm text-muted-foreground">{transaction.status}</p>
+        </div>
+      </div>
+    )
+  }
 
-          <Tabs defaultValue="ingresos" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="ingresos">Ingresos</TabsTrigger>
-              <TabsTrigger value="transacciones">Transacciones</TabsTrigger>
-            </TabsList>
-            <TabsContent value="ingresos">
-              <Card>
+  return (
+    <div className="flex min-h-screen w-full flex-col bg-muted/40">
+      <Header />
+      <main className="flex-1 p-4 sm:px-6 sm:py-0 md:p-8">
+        <div className="mx-auto grid max-w-7xl gap-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Billetera</h1>
+              <Breadcrumb className="hidden md:flex mt-2">
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <a href="/es/dashboard">Dashboard</a>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Billetera</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            <Button>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar Reporte
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-8 flex flex-col gap-6">
+              <Card className="flex flex-col">
                 <CardHeader>
                   <CardTitle>Ingresos</CardTitle>
-                  <CardDescription>Visualización de tus ingresos en el tiempo</CardDescription>
+                  <CardDescription>
+                    Visualización de tus ingresos en los últimos 6 meses.
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1">
                   <InteractiveChart data={chartData} />
                 </CardContent>
               </Card>
-            </TabsContent>
-            <TabsContent value="transacciones">
               <Card>
                 <CardHeader>
-                  <CardTitle>Historial de transacciones</CardTitle>
-                  <CardDescription>Registro de tus movimientos recientes</CardDescription>
+                  <CardTitle>Transacciones Recientes</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className="flex justify-between items-center border-b pb-3">
-                        <div className="flex items-start gap-2">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <ArrowUpRight className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium">Servicio de limpieza</p>
-                            <p className="text-sm text-muted-foreground">15 de mayo, 2025</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium text-green-600">+$35.000 CLP</p>
-                          <p className="text-sm text-muted-foreground">Completado</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <CardContent className="space-y-6">
+                  {transactions.map((tx) => (
+                    <TransactionItem key={tx.id} transaction={tx} />
+                  ))}
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
+            </div>
+            <div className="lg:col-span-4 flex flex-col gap-6">
+              <Card>
+                <CardHeader>
+                  <CardDescription>Saldo disponible</CardDescription>
+                  <CardTitle className="text-4xl font-bold">$125.000</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-4">
+                  <Button>Retirar</Button>
+                  <Button variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Añadir fondos
+                  </Button>
+                </CardContent>
+              </Card>
+              <div className="space-y-6">
+                <StatCard
+                  icon={DollarSign}
+                  title="Ingresos Totales (6 meses)"
+                  value={`$${totalIncome.toLocaleString("es-CL")}`}
+                  description="Suma de todos los ingresos."
+                />
+                <StatCard
+                  icon={Briefcase}
+                  title="Servicios Completados"
+                  value={totalServices.toString()}
+                  description="Total de trabajos finalizados."
+                />
+                <StatCard
+                  icon={Star}
+                  title="Calificación Promedio"
+                  value={avgRating}
+                  description="Sobre 5 estrellas."
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
