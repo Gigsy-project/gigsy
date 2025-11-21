@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Map as MapLibreMap,
   Marker,
@@ -10,6 +17,7 @@ import {
 } from "react-map-gl/maplibre";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+
 import type { ServiceTask } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 import type { MapRef } from "react-map-gl/maplibre";
@@ -23,10 +31,36 @@ interface ServiceTaskWithLocation extends ServiceTask {
   coordinates: ServiceLocation;
 }
 
+/**
+ * Interactive Map Component with GSAP-powered Service Details Panel
+ *
+ * Usage example:
+ *
+ * const [selectedService, setSelectedService] = useState<ServiceTaskWithLocation | null>(null);
+ *
+ * const handleSelectService = (service: ServiceTaskWithLocation | null) => {
+ *   setSelectedService(service);
+ * };
+ *
+ * <InteractiveMap
+ *   services={services}
+ *   userLocation={userLocation}
+ *   selectedService={selectedService}
+ *   onSelectService={handleSelectService}
+ *   flyToServiceTrigger={flyToServiceTrigger}
+ * />
+ *
+ * Features:
+ * - Service markers with hover popups
+ * - User location detection and display
+ * - Service selection for full-screen overlay (handled by parent)
+ * - Built-in geolocation controls
+ */
+
 interface InteractiveMapProps {
   services: ServiceTaskWithLocation[];
   userLocation: ServiceLocation;
-  onSelectService: (service: ServiceTaskWithLocation) => void;
+  onSelectService: (service: ServiceTaskWithLocation | null) => void;
   selectedService: ServiceTaskWithLocation | null;
   flyToServiceTrigger?: number; // Timestamp trigger to force flyTo
 }
@@ -51,68 +85,6 @@ const InteractiveMap = ({
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isFetchingFallback, setIsFetchingFallback] = useState(false);
-
-  // Get user location with navigator.geolocation
-  const getUserLocation = useCallback(() => {
-    if (!navigator.geolocation) {
-      setLocationError("Geolocalización no soportada por el navegador");
-      return;
-    }
-
-    setIsLocating(true);
-    setLocationError(null);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        const newLocation = { lat: latitude, lng: longitude };
-        setDetectedLocation(newLocation);
-        setIsLocating(false);
-        setLocationError(null);
-
-        // Zoom and pan to user location ONLY on first detection
-        if (mapRef.current && !hasInitiallyZoomedToUserRef.current) {
-          mapRef.current.flyTo({
-            center: [longitude, latitude],
-            zoom: 15,
-            duration: 1000,
-          });
-          hasInitiallyZoomedToUserRef.current = true;
-        }
-      },
-      (error) => {
-        console.error("Error obteniendo ubicación:", error);
-        setIsLocating(false);
-
-        let errorMessage = "No se pudo obtener tu ubicación";
-
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = "Permiso de ubicación denegado";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = "Información de ubicación no disponible";
-            break;
-          case error.TIMEOUT:
-            errorMessage = "Tiempo de espera agotado";
-            break;
-          default:
-            errorMessage = "Error desconocido al obtener ubicación";
-            break;
-        }
-
-        setLocationError(errorMessage);
-
-        // Fallback usando IP geolocation (sin Google APIs)
-        handleIPGeolocationFallback();
-      },
-      {
-        enableHighAccuracy: true, // Importante: evita servicios de Google
-        timeout: 8000, // 8 segundos timeout
-        maximumAge: 600000, // Cache por 10 minutos
-      },
-    );
-  }, []);
 
   // Fallback usando IP geolocation sin Google APIs
   const handleIPGeolocationFallback = useCallback(async () => {
@@ -159,6 +131,69 @@ const InteractiveMap = ({
     }
   }, []);
 
+  // Get user location with navigator.geolocation
+  const getUserLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocalización no soportada por el navegador");
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const newLocation = { lat: latitude, lng: longitude };
+        setDetectedLocation(newLocation);
+        setIsLocating(false);
+        setLocationError(null);
+
+        console.log(newLocation);
+        // Zoom and pan to user location ONLY on first detection
+        if (mapRef.current && !hasInitiallyZoomedToUserRef.current) {
+          mapRef.current.flyTo({
+            center: [longitude, latitude],
+            zoom: 15,
+            duration: 1000,
+          });
+          hasInitiallyZoomedToUserRef.current = true;
+        }
+      },
+      (error) => {
+        console.error("Error obteniendo ubicación:", error);
+        setIsLocating(false);
+
+        let errorMessage = "No se pudo obtener tu ubicación";
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Permiso de ubicación denegado";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Información de ubicación no disponible";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Tiempo de espera agotado";
+            break;
+          default:
+            errorMessage = "Error desconocido al obtener ubicación";
+            break;
+        }
+
+        setLocationError(errorMessage);
+
+        // Fallback usando IP geolocation (sin Google APIs)
+        handleIPGeolocationFallback();
+      },
+      {
+        enableHighAccuracy: true, // Importante: evita servicios de Google
+        timeout: 8000, // 8 segundos timeout
+        maximumAge: 600000, // Cache por 10 minutos
+      },
+    );
+  }, [handleIPGeolocationFallback]);
+
   useEffect(() => {
     getUserLocation();
   }, [getUserLocation]);
@@ -192,10 +227,16 @@ const InteractiveMap = ({
 
   // Fit bounds to show all markers only on initial mount (not when coming back from details view)
   const hasFitBoundsRef = useRef(false);
-  
+
   useEffect(() => {
     // Don't run fitBounds if there's a selected service (user is returning from details view)
-    if (!mapRef.current || services.length === 0 || hasFitBoundsRef.current || selectedService) return;
+    if (
+      !mapRef.current ||
+      services.length === 0 ||
+      hasFitBoundsRef.current ||
+      selectedService
+    )
+      return;
 
     const bounds = new maplibregl.LngLatBounds();
     bounds.extend([currentUserLocation.lng, currentUserLocation.lat]);
@@ -207,27 +248,26 @@ const InteractiveMap = ({
       mapRef.current?.fitBounds(bounds, { padding: 50 });
       hasFitBoundsRef.current = true;
     }, 100);
-  }, [services, currentUserLocation.lng, currentUserLocation.lat, selectedService]);
+  }, [
+    services,
+    currentUserLocation.lng,
+    currentUserLocation.lat,
+    selectedService,
+  ]);
 
-  // Center map on selected service (with priority over fitBounds)
+  // IMPORTANT: We do NOT automatically center the map on a service when it's selected
+  // This prevents unwanted map movement when users are just browsing services
+  // The map will ONLY move to a service location when:
+  // 1. The flyToServiceTrigger changes (external trigger)
+  // 2. The initial fitBounds on component mount
+  // This provides better UX by keeping the map stable during service browsing
+
+  // Clean up any effects that were related to the removed panel
   useEffect(() => {
-    if (mapRef.current && selectedService) {
-      // Use a slight delay to ensure this runs after any fitBounds
-      setTimeout(() => {
-        mapRef.current?.flyTo({
-          center: [
-            selectedService.coordinates.lng,
-            selectedService.coordinates.lat,
-          ],
-          zoom: 16, // Higher zoom for better focus on the service
-          duration: 800, // Smoother animation
-          essential: true, // Ensure animation is not interrupted
-        });
-      }, 150);
-    }
+    // No panel-specific logic needed anymore
   }, [selectedService]);
 
-  // Force flyTo when trigger changes (when "Ver mapa" is clicked)
+  // Force flyTo when trigger changes (external trigger)
   useEffect(() => {
     if (mapRef.current && selectedService && flyToServiceTrigger) {
       // Immediate flyTo without delay
@@ -246,41 +286,8 @@ const InteractiveMap = ({
   // Airtasker-style map: Clean, minimalist design with soft colors
   // Similar to Airtasker's map design - light, modern, with clear streets and labels
   const mapStyle = useMemo(() => {
-    // Option 1: MapTiler Streets style (similar to Airtasker) - requires API key
-    // Uncomment and add your MapTiler API key to use:
-    // return `https://api.maptiler.com/maps/streets/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`;
-
-    // Option 2: OpenFreeMap Positron style (light, clean, Airtasker-like)
     return "https://tiles.openfreemap.org/styles/positron";
-
-    // Option 3: Custom Airtasker-inspired style (light colors, clean design)
-    // return {
-    //   version: 8 as const,
-    //   sources: {
-    //     'carto-positron': {
-    //       type: 'raster' as const,
-    //       tiles: [
-    //         'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-    //         'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-    //         'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-    //       ],
-    //       tileSize: 256,
-    //       attribution: '© OpenStreetMap contributors © CARTO'
-    //     }
-    //   },
-    //   layers: [
-    //     {
-    //       id: 'carto-positron-layer',
-    //       type: 'raster' as const,
-    //       source: 'carto-positron',
-    //       minzoom: 0,
-    //       maxzoom: 19
-    //     }
-    //   ],
-    //   glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf'
-    // };
   }, []);
-
 
   return (
     <div className="h-full w-full relative z-0">
@@ -289,7 +296,7 @@ const InteractiveMap = ({
         initialViewState={initialViewState}
         style={{ width: "100%", height: "100%" }}
         mapStyle={mapStyle}
-        >
+      >
         {/* User location marker */}
         {!isLocating && (
           <Marker
@@ -339,36 +346,47 @@ const InteractiveMap = ({
               latitude={coordinates.lat}
               anchor="center"
             >
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                  urgent ? "bg-red-500" : "bg-primary"
-                } text-white font-bold shadow-lg border-2 border-white cursor-pointer transition-all duration-300 ${
-                  isSelected ? "scale-125 shadow-xl ring-4 ring-blue-300 animate-pulse" : "scale-100 hover:scale-110"
-                }`}
-                onMouseEnter={() => {
-                  // Clear any pending timeout
-                  if (popupTimeoutRef.current) {
-                    clearTimeout(popupTimeoutRef.current);
-                  }
-                  // Show popup immediately
-                  setPopupInfo({
-                    service,
-                    longitude: coordinates.lng,
-                    latitude: coordinates.lat,
-                  });
-                }}
-                onMouseLeave={() => {
-                  // Delay closing to allow moving to popup
-                  popupTimeoutRef.current = setTimeout(() => {
-                    setPopupInfo(null);
-                  }, 100);
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectService(service);
-                }}
-              >
-                {category.charAt(0)}
+              <div className="relative">
+                <button
+                  type="button"
+                  className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                    urgent ? "bg-red-500" : "bg-primary"
+                  } text-white font-bold shadow-lg border-2 border-white cursor-pointer transition-all duration-300 ${
+                    isSelected
+                      ? "scale-125 shadow-xl ring-4 ring-blue-300"
+                      : "scale-100 hover:scale-110"
+                  }`}
+                  onMouseEnter={() => {
+                    // Clear any pending timeout
+                    if (popupTimeoutRef.current) {
+                      clearTimeout(popupTimeoutRef.current);
+                    }
+                    // Show popup immediately
+                    setPopupInfo({
+                      service,
+                      longitude: coordinates.lng,
+                      latitude: coordinates.lat,
+                    });
+                  }}
+                  onMouseLeave={() => {
+                    // Delay closing to allow moving to popup
+                    popupTimeoutRef.current = setTimeout(() => {
+                      setPopupInfo(null);
+                    }, 100);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectService(service);
+                    }
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectService(service);
+                  }}
+                >
+                  {category.charAt(0)}
+                </button>
               </div>
             </Marker>
           );
@@ -386,7 +404,8 @@ const InteractiveMap = ({
             className="custom-popup"
             offset={15}
           >
-            <div 
+            <div
+              role="tooltip"
               className="min-w-[230px] max-w-[270px] bg-white p-4"
               onMouseEnter={() => {
                 if (popupTimeoutRef.current) {
@@ -404,7 +423,10 @@ const InteractiveMap = ({
                     {popupInfo.service.category}
                   </span>
                   {popupInfo.service.urgent && (
-                    <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" title="Urgente" />
+                    <span
+                      className="h-2 w-2 rounded-full bg-red-500 animate-pulse"
+                      title="Urgente"
+                    />
                   )}
                 </div>
 
@@ -415,7 +437,9 @@ const InteractiveMap = ({
 
                 {/* Footer with Price */}
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-1">
-                  <span className="text-xs font-medium text-gray-500">Presupuesto</span>
+                  <span className="text-xs font-medium text-gray-500">
+                    Presupuesto
+                  </span>
                   <span className="font-bold text-blue-600 text-lg">
                     {formatCurrency(popupInfo.service.budget)}
                   </span>
@@ -427,15 +451,30 @@ const InteractiveMap = ({
 
         {/* Navigation controls */}
         <NavigationControl position="top-left" />
-        
+
         {/* Geolocate control - button to center on user location */}
         <GeolocateControl
           position="top-left"
           trackUserLocation={false}
-          showAccuracyCircle={true}
+          showAccuracyCircle={false}
+          showUserLocation={true}
+          fitBoundsOptions={{
+            maxZoom: 16,
+            padding: 20,
+          }}
+          onGeolocate={(e) => {
+            if (mapRef.current) {
+              mapRef.current.flyTo({
+                center: [e.coords.longitude, e.coords.latitude],
+                zoom: 16,
+                duration: 1000,
+              });
+            }
+          }}
           positionOptions={{
             enableHighAccuracy: true,
             timeout: 6000,
+            maximumAge: 60000,
           }}
         />
       </MapLibreMap>
@@ -454,7 +493,9 @@ const InteractiveMap = ({
         }
         .maplibregl-popup-content {
           border-radius: 0.75rem; /* rounded-xl */
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+          box-shadow:
+            0 10px 15px -3px rgba(0, 0, 0, 0.1),
+            0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
           padding: 0 !important;
           border: 1px solid #f3f4f6; /* border-gray-100 */
           overflow: hidden;

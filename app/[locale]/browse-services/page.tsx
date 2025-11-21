@@ -64,6 +64,10 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import dynamic from "next/dynamic";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(useGSAP);
 
 // Types
 interface ServiceLocation {
@@ -640,7 +644,11 @@ const ServiceDetails = memo<{
 
   const handleSubmitOffer = useCallback(() => {
     // Logic to submit offer would go here
-    console.log("Submitting offer:", { serviceId: service.id, amount: offerAmount, message: offerMessage });
+    console.log("Submitting offer:", {
+      serviceId: service.id,
+      amount: offerAmount,
+      message: offerMessage,
+    });
     setIsOfferModalOpen(false);
     setOfferMessage("");
   }, [service.id, offerAmount, offerMessage]);
@@ -669,16 +677,16 @@ const ServiceDetails = memo<{
                 {service.status === "open" ? "ABIERTO" : "ASIGNADO"}
               </Badge>
               {service.urgent && (
-                <Badge 
-                  variant="destructive" 
+                <Badge
+                  variant="destructive"
                   className="h-8 px-3 flex items-center justify-center"
                 >
                   URGENTE
                 </Badge>
               )}
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={toggleFollow}
                 className="h-8 px-3"
               >
@@ -689,7 +697,9 @@ const ServiceDetails = memo<{
               </Button>
             </div>
 
-            <h1 className="text-4xl font-bold mb-6 text-gray-900 leading-tight">{service.title}</h1>
+            <h1 className="text-4xl font-bold mb-6 text-gray-900 leading-tight">
+              {service.title}
+            </h1>
 
             <div className="space-y-8">
               {/* Posted By Section */}
@@ -706,7 +716,7 @@ const ServiceDetails = memo<{
                   <div>
                     <HoverCard>
                       <HoverCardTrigger asChild>
-                        <button 
+                        <button
                           type="button"
                           className="font-semibold text-base text-gray-900 hover:text-blue-600 transition-colors cursor-pointer text-left"
                         >
@@ -723,7 +733,7 @@ const ServiceDetails = memo<{
                               {service.location}
                             </p>
                           </div>
-                          
+
                           {/* Star Rating */}
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
@@ -731,7 +741,7 @@ const ServiceDetails = memo<{
                                 const starIndex = i;
                                 const rating = service.postedBy.rating;
                                 const filled = starIndex < rating;
-                                
+
                                 return (
                                   <Star
                                     key={`star-${starIndex}-${service.postedBy.name}`}
@@ -745,12 +755,16 @@ const ServiceDetails = memo<{
                               })}
                             </div>
                             <span className="text-sm text-gray-600">
-                              ({service.postedBy.reviewCount} {service.postedBy.reviewCount === 1 ? "reseña" : "reseñas"})
+                              ({service.postedBy.reviewCount}{" "}
+                              {service.postedBy.reviewCount === 1
+                                ? "reseña"
+                                : "reseñas"}
+                              )
                             </span>
                           </div>
 
                           <div className="pt-2 border-t border-gray-200">
-                            <Button 
+                            <Button
                               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-10 rounded-lg"
                               onClick={() => {
                                 // Navigate to profile page
@@ -777,17 +791,21 @@ const ServiceDetails = memo<{
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">UBICACIÓN</span>
-                    <Button 
-                      variant="link" 
-                      size="sm" 
+                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                      UBICACIÓN
+                    </span>
+                    <Button
+                      variant="link"
+                      size="sm"
                       className="h-auto p-0 text-blue-600 hover:text-blue-700 font-medium"
                       onClick={onViewOnMap}
                     >
                       Ver mapa
                     </Button>
                   </div>
-                  <p className="font-medium text-gray-900 text-base">{service.location}</p>
+                  <p className="font-medium text-gray-900 text-base">
+                    {service.location}
+                  </p>
                 </div>
               </div>
 
@@ -801,7 +819,9 @@ const ServiceDetails = memo<{
                     FECHA DE REALIZACIÓN
                   </span>
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-gray-900 text-base capitalize">{service.date}</p>
+                    <p className="font-medium text-gray-900 text-base capitalize">
+                      {service.date}
+                    </p>
                     <span className="text-gray-300">•</span>
                     <p className="text-gray-600">{service.time}</p>
                   </div>
@@ -810,7 +830,9 @@ const ServiceDetails = memo<{
 
               {/* Details Section */}
               <div className="pt-4 border-t border-gray-100">
-                <h3 className="font-semibold text-lg mb-3 text-gray-900">Detalles</h3>
+                <h3 className="font-semibold text-lg mb-3 text-gray-900">
+                  Detalles
+                </h3>
                 <p className="text-gray-600 leading-relaxed text-base">
                   {service.description}
                 </p>
@@ -831,8 +853,8 @@ const ServiceDetails = memo<{
                 </div>
               </CardHeader>
               <CardContent className="space-y-2.5 px-5 pb-5">
-                <Button 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-10 rounded-lg shadow-sm text-sm" 
+                <Button
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-10 rounded-lg shadow-sm text-sm"
                   onClick={handleMakeOfferClick}
                 >
                   Hacer una oferta
@@ -840,8 +862,8 @@ const ServiceDetails = memo<{
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium h-10 rounded-lg text-sm"
                     >
                       Más opciones
@@ -865,12 +887,14 @@ const ServiceDetails = memo<{
       <Dialog open={isOfferModalOpen} onOpenChange={setIsOfferModalOpen}>
         <DialogContent className="sm:max-w-md bg-white p-0 gap-0 overflow-hidden rounded-xl">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-100">
-            <DialogTitle className="text-xl font-bold text-gray-900">Hacer una oferta</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-gray-900">
+              Hacer una oferta
+            </DialogTitle>
             <DialogDescription>
               Envía tu propuesta para esta tarea
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="p-6 space-y-6">
             {/* Task Summary Card */}
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 flex items-start gap-3">
@@ -878,20 +902,30 @@ const ServiceDetails = memo<{
                 <User className="h-5 w-5 text-gray-500" />
               </div>
               <div>
-                <h4 className="font-medium text-gray-900 text-sm line-clamp-1">{service.title}</h4>
+                <h4 className="font-medium text-gray-900 text-sm line-clamp-1">
+                  {service.title}
+                </h4>
                 <p className="text-xs text-gray-500 mt-1">
-                  Presupuesto del cliente: <span className="font-semibold text-gray-700">{formatCurrency(service.budget)}</span>
+                  Presupuesto del cliente:{" "}
+                  <span className="font-semibold text-gray-700">
+                    {formatCurrency(service.budget)}
+                  </span>
                 </p>
               </div>
             </div>
 
             {/* Offer Amount */}
             <div className="space-y-3">
-              <Label htmlFor="amount" className="text-sm font-semibold text-gray-700">
+              <Label
+                htmlFor="amount"
+                className="text-sm font-semibold text-gray-700"
+              >
                 Tu oferta ($)
               </Label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-lg">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-lg">
+                  $
+                </span>
                 <Input
                   id="amount"
                   type="number"
@@ -910,10 +944,15 @@ const ServiceDetails = memo<{
             {/* Offer Message */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <Label htmlFor="message" className="text-sm font-semibold text-gray-700">
+                <Label
+                  htmlFor="message"
+                  className="text-sm font-semibold text-gray-700"
+                >
                   Mensaje
                 </Label>
-                <span className="text-[10px] text-gray-400 uppercase font-medium tracking-wide">Opcional</span>
+                <span className="text-[10px] text-gray-400 uppercase font-medium tracking-wide">
+                  Opcional
+                </span>
               </div>
               <Textarea
                 id="message"
@@ -933,7 +972,7 @@ const ServiceDetails = memo<{
             >
               Cancelar
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmitOffer}
               className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm"
             >
@@ -968,17 +1007,19 @@ const BrowseServicesPage = () => {
   );
 
   const handleSelectService = useCallback(
-    (service: ServiceTaskWithLocation) => {
-      setSelectedService(service);
-      setShowDetails(true);
+    (service: ServiceTaskWithLocation | null) => {
+      if (service) {
+        setSelectedService(service);
+        setShowDetails(true);
+      }
     },
     [],
   );
 
-  const handleClearSelectedService = useCallback(() => {
-    setSelectedService(null);
-    setShowDetails(false);
-  }, []);
+  const handleClearSelectedService = () => {
+    // En lugar de cambiar el estado directamente, ejecutar animación de salida
+    handleExitAnimation();
+  }
 
   const handleViewOnMap = useCallback(() => {
     setShowDetails(false);
@@ -990,9 +1031,74 @@ const BrowseServicesPage = () => {
     setIsFilterOpen(false);
   }, []);
 
+  // Ref para la animación del panel de detalles
+  const detailsPanelRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<gsap.core.Timeline | null>(null);
+
+  // Ref para controlar si estamos en proceso de salida
+  const isExitingRef = useRef(false);
+
+  // Animación GSAP para el panel de detalles (entrada y salida)
+  // Animación GSAP para el panel de detalles (entrada y salida)
+  useGSAP(() => {
+    const panel = detailsPanelRef.current;
+    if (!panel) return;
+
+    // Limpiar timeline anterior si existe
+    if (timelineRef.current) {
+      timelineRef.current.kill();
+      timelineRef.current = null;
+    }
+
+    if (showDetails && selectedService && !isExitingRef.current) {
+      // === ANIMACIÓN DE ENTRADA ===
+      // Estado inicial: todo el panel fuera de pantalla
+      gsap.set(panel, {
+        x: "100%", // Desplazado completamente a la derecha
+        opacity: 1, // Opaco (el panel en sí)
+        visibility: "visible", // Visible para poder animarlo
+      });
+
+      // Animar todo el contenedor hacia dentro
+      gsap.to(panel, {
+        x: "0%", // Desliza hacia su posición final
+        duration: 0.8,
+        ease: "power2.out", // Lento al inicio, rápido al final
+      });
+    }
+  }, [showDetails, selectedService]);
+
+  // Función separada para manejar la animación de salida
+  const handleExitAnimation = useCallback(() => {
+    const panel = detailsPanelRef.current;
+    if (!panel || isExitingRef.current) return;
+
+    isExitingRef.current = true;
+
+    // === ANIMACIÓN DE SALIDA ===
+    // Animar todo el panel hacia fuera
+    gsap.to(panel, {
+      x: "100%", // Desliza completamente hacia la derecha
+      duration: 0.6,
+      ease: "power2.in", // Rápido al inicio, lento al final
+      onComplete: () => {
+        // Cambiar el estado DESPUÉS de que termine la animación
+        setShowDetails(false);
+        setSelectedService(null);
+        isExitingRef.current = false;
+
+        // Ocultar completamente
+        gsap.set(panel, {
+          visibility: "hidden",
+          x: "100%",
+        });
+      },
+    });
+  }, []);
+
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header/>
+      <Header />
 
       {/* Search and Filters Bar */}
       <div className="border-b border-gray-200 bg-white/95 backdrop-blur shrink-0 z-50">
@@ -1016,7 +1122,10 @@ const BrowseServicesPage = () => {
                   <Filter className="h-5 w-5" />
                   Filtros
                   {activeFiltersCount > 0 && (
-                    <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 border-0">
+                    <Badge
+                      variant="secondary"
+                      className="ml-1 bg-blue-100 text-blue-700 border-0"
+                    >
                       {activeFiltersCount}
                     </Badge>
                   )}
@@ -1027,7 +1136,9 @@ const BrowseServicesPage = () => {
                 className="w-full sm:max-w-md flex flex-col bg-white p-0"
               >
                 <SheetHeader className="pb-6 px-6 pt-6 border-b border-gray-200">
-                  <SheetTitle className="text-xl font-semibold text-gray-900">Filtros</SheetTitle>
+                  <SheetTitle className="text-xl font-semibold text-gray-900">
+                    Filtros
+                  </SheetTitle>
                   <SheetDescription className="text-sm text-gray-600 mt-2">
                     Ajusta los filtros para encontrar exactamente lo que buscas
                   </SheetDescription>
@@ -1199,7 +1310,9 @@ const BrowseServicesPage = () => {
                           DISTANCIA
                         </h3>
                         <div className="text-center py-2">
-                          <p className="text-2xl font-bold text-gray-900">{filters.distance} km</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {filters.distance} km
+                          </p>
                         </div>
                         <div className="px-4 pb-2">
                           <Slider
@@ -1273,8 +1386,8 @@ const BrowseServicesPage = () => {
                       Limpiar filtros
                     </Button>
                   )}
-                  <Button 
-                    onClick={handleCloseFilters} 
+                  <Button
+                    onClick={handleCloseFilters}
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
                   >
                     Aplicar filtros
@@ -1297,18 +1410,20 @@ const BrowseServicesPage = () => {
                 </h2>
               </div>
 
-              <div 
+              <div
                 ref={scrollContainerRef}
                 className="space-y-3 overflow-y-auto pr-2 flex-1 min-h-0 scrollbar-hide-on-idle"
                 onScroll={() => {
                   if (scrollContainerRef.current) {
-                    scrollContainerRef.current.classList.add('scrolling');
+                    scrollContainerRef.current.classList.add("scrolling");
                     if (scrollTimeoutRef.current) {
                       clearTimeout(scrollTimeoutRef.current);
                     }
                     scrollTimeoutRef.current = setTimeout(() => {
                       if (scrollContainerRef.current) {
-                        scrollContainerRef.current.classList.remove('scrolling');
+                        scrollContainerRef.current.classList.remove(
+                          "scrolling",
+                        );
                       }
                     }, 1000);
                   }
@@ -1349,10 +1464,17 @@ const BrowseServicesPage = () => {
                       />
                     )}
                   </div>
-                  
+
                   {/* Show details overlay when selected */}
-                  {showDetails && selectedService && (
-                    <div className="absolute inset-0 bg-white z-10">
+                  {(showDetails || isExitingRef.current) && selectedService && (
+                    <div
+                      ref={detailsPanelRef}
+                      className="absolute inset-0 bg-white z-10"
+                      style={{
+                        transform: "translateX(100%)", // Estado inicial fuera de pantalla
+                        visibility: "hidden", // Oculto hasta que GSAP tome control
+                      }}
+                    >
                       <ServiceDetails
                         service={selectedService}
                         onBack={handleClearSelectedService}
