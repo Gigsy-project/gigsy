@@ -39,13 +39,11 @@ import {
   Award,
   DollarSign,
   Clock,
-  CreditCard,
   CheckCircle,
 } from "lucide-react";
 import { ProviderProfileModal } from "@/components/provider-profile-modal";
 import type { Provider } from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
-import { CardList } from "@/components/card-list";
 
 // Mock data for CV sections
 const experienceData = [
@@ -198,8 +196,6 @@ export default function ProfilePage() {
         return <ReviewsSection />;
       case "favorites":
         return <FavoritesSection onProviderClick={handleProviderClick} />;
-      case "cards":
-        return <CardsSection />;
       default:
         return null;
     }
@@ -261,7 +257,6 @@ const ProfileSidebar = ({
     { id: "services", label: "Servicios", icon: Briefcase },
     { id: "reviews", label: "Reseñas", icon: Star },
     { id: "favorites", label: "Favoritos", icon: Heart },
-    { id: "cards", label: "Tarjetas", icon: CreditCard },
   ];
   return (
     <Card className="sticky top-24">
@@ -730,82 +725,3 @@ const FavoritesSection = ({
   );
 };
 
-// Mock data for user cards
-interface UserCard {
-  id: number;
-  cardNumber: string;
-  expiryDate: string;
-  cvv: string;
-  cardName: string;
-  isDefault: boolean;
-  type: "credit" | "debit";
-  provider: "visa" | "mastercard";
-  bankName: string;
-}
-
-const userCardsData: UserCard[] = [
-  {
-    id: 1,
-    cardNumber: "4757 7447 1880 1226",
-    expiryDate: "12/25",
-    cvv: "123",
-    cardName: "Diego Letelier",
-    isDefault: true,
-    type: "credit",
-    provider: "visa",
-    bankName: "Banco de Chile",
-  },
-  {
-    id: 2,
-    cardNumber: "5555 4444 3333 1111",
-    expiryDate: "08/26",
-    cvv: "456",
-    cardName: "Diego Letelier",
-    isDefault: false,
-    type: "debit",
-    provider: "mastercard",
-    bankName: "Banco Santander",
-  },
-  {
-    id: 3,
-    cardNumber: "4111 1111 1111 1111",
-    expiryDate: "05/27",
-    cvv: "789",
-    cardName: "Diego Letelier",
-    isDefault: false,
-    type: "credit",
-    provider: "visa",
-    bankName: "Banco Estado",
-  },
-];
-
-const CardsSection = () => {
-  const [cards, setCards] = useState<UserCard[]>(userCardsData);
-
-  const handleRemoveCard = (id: number) => {
-    setCards(cards.filter((card) => card.id !== id));
-  };
-
-  const handleSetDefaultCard = (id: number) => {
-    setCards(
-      cards.map((card) => ({
-        ...card,
-        isDefault: card.id === id,
-      })),
-    );
-  };
-
-  const handleAddCard = (newCard: Omit<UserCard, "id">) => {
-    const id = Math.max(...cards.map((c) => c.id), 0) + 1;
-    setCards([...cards, { ...newCard, id }]);
-  };
-
-  return (
-    <CardList
-      cards={cards}
-      onRemoveCard={handleRemoveCard}
-      onSetDefaultCard={handleSetDefaultCard}
-      onAddCard={handleAddCard}
-    />
-  );
-};

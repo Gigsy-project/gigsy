@@ -18,16 +18,16 @@
     "searchCity": "Search city...",
     "cityNotFound": "City not found.",
     "whyChoose": "Why choose GigSy?",
-    "whyChooseDesc": "The most reliable platform to connect with quality services",
+    "whyChooseDesc": "The most reliable platform to connect with quality services and verified professionals.",
     "features": {
-      "verified": "Verified",
-      "verifiedDesc": "People with complete and reliable verification in every service",
-      "quality": "Quality",
-      "qualityDesc": "Reliable and transparent rating system for everyone",
-      "fast": "Fast",
-      "fastDesc": "Immediate connection with people in your nearby community",
-      "protected": "Protected",
-      "protectedDesc": "Coverage for unexpected events for your peace of mind and security"
+      "verified": "Verified Professionals",
+      "verifiedDesc": "All service providers pass a verification process to ensure your safety.",
+      "quality": "Quality Guaranteed",
+      "qualityDesc": "A transparent rating system helps you choose the best professional.",
+      "fast": "Fast & Efficient",
+      "fastDesc": "Find immediate help from people in your local community.",
+      "protected": "Payment Protection",
+      "protectedDesc": "Your payment is held securely until you confirm the service is complete."
     }
   },
   "button": {
@@ -45,7 +45,68 @@
     "earn": "Offer services",
     "help": "Find help",
     "logout": "Logout",
-    "complete": "Complete profile"
+    "complete": "Complete profile",
+    "findService": "Find a Service",
+    "offerService": "Offer a Service",
+    "exploreServices": "Explore Services",
+    "startEarning": "Start Earning Now",
+    "joinNow": "Join the Community"
+  },
+  "community": {
+    "title": "A Community That Grows Together",
+    "subtitle": "More than a platform, we are a network of neighbors helping neighbors. Connect, collaborate, and thrive.",
+    "step1": {
+      "title": "Connect Locally",
+      "description": "Find trusted people in your own neighborhood ready to help or hire."
+    },
+    "step2": {
+      "title": "Collaborate & Share",
+      "description": "Exchange skills and services to solve daily challenges together."
+    },
+    "step3": {
+      "title": "Grow Together",
+      "description": "Build lasting relationships and strengthen your local economy."
+    }
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Getting help or starting to earn is easier than ever. Follow these simple steps.",
+    "step1": {
+      "title": "1. Search or Post",
+      "description": "Describe the service you need or create your profile to offer your skills."
+    },
+    "step2": {
+      "title": "2. Connect & Schedule",
+      "description": "Receive offers from professionals or job opportunities and schedule the details."
+    },
+    "step3": {
+      "title": "3. Get It Done",
+      "description": "Complete the service and handle payments securely through the platform."
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Get Your Daily Tasks Done, Fast and Easy.",
+      "subtitle": "The simplest way to find trusted help for your needs, or to earn money by offering your services.",
+      "imageAlt": "A person receiving a package from a service provider"
+    },
+    "findService": {
+      "title": "Find the Help You Need, Instantly.",
+      "subtitle": "From home repairs to personal errands, connect with skilled professionals in your area ready to help.",
+      "imageAlt": "A person looking at a list of services on their phone"
+    },
+    "offerService": {
+      "title": "Earn Money Your Way.",
+      "subtitle": "Turn your skills into income. GigSy gives you the flexibility to work when you want, where you want.",
+      "benefit1": "Set your own schedule",
+      "benefit2": "Choose the services you want to offer",
+      "benefit3": "Get paid securely and quickly",
+      "imageAlt": "A service provider smiling"
+    },
+    "finalCta": {
+      "title": "Ready to Join the GigSy Community?",
+      "subtitle": "Whether you're looking for help or looking to earn, your community is waiting for you."
+    }
   },
   "form": {
     "id": "ID Photo (front and back)",

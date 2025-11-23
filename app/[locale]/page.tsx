@@ -4,146 +4,61 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import Image from "next/image"
-import { Shield, Star, Zap, ShieldCheck, ArrowRight, CheckCircle, MapPin, Clock, Loader2, Check, Wrench } from "lucide-react"
-import { useTranslations } from 'next-intl';
-import { Link, useRouter } from '@/i18n/navigation';
-import { useAuth } from "@/hooks/use-auth"
-import { useEffect, useState } from "react"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command"
-import { cn } from "@/lib/utils"
+  Shield,
+  Star,
+  Zap,
+  ShieldCheck,
+  Heart,
+  Briefcase,
+  Users,
+  CheckCircle,
+  MapPin,
+  TrendingUp,
+} from "lucide-react"
+import { useTranslations } from "next-intl"
+import { Link } from "@/i18n/navigation"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { useRef } from "react"
 
-// Features will be created dynamically with translations
-
-// Lista de ciudades de Chile
-const CHILEAN_CITIES = [
-  { value: "santiago", label: "Santiago, CL" },
-  { value: "valparaiso", label: "Valparaíso, CL" },
-  { value: "concepcion", label: "Concepción, CL" },
-  { value: "la-serena", label: "La Serena, CL" },
-  { value: "antofagasta", label: "Antofagasta, CL" },
-  { value: "temuco", label: "Temuco, CL" },
-  { value: "rancagua", label: "Rancagua, CL" },
-  { value: "talca", label: "Talca, CL" },
-  { value: "arica", label: "Arica, CL" },
-  { value: "iquique", label: "Iquique, CL" },
-  { value: "calama", label: "Calama, CL" },
-  { value: "copiapó", label: "Copiapó, CL" },
-  { value: "coquimbo", label: "Coquimbo, CL" },
-  { value: "viña-del-mar", label: "Viña del Mar, CL" },
-  { value: "quillota", label: "Quillota, CL" },
-  { value: "los-andes", label: "Los Andes, CL" },
-  { value: "san-antonio", label: "San Antonio, CL" },
-  { value: "curicó", label: "Curicó, CL" },
-  { value: "chillán", label: "Chillán, CL" },
-  { value: "los-ángeles", label: "Los Ángeles, CL" },
-  { value: "valdivia", label: "Valdivia, CL" },
-  { value: "osorno", label: "Osorno, CL" },
-  { value: "puerto-montt", label: "Puerto Montt, CL" },
-  { value: "coyhaique", label: "Coyhaique, CL" },
-  { value: "punta-arenas", label: "Punta Arenas, CL" },
-] as const
-
-// Hook para obtener la ubicación del usuario y convertirla a nombre de ciudad
-const useUserCity = () => {
-  const [city, setCity] = useState<string>("Santiago, CL")
-  const [isLoadingLocation, setIsLoadingLocation] = useState(true)
-
-  useEffect(() => {
-    const getCityFromLocation = async (lat: number, lng: number) => {
-      try {
-        // Usar Nominatim (OpenStreetMap) para geocodificación inversa
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-          {
-            headers: {
-              "User-Agent": "Gigsy App", // Nominatim requiere User-Agent
-            },
-          }
-        )
-
-        if (!response.ok) {
-          throw new Error("Error al obtener la ubicación")
-        }
-
-        const data = await response.json()
-        
-        // Extraer ciudad y país de la respuesta
-        const address = data.address
-        const cityName = address.city || address.town || address.municipality || address.village || "Santiago"
-        const country = address.country_code?.toUpperCase() || "CL"
-        
-        // Si estamos en Chile, usar el formato "Ciudad, CL"
-        if (country === "CL") {
-          setCity(`${cityName}, CL`)
-        } else {
-          setCity(`${cityName}, ${country}`)
-        }
-      } catch (error) {
-        console.error("Error al obtener la ciudad:", error)
-        setCity("Santiago, CL") // Fallback a Santiago
-      } finally {
-        setIsLoadingLocation(false)
-      }
-    }
-
-    // Verificar si el navegador soporta geolocalización
-    if (!navigator.geolocation) {
-      setIsLoadingLocation(false)
-      return
-    }
-
-    // Solicitar ubicación del usuario
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        console.log("Ubicación obtenida:", latitude, longitude)
-        getCityFromLocation(latitude, longitude)
-      },
-      (error) => {
-        setCity("Santiago, CL")
-        setIsLoadingLocation(false)
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 300000, // Cache por 5 minutos
-      }
-    )
-  }, [])
-
-  return { city, isLoadingLocation, setCity }
-}
+gsap.registerPlugin(ScrollTrigger)
 
 export default function HomePage() {
   const t = useTranslations()
-  const { status, isLoggedIn, isLoading, continueAsGuest } = useAuth()
-  const router = useRouter()
-  const { city, isLoadingLocation, setCity: setUserCity } = useUserCity()
-  const [isCityDialogOpen, setIsCityDialogOpen] = useState(false)
-  const [selectedCity, setSelectedCity] = useState("")
-  const [selectedAction, setSelectedAction] = useState("")
+  const mainRef = useRef(null)
+
+  useGSAP(
+    () => {
+      gsap.from(".hero-element", {
+        duration: 0.8,
+        y: 50,
+        opacity: 0,
+        stagger: 0.2,
+        ease: "power3.out",
+        delay: 0.2,
+      })
+
+      const sections = gsap.utils.toArray(".animated-section")
+      sections.forEach((section) => {
+        gsap.from(section as HTMLElement, {
+          scrollTrigger: {
+            trigger: section as HTMLElement,
+            start: "top 85%",
+            end: "bottom 20%",
+            toggleActions: "play none none none",
+          },
+          opacity: 0,
+          y: 50,
+          duration: 1,
+          ease: "power3.out",
+        })
+      })
+    },
+    { scope: mainRef }
+  )
 
   const features = [
     {
@@ -167,175 +82,223 @@ export default function HomePage() {
       description: t("hero.features.protectedDesc"),
     },
   ]
-  
+
+  const communitySteps = [
+    {
+      icon: MapPin,
+      title: t("community.step1.title"),
+      description: t("community.step1.description"),
+    },
+    {
+      icon: Users,
+      title: t("community.step2.title"),
+      description: t("community.step2.description"),
+    },
+    {
+      icon: TrendingUp,
+      title: t("community.step3.title"),
+      description: t("community.step3.description"),
+    },
+  ]
+
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-white" ref={mainRef}>
       <Header />
 
       <main className="flex-1">
-        {/* Hero Section - Only for non-logged users */}
-        <section className="relative overflow-hidden bg-background">
-          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[600px] lg:min-h-[700px] pt-4 lg:pt-6 pb-12 lg:pb-16">
-              {/* Left Section - Content and Form */}
-              <div className="space-y-6">
-                {/* Main Heading */}
-                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight">
-                  {t("hero.title")}
-                </h1>
-
-                {/* Location Indicator */}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  {isLoadingLocation ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      <span>{t("hero.gettingLocation")}</span>
-                    </div>
-                  ) : (
-                    <>
-                      <span>{city}</span>
-                      <Button
-                        variant="link"
-                        onClick={() => setIsCityDialogOpen(true)}
-                        className="text-primary hover:underline ml-1"
-                      >
-                        {t("hero.changeCity")}
-                      </Button>
-                    </>
-                  )}
-                </div>
-
-                {/* Service Request Form */}
-                <div className="space-y-4 pt-4">
-                  {/* Action Type Selector */}
-                  <Select value={selectedAction} onValueChange={setSelectedAction}>
-                    <SelectTrigger className="w-full h-14 text-base rounded-xl min-h-[56px]">
-                      <div className="flex items-center gap-2 flex-1 justify-start">
-                        <Clock className="h-4 w-4" />
-                        <SelectValue placeholder={t("hero.selectAction")} className="text-left" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="accion" disabled>
-                        {t("hero.selectAction")}
-                      </SelectItem>
-                      <SelectItem value="buscar">{t("hero.searchService")}</SelectItem>
-                      <SelectItem value="publicar">{t("hero.postService")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  {/* Service Input */}
-                  <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                      <Wrench className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <Input
-                      placeholder={selectedAction === "buscar" ? t("hero.whatServiceSearch") : t("hero.whatServicePost")}
-                      className="pl-12 h-14 text-base rounded-xl"
-                    />
-                  </div>
-
-                  {/* Action Button */}
-                  <Button
-                    size="lg"
-                    className="w-full h-14 text-base font-semibold rounded-xl"
-                    onClick={() => router.push("/browse-services")}
-                  >
-                    {t("button.search")}
-                  </Button>
-
-                  {/* Login Prompt */}
-                  <p className="text-sm text-muted-foreground text-center pt-2">
-                    <Link href="/login" className="text-primary hover:underline">
-                      {t("button.login")}
-                    </Link>{" "}
-                    {t("hero.loginPrompt")}
-                  </p>
-                </div>
+        {/* Hero Section */}
+        <section className="relative bg-gray-50">
+          <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-80px)] px-4 py-16">
+            <div className="text-center lg:text-left">
+              <h1 className="hero-element text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+                {t("landing.hero.title")}
+              </h1>
+              <p className="hero-element mt-6 text-lg text-gray-600 md:text-xl">
+                {t("landing.hero.subtitle")}
+              </p>
+              <div className="hero-element mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Button size="lg" className="rounded-full h-12 px-8 text-base" asChild>
+                  <Link href="/browse-services">
+                    <Briefcase className="mr-2 h-5 w-5" />
+                    {t("button.findService")}
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="rounded-full h-12 px-8 text-base" asChild>
+                  <Link href="/register">
+                    <Heart className="mr-2 h-5 w-5" />
+                    {t("button.offerService")}
+                  </Link>
+                </Button>
               </div>
-
+            </div>
+            <div className="hero-element relative h-[400px] lg:h-[500px] w-full rounded-3xl overflow-hidden">
               <Image
-                src="/hero-image.png"
-                alt="Servicios en tu comunidad"
-                width={500}
-                height={500}
-                className="w-full h-full max-h-[500px] rounded-xl object-cover" style={{ objectPosition: '85% center' }}
+                src="/hero.png"
+                alt={t("landing.hero.imageAlt")}
+                fill
+                className="object-cover"
                 priority
-                loading="eager"
               />
             </div>
           </div>
         </section>
 
-        {/* Dialog para cambiar ciudad */}
-        <Dialog open={isCityDialogOpen} onOpenChange={setIsCityDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>{t("hero.changeLocation")}</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">
-              <Command>
-                <CommandInput placeholder={t("hero.searchCity")} />
-                <CommandList>
-                  <CommandEmpty>{t("hero.cityNotFound")}</CommandEmpty>
-                  <CommandGroup>
-                    {CHILEAN_CITIES.map((cityOption) => (
-                      <CommandItem
-                        key={cityOption.value}
-                        value={cityOption.label}
-                        onSelect={(currentValue) => {
-                          const selected = CHILEAN_CITIES.find(
-                            (c) => c.label.toLowerCase() === currentValue.toLowerCase()
-                          )
-                          if (selected) {
-                            setSelectedCity(selected.value)
-                            setUserCity(selected.label)
-                            setIsCityDialogOpen(false)
-                          }
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            city === cityOption.label ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {cityOption.label}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
+        {/* Community Section */}
+        <section className="animated-section py-20 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                {t("community.title")}
+              </h2>
+              <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                {t("community.subtitle")}
+              </p>
             </div>
-          </DialogContent>
-        </Dialog>
+            
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Column 1: Image */}
+              <div className="relative h-[400px] lg:h-[600px] w-full rounded-3xl overflow-hidden">
+                <Image
+                  src="/comunidad-servicios.png"
+                  alt="GigSy Community Ecosystem"
+                  fill
+                  className="object-cover"
+                />
+              </div>
 
-        {/* Features - 4 columns grid */}
-        <section className="py-4 lg:py-6">
-          <div className="container mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold mb-4">{t("hero.whyChoose")}</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
+              {/* Column 2: Steps */}
+              <div className="space-y-12">
+                {communitySteps.map((step, index) => (
+                  <div key={index} className="flex gap-6">
+                    <div className="flex-shrink-0">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-md">
+                        <step.icon className="h-7 w-7" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-bold text-gray-900">{step.title}</h3>
+                      </div>
+                      <p className="text-lg text-gray-600 leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                <div className="pt-4 pl-20">
+                  <Button size="lg" className="rounded-full px-8" asChild>
+                    <Link href="/register">{t("button.joinNow")}</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Find Services Section */}
+        <section className="animated-section py-20 bg-gray-50">
+          <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center px-4">
+            <div className="relative h-[350px] lg:h-[450px] w-full order-last lg:order-first rounded-3xl overflow-hidden">
+                <Image
+                    src="/buscar-servicios.png"
+                    alt={t("landing.findService.imageAlt")}
+                    fill
+                    className="object-cover"
+                />
+            </div>
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                {t("landing.findService.title")}
+              </h2>
+              <p className="mt-4 text-lg text-gray-600">
+                {t("landing.findService.subtitle")}
+              </p>
+              <Button size="lg" className="mt-8 rounded-full h-12 px-8" asChild>
+                <Link href="/browse-services">{t("button.exploreServices")}</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+        
+        {/* Offer Services Section */}
+        <section className="animated-section py-20 bg-white">
+          <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center px-4">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                {t("landing.offerService.title")}
+              </h2>
+              <p className="mt-4 text-lg text-gray-600">
+                {t("landing.offerService.subtitle")}
+              </p>
+              <ul className="mt-6 space-y-4">
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="h-6 w-6 text-green-500" />
+                  <span className="text-gray-600">{t("landing.offerService.benefit1")}</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="h-6 w-6 text-green-500" />
+                  <span className="text-gray-600">{t("landing.offerService.benefit2")}</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="h-6 w-6 text-green-500" />
+                  <span className="text-gray-600">{t("landing.offerService.benefit3")}</span>
+                </li>
+              </ul>
+              <Button size="lg" className="mt-8 rounded-full h-12 px-8" asChild>
+                <Link href="/register">{t("button.startEarning")}</Link>
+              </Button>
+            </div>
+            <div className="relative h-[350px] lg:h-[450px] w-full rounded-3xl overflow-hidden">
+                <Image
+                    src="/gana-dondequieras.png"
+                    alt={t("landing.offerService.imageAlt")}
+                    fill
+                    className="object-cover"
+                />
+            </div>
+          </div>
+        </section>
+        
+        {/* Why Choose Us Section */}
+        <section className="animated-section py-20 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{t("hero.whyChoose")}</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto mt-4 text-lg">
                 {t("hero.whyChooseDesc")}
               </p>
             </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-              {features.map((feature, index) => (
-                <Card key={feature.title} className="border-0 shadow-none bg-transparent">
-                  <CardContent className="p-6 text-center">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                      <feature.icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <h3 className="font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed text-center line-clamp-3 xl:line-clamp-2">{feature.description}</p>
-                  </CardContent>
-                </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+              {features.map((feature) => (
+                <div key={feature.title} className="text-center">
+                  <div className="flex-shrink-0 flex mx-auto h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                    <feature.icon className="h-7 w-7 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-lg mt-5 text-gray-900">{feature.title}</h3>
+                  <p className="mt-2 text-gray-600">{feature.description}</p>
+                </div>
               ))}
             </div>
           </div>
         </section>
+
+        {/* Final CTA Section */}
+        <section className="animated-section py-24 bg-primary text-white mx-2 rounded-xl">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              {t("landing.finalCta.title")}
+            </h2>
+            <p className="mt-4 max-w-2xl mx-auto text-lg text-primary-200">
+              {t("landing.finalCta.subtitle")}
+            </p>
+            <div className="mt-8">
+              <Button size="lg" variant="secondary" className="rounded-full h-14 px-10 text-base" asChild>
+                <Link href="/register">{t("button.joinNow")}</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <Footer />

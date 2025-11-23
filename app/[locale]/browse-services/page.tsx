@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, memo, useEffect, useRef } from "react";
 import { Header } from "@/components/header";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -30,6 +31,7 @@ import {
   Heart,
   Flag,
   User,
+  Users,
   Loader2,
   Filter,
   Star,
@@ -554,72 +556,78 @@ const ServiceTaskCard = memo<{
 
   return (
     <Card
-      className={`cursor-pointer border transition-all shadow-sm hover:shadow rounded-lg !py-0 ${
+      className={`cursor-pointer border transition-all shadow-sm hover:shadow-md rounded-xl overflow-hidden group ${
         isSelected 
-          ? "bg-blue-50 border-blue-500 border-2 shadow-md" 
+          ? "bg-blue-50/50 border-blue-500 ring-1 ring-blue-500" 
           : "bg-white border-gray-200 hover:border-gray-300"
       }`}
       onClick={handleClick}
     >
-      <CardContent className="!p-5">
-        <div className="flex items-start gap-3">
-          {/* Avatar */}
-          <Avatar className="h-10 w-10 shrink-0">
+      <CardContent className="p-5 flex flex-col h-full">
+        {/* Header: Avatar + Title + Price */}
+        <div className="flex gap-4 mb-4">
+          <Avatar className="h-12 w-12 shrink-0 border border-gray-100 shadow-sm">
             <AvatarImage
               src={service.postedBy.avatar || "/placeholder-user.jpg"}
+              className="object-cover"
             />
-            <AvatarFallback className="bg-gray-100 text-gray-400">
+            <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
               {service.postedBy.name.charAt(0)}
             </AvatarFallback>
           </Avatar>
-
-          {/* Content */}
+          
           <div className="flex-1 min-w-0">
-            {/* Title and Price */}
-            <div className="flex justify-between items-start mb-3 gap-2">
-              <h3 className="font-semibold text-base text-gray-900 line-clamp-2 leading-snug">
+            <div className="flex justify-between items-start gap-3">
+              <h3 className="font-bold text-gray-900 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors">
                 {service.title}
               </h3>
-              <span className="font-bold text-lg text-gray-900 whitespace-nowrap ml-2">
+              <span className="font-bold text-lg text-blue-600 whitespace-nowrap shrink-0 tracking-tight">
                 {formatCurrency(service.budget)}
               </span>
             </div>
+            <p className="text-xs text-gray-500 mt-1 truncate">
+              Publicado por {service.postedBy.name}
+            </p>
+          </div>
+        </div>
 
-            {/* Details with icons */}
-            <div className="space-y-1.5 text-sm text-gray-600 mb-4">
-              <div className="flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                <span className="truncate">{service.location}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                <span>{service.date}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                <span>{service.time}</span>
-              </div>
+        {/* Details Grid */}
+        <div className="grid grid-cols-1 gap-y-2.5 mb-4 text-sm text-gray-600 bg-gray-50/80 p-3 rounded-lg border border-gray-100">
+          <div className="flex items-center gap-2.5">
+            <MapPin className="h-4 w-4 text-blue-500 shrink-0" />
+            <span className="truncate font-medium">{service.location}</span>
+          </div>
+          <div className="flex items-center gap-4 text-xs sm:text-sm">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-blue-500 shrink-0" />
+              <span>{service.date}</span>
             </div>
-
-            {/* Status and Offers */}
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleClick();
-                }}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium hover:underline transition-colors"
-              >
-                {service.status === "open" ? "Abierto" : "Asignado"}
-              </button>
-              {service.offers > 0 && (
-                <span className="text-sm text-gray-500">
-                  • {service.offers} {service.offers === 1 ? "oferta" : "ofertas"}
-                </span>
-              )}
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-blue-500 shrink-0" />
+              <span>{service.time}</span>
             </div>
           </div>
+        </div>
+
+        {/* Footer: Status + Offers */}
+        <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+          <Badge 
+            variant={service.status === "open" ? "secondary" : "outline"} 
+            className={`${
+              service.status === "open" 
+                ? "bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200" 
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            } font-medium px-3 py-1 rounded-full transition-colors`}
+          >
+            {service.status === "open" ? "Abierto" : "Asignado"}
+          </Badge>
+          
+          {service.offers > 0 && (
+            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+              <Users className="h-3.5 w-3.5" />
+              <span>{service.offers} {service.offers === 1 ? "oferta" : "ofertas"}</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -633,6 +641,7 @@ const ServiceDetails = memo<{
   onBack: () => void;
   onViewOnMap: () => void;
 }>(({ service, onBack, onViewOnMap }) => {
+  const isMobile = useIsMobile();
   const [isFollowing, setIsFollowing] = useState(false);
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
   const [offerAmount, setOfferAmount] = useState(service.budget.toString());
@@ -665,7 +674,7 @@ const ServiceDetails = memo<{
             <div className="mb-6">
               <Button variant="ghost" onClick={onBack} className="mb-4">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver al mapa
+                {isMobile ? "Volver a servicios" : "Volver al mapa"}
               </Button>
             </div>
 
@@ -996,6 +1005,7 @@ const BrowseServicesPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const isMobile = useIsMobile();
 
   const userLocation = useUserLocation();
   const { filters, updateFilter, resetFilters, activeFiltersCount } =
@@ -1103,7 +1113,7 @@ const BrowseServicesPage = () => {
       {/* Search and Filters Bar */}
       <div className="border-b border-gray-200 bg-white/95 backdrop-blur shrink-0 z-50">
         <div className="container mx-auto max-w-7xl py-4 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="flex flex-row gap-4 items-center">
             {/* Search Bar */}
             <div className="relative flex-1 w-full">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -1118,9 +1128,9 @@ const BrowseServicesPage = () => {
             {/* Filters Button */}
             <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
               <SheetTrigger asChild>
-                <Button className="h-12 px-6 gap-2 text-base bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm">
+                <Button className="h-12 px-3 md:px-6 gap-2 text-base bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm">
                   <Filter className="h-5 w-5" />
-                  Filtros
+                  <span className="hidden md:inline">Filtros</span>
                   {activeFiltersCount > 0 && (
                     <Badge
                       variant="secondary"
@@ -1448,8 +1458,8 @@ const BrowseServicesPage = () => {
               </div>
             </div>
 
-            {/* Map */}
-            <div className="lg:col-span-2 relative z-0 h-full overflow-hidden">
+            {/* Map - Hidden on mobile */}
+            <div className="hidden lg:block lg:col-span-2 relative z-0 h-full overflow-hidden">
               <Card className="p-0 h-full bg-white border border-gray-200 shadow-sm">
                 <CardContent className="p-0 h-full rounded-xl overflow-hidden relative">
                   {/* Keep map mounted but hidden when showing details */}
@@ -1465,11 +1475,11 @@ const BrowseServicesPage = () => {
                     )}
                   </div>
 
-                  {/* Show details overlay when selected */}
+                  {/* Show details overlay when selected - Desktop only */}
                   {(showDetails || isExitingRef.current) && selectedService && (
                     <div
                       ref={detailsPanelRef}
-                      className="absolute inset-0 bg-white z-10"
+                      className="hidden lg:block absolute inset-0 bg-white z-10"
                       style={{
                         transform: "translateX(100%)", // Estado inicial fuera de pantalla
                         visibility: "hidden", // Oculto hasta que GSAP tome control
@@ -1488,6 +1498,37 @@ const BrowseServicesPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Mobile Sheet for Service Details */}
+      <Sheet 
+        open={isMobile && selectedService !== null && showDetails} 
+        onOpenChange={(open) => {
+          if (!open) {
+            handleClearSelectedService();
+          }
+        }}
+      >
+        <SheetContent 
+          side="right" 
+          className="w-full sm:max-w-lg p-0 overflow-y-auto [&>button]:hidden"
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Detalles del servicio</SheetTitle>
+          </SheetHeader>
+          {selectedService && (
+            <div className="h-full">
+              <ServiceDetails
+                service={selectedService}
+                onBack={handleClearSelectedService}
+                onViewOnMap={() => {
+                  // En mobile, no hay mapa, así que solo cerramos
+                  handleClearSelectedService();
+                }}
+              />
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

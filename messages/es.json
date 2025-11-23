@@ -18,16 +18,16 @@
     "searchCity": "Buscar ciudad...",
     "cityNotFound": "No se encontró la ciudad.",
     "whyChoose": "¿Por qué elegir GigSy?",
-    "whyChooseDesc": "La plataforma más confiable para conectar con servicios de calidad",
+    "whyChooseDesc": "La plataforma más confiable para conectar con servicios de calidad y profesionales verificados.",
     "features": {
-      "verified": "Verificados",
-      "verifiedDesc": "Personas con verificación completa y confiable en cada servicio",
-      "quality": "Calidad",
-      "qualityDesc": "Sistema de calificaciones confiable y transparente para todos",
-      "fast": "Rápido",
-      "fastDesc": "Conexión inmediata con personas de tu comunidad cercana",
-      "protected": "Protegido",
-      "protectedDesc": "Cobertura ante imprevistos para tu tranquilidad y seguridad"
+      "verified": "Profesionales Verificados",
+      "verifiedDesc": "Todos los proveedores de servicios pasan un proceso de verificación para garantizar tu seguridad.",
+      "quality": "Calidad Garantizada",
+      "qualityDesc": "Un sistema de calificación transparente te ayuda a elegir al mejor profesional.",
+      "fast": "Rápido y Eficiente",
+      "fastDesc": "Encuentra ayuda inmediata de personas en tu comunidad local.",
+      "protected": "Pago Protegido",
+      "protectedDesc": "Tu pago se retiene de forma segura hasta que confirmes que el servicio se ha completado."
     }
   },
   "button": {
@@ -45,7 +45,68 @@
     "earn": "Ofrecer servicios",
     "help": "Buscar ayuda",
     "logout": "Cerrar sesión",
-    "complete": "Completar perfil"
+    "complete": "Completar perfil",
+    "findService": "Buscar un Servicio",
+    "offerService": "Ofrecer un Servicio",
+    "exploreServices": "Explorar Servicios",
+    "startEarning": "Comienza a Ganar Ahora",
+    "joinNow": "Únete a la Comunidad"
+  },
+  "community": {
+    "title": "Una Comunidad que Crece Unida",
+    "subtitle": "Más que una plataforma, somos una red de vecinos ayudando a vecinos. Conecta, colabora y prospera.",
+    "step1": {
+      "title": "Conecta Localmente",
+      "description": "Encuentra personas de confianza en tu propio barrio listas para ayudar o contratar."
+    },
+    "step2": {
+      "title": "Colabora y Comparte",
+      "description": "Intercambia habilidades y servicios para resolver desafíos diarios juntos."
+    },
+    "step3": {
+      "title": "Crezcan Juntos",
+      "description": "Construye relaciones duraderas y fortalece tu economía local."
+    }
+  },
+  "howItWorks": {
+    "title": "Cómo Funciona",
+    "subtitle": "Obtener ayuda o empezar a ganar dinero es más fácil que nunca. Sigue estos simples pasos.",
+    "step1": {
+      "title": "1. Busca o Publica",
+      "description": "Describe el servicio que necesitas o crea tu perfil para ofrecer tus habilidades."
+    },
+    "step2": {
+      "title": "2. Conecta y Agenda",
+      "description": "Recibe ofertas de profesionales u oportunidades de trabajo y agenda los detalles."
+    },
+    "step3": {
+      "title": "3. ¡Listo!",
+      "description": "Completa el servicio y gestiona los pagos de forma segura a través de la plataforma."
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Resuelve Tus Tareas Diarias, Rápido y Fácil.",
+      "subtitle": "La forma más simple de encontrar ayuda de confianza para lo que necesites, o de ganar dinero ofreciendo tus servicios.",
+      "imageAlt": "Una persona recibiendo un paquete de un proveedor de servicios"
+    },
+    "findService": {
+      "title": "Encuentra la Ayuda que Necesitas, al Instante.",
+      "subtitle": "Desde reparaciones en el hogar hasta encargos personales, conecta con profesionales calificados en tu área listos para ayudar.",
+      "imageAlt": "Una persona mirando una lista de servicios en su teléfono"
+    },
+    "offerService": {
+      "title": "Gana Dinero a Tu Manera.",
+      "subtitle": "Convierte tus habilidades en ingresos. GigSy te da la flexibilidad de trabajar cuándo y dónde quieras.",
+      "benefit1": "Define tu propio horario",
+      "benefit2": "Elige los servicios que quieres ofrecer",
+      "benefit3": "Recibe tu pago de forma segura y rápida",
+      "imageAlt": "Un proveedor de servicios sonriendo"
+    },
+    "finalCta": {
+      "title": "¿Listo para Unirte a la Comunidad GigSy?",
+      "subtitle": "Ya sea que busques ayuda o quieras ganar dinero, tu comunidad te está esperando."
+    }
   },
   "form": {
     "id": "Foto de ID (frente y reverso)",

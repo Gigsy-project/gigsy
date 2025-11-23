@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Header } from "@/components/header"
 import {
   Breadcrumb,
@@ -12,19 +13,87 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
-  ArrowDownLeft,
   ArrowUpRight,
+  ArrowDown,
+  ArrowDownLeft,
   Download,
   DollarSign,
   Briefcase,
   Star,
   Plus,
-  Clock,
 } from "lucide-react"
 import { InteractiveChart } from "@/components/interactive-chart"
-import { Separator } from "@/components/ui/separator"
+import { CardList } from "@/components/card-list"
+
+// Mock data for user cards
+interface UserCard {
+  id: number;
+  cardNumber: string;
+  expiryDate: string;
+  cvv: string;
+  cardName: string;
+  isDefault: boolean;
+  type: "credit" | "debit";
+  provider: "visa" | "mastercard";
+  bankName: string;
+}
+
+const userCardsData: UserCard[] = [
+  {
+    id: 1,
+    cardNumber: "4757 7447 1880 1226",
+    expiryDate: "12/25",
+    cvv: "123",
+    cardName: "Diego Letelier",
+    isDefault: true,
+    type: "credit",
+    provider: "visa",
+    bankName: "Banco de Chile",
+  },
+  {
+    id: 2,
+    cardNumber: "5555 4444 3333 1111",
+    expiryDate: "08/26",
+    cvv: "456",
+    cardName: "Diego Letelier",
+    isDefault: false,
+    type: "debit",
+    provider: "mastercard",
+    bankName: "Banco Santander",
+  },
+  {
+    id: 3,
+    cardNumber: "4111 1111 1111 1111",
+    expiryDate: "05/27",
+    cvv: "789",
+    cardName: "Diego Letelier",
+    isDefault: false,
+    type: "credit",
+    provider: "visa",
+    bankName: "Banco Estado",
+  },
+];
 
 export default function WalletPage() {
+  const [cards, setCards] = useState<UserCard[]>(userCardsData);
+
+  const handleRemoveCard = (id: number) => {
+    setCards(cards.filter((card) => card.id !== id));
+  };
+
+  const handleSetDefaultCard = (id: number) => {
+    setCards(
+      cards.map((card) => ({
+        ...card,
+        isDefault: card.id === id,
+      })),
+    );
+  };
+
+  const handleAddCard = (newCard: Omit<UserCard, "id">) => {
+    const id = Math.max(...cards.map((c) => c.id), 0) + 1;
+    setCards([...cards, { ...newCard, id }]);
+  };
   // Enhanced data for the interactive chart
   const chartData = [
     { month: "Enero", shortMonth: "ene", amount: 65000, services: 3, avgRating: 4.5 },
@@ -36,7 +105,14 @@ export default function WalletPage() {
   ]
 
   // Mock data for transactions
-  const transactions = [
+  const transactions: Array<{
+    id: number;
+    type: "income" | "withdrawal" | "pending";
+    title: string;
+    date: string;
+    amount: string;
+    status: string;
+  }> = [
     {
       id: 1,
       type: "income",
@@ -108,35 +184,47 @@ export default function WalletPage() {
     </Card>
   )
 
-  const TransactionItem = ({ transaction }: { transaction: any }) => {
-    const iconMap = {
-      income: <ArrowUpRight className="h-5 w-5 text-green-500" />,
-      withdrawal: <ArrowDownLeft className="h-5 w-5 text-red-500" />,
-      pending: <Clock className="h-5 w-5 text-yellow-500" />,
+  const TransactionItem = ({ transaction }: { 
+    transaction: {
+      id: number;
+      type: "income" | "withdrawal" | "pending";
+      title: string;
+      date: string;
+      amount: string;
+      status: string;
     }
-    const colorMap = {
-      income: "text-green-500",
-      withdrawal: "text-red-500",
-      pending: "text-yellow-500",
+  }) => {
+    const isWithdrawal = transaction.type === "withdrawal"
+    const isPending = transaction.type === "pending"
+    
+    const getArrow = () => {
+      if (isWithdrawal) return <ArrowDown className="h-5 w-5 text-blue-600" />
+      if (isPending) return <ArrowDownLeft className="h-5 w-5 text-blue-600" />
+      return <ArrowUpRight className="h-5 w-5 text-blue-600" />
     }
+    
+    const getAmountColor = () => {
+      if (isWithdrawal) return "text-gray-500"
+      if (isPending) return "text-red-600"
+      return "text-green-600"
+    }
+    
     return (
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div
-            className={`h-10 w-10 rounded-full flex items-center justify-center bg-muted`}
-          >
-            {iconMap[transaction.type as keyof typeof iconMap]}
+          <div className="h-10 w-10 rounded-full flex items-center justify-center bg-blue-100">
+            {getArrow()}
           </div>
           <div>
-            <p className="font-medium">{transaction.title}</p>
+            <p className="font-bold text-gray-800">{transaction.title}</p>
             <p className="text-sm text-muted-foreground">{transaction.date}</p>
           </div>
         </div>
         <div className="text-right">
-          <p className={`font-semibold ${colorMap[transaction.type as keyof typeof colorMap]}`}>
+          <p className={`text-sm font-semibold ${getAmountColor()}`}>
             {transaction.amount}
           </p>
-          <p className="text-sm text-muted-foreground">{transaction.status}</p>
+          <p className="text-xs text-muted-foreground">{transaction.status}</p>
         </div>
       </div>
     )
@@ -169,9 +257,46 @@ export default function WalletPage() {
               Exportar Reporte
             </Button>
           </div>
+          {/* Cards superiores en fila horizontal */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card>
+              <CardHeader>
+                <CardDescription>Saldo disponible</CardDescription>
+                <CardTitle className="text-4xl font-bold">$125.000</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-4">
+                <Button size="sm">Retirar</Button>
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Añadir
+                </Button>
+              </CardContent>
+            </Card>
+            <StatCard
+              icon={DollarSign}
+              title="Ingresos Totales (6 meses)"
+              value={`$${totalIncome.toLocaleString("es-CL")}`}
+              description="Suma de todos los ingresos."
+            />
+            <StatCard
+              icon={Briefcase}
+              title="Servicios Completados"
+              value={totalServices.toString()}
+              description="Total de trabajos finalizados."
+            />
+            <StatCard
+              icon={Star}
+              title="Calificación Promedio"
+              value={avgRating}
+              description="Sobre 5 estrellas."
+            />
+          </div>
+
+          {/* Sección inferior: Gráfico a la izquierda, Transacciones y Tarjetas a la derecha */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <div className="lg:col-span-8 flex flex-col gap-6">
-              <Card className="flex flex-col">
+            {/* Lado izquierdo: Gráfico de ingresos */}
+            <div className="lg:col-span-8">
+              <Card className="flex flex-col h-full">
                 <CardHeader>
                   <CardTitle>Ingresos</CardTitle>
                   <CardDescription>
@@ -182,49 +307,26 @@ export default function WalletPage() {
                   <InteractiveChart data={chartData} />
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader>
+            </div>
+
+            {/* Lado derecho: Transacciones y Tarjetas */}
+            <div className="lg:col-span-4 flex flex-col gap-6 h-full">
+              <Card className="flex flex-col h-[380px] pb-0">
+                <CardHeader className="shrink-0">
                   <CardTitle>Transacciones Recientes</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-6 overflow-y-auto">
                   {transactions.map((tx) => (
                     <TransactionItem key={tx.id} transaction={tx} />
                   ))}
                 </CardContent>
               </Card>
-            </div>
-            <div className="lg:col-span-4 flex flex-col gap-6">
-              <Card>
-                <CardHeader>
-                  <CardDescription>Saldo disponible</CardDescription>
-                  <CardTitle className="text-4xl font-bold">$125.000</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4">
-                  <Button>Retirar</Button>
-                  <Button variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Añadir fondos
-                  </Button>
-                </CardContent>
-              </Card>
-              <div className="space-y-6">
-                <StatCard
-                  icon={DollarSign}
-                  title="Ingresos Totales (6 meses)"
-                  value={`$${totalIncome.toLocaleString("es-CL")}`}
-                  description="Suma de todos los ingresos."
-                />
-                <StatCard
-                  icon={Briefcase}
-                  title="Servicios Completados"
-                  value={totalServices.toString()}
-                  description="Total de trabajos finalizados."
-                />
-                <StatCard
-                  icon={Star}
-                  title="Calificación Promedio"
-                  value={avgRating}
-                  description="Sobre 5 estrellas."
+              <div className="flex-1 min-h-0 h-[calc(50%-12px)]">
+                <CardList
+                  cards={cards}
+                  onRemoveCard={handleRemoveCard}
+                  onSetDefaultCard={handleSetDefaultCard}
+                  onAddCard={handleAddCard}
                 />
               </div>
             </div>

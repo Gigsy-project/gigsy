@@ -1,65 +1,64 @@
 "use client";
 
+import { useState } from "react";
 import { Header } from "@/components/header";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Clock,
   DollarSign,
   MapPin,
   Calendar as CalendarIcon,
   MoreVertical,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { cn } from "@/lib/utils";
+
+// Mock data
+interface Appointment {
+  id: number;
+  title: string;
+  date: Date;
+  time: string;
+  location: string;
+  status: "confirmed" | "pending" | "completed";
+  earnings: string;
+}
 
 export default function CalendarPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
 
-  // Mock data for appointments
-  const appointments = [
-    // Past appointment for demonstration
+  const appointments: Appointment[] = [
+    // Past
     {
       id: 9,
       title: "Instalación de software",
-      date: new Date(2025, 3, 15), // April 15, 2025 (past)
+      date: new Date(2025, 3, 15),
       time: "11:00 - 13:00",
       location: "Remoto",
       status: "completed",
       earnings: "$25.000 CLP",
     },
-    // Appointments for August 3rd, 2025
+    // August
     {
       id: 11,
       title: "Consultoría de diseño",
-      date: new Date(2025, 7, 3), // August 3, 2025
+      date: new Date(2025, 7, 3),
       time: "10:00 - 11:00",
       location: "Online",
       status: "confirmed",
@@ -68,17 +67,17 @@ export default function CalendarPage() {
     {
       id: 12,
       title: "Revisión de proyecto",
-      date: new Date(2025, 7, 3), // August 3, 2025
+      date: new Date(2025, 7, 3),
       time: "15:00 - 16:30",
       location: "Oficina del Cliente, Santiago",
       status: "confirmed",
       earnings: "$40.000 CLP",
     },
-    // Upcoming appointments from today (November 20, 2025) onwards
+    // Upcoming (Nov/Dec)
     {
       id: 13,
       title: "Limpieza de oficina",
-      date: new Date(2025, 10, 21), // November 21, 2025
+      date: new Date(2025, 10, 21),
       time: "09:00 - 12:00",
       location: "Providencia, Santiago",
       status: "confirmed",
@@ -87,7 +86,7 @@ export default function CalendarPage() {
     {
       id: 14,
       title: "Catering para evento",
-      date: new Date(2025, 10, 27), // November 27, 2025
+      date: new Date(2025, 10, 27),
       time: "18:00 - 22:00",
       location: "Las Condes, Santiago",
       status: "pending",
@@ -96,7 +95,7 @@ export default function CalendarPage() {
     {
       id: 15,
       title: "Mantenimiento de jardín",
-      date: new Date(2025, 11, 5), // December 5, 2025
+      date: new Date(2025, 11, 5),
       time: "10:00 - 14:00",
       location: "La Reina, Santiago",
       status: "confirmed",
@@ -105,240 +104,220 @@ export default function CalendarPage() {
     {
       id: 16,
       title: "Fotografía de producto",
-      date: new Date(2025, 11, 15), // December 15, 2025
+      date: new Date(2025, 11, 15),
       time: "13:00 - 17:00",
       location: "Estudio, Santiago",
       status: "pending",
       earnings: "$120.000 CLP",
     },
-    // Keeping some of the old data for variety
-    {
-      id: 1,
-      title: "Limpieza de casa",
-      date: new Date(2025, 4, 20), // May 20, 2025
-      time: "10:00 - 12:00",
-      location: "Providencia, Santiago",
-      status: "completed",
-      earnings: "$35.000 CLP",
-    },
-    {
-      id: 6,
-      title: "Jardinería",
-      date: new Date(2025, 5, 5), // June 5, 2025
-      time: "09:00 - 13:00",
-      location: "Lo Barnechea, Santiago",
-      status: "completed",
-      earnings: "$40.000 CLP",
-    },
   ];
 
-  // Filter appointments for the selected date
   const selectedDateAppointments = appointments.filter(
     (appointment) =>
       date &&
       appointment.date.getDate() === date.getDate() &&
       appointment.date.getMonth() === date.getMonth() &&
-      appointment.date.getFullYear() === date.getFullYear(),
+      appointment.date.getFullYear() === date.getFullYear()
   );
 
-  // Upcoming appointments (from today onwards)
   const upcomingAppointments = appointments
     .filter((appointment) => appointment.date >= new Date())
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  // Function to highlight dates with appointments
   const isDayWithAppointment = (day: Date) => {
     return appointments.some(
       (appointment) =>
         appointment.date.getDate() === day.getDate() &&
         appointment.date.getMonth() === day.getMonth() &&
-        appointment.date.getFullYear() === day.getFullYear(),
+        appointment.date.getFullYear() === day.getFullYear()
     );
   };
 
-  const AppointmentCard = ({
-    appointment,
-    showDate = false,
-  }: {
-    appointment: any;
-    showDate?: boolean;
-  }) => (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base font-medium">
-          {appointment.title}
-        </CardTitle>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-            <DropdownMenuItem>Reprogramar</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
-              Cancelar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </CardHeader>
-      <CardContent>
-        {showDate && (
-          <div className="flex items-center text-sm text-muted-foreground mb-2">
-            <CalendarIcon className="h-4 w-4 mr-2" />
-            <span>
-              {appointment.date.toLocaleDateString("es-ES", {
-                dateStyle: "long",
-              })}
-            </span>
-          </div>
-        )}
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Clock className="h-4 w-4 mr-2" />
-          <span>{appointment.time}</span>
-        </div>
-        <div className="flex items-center text-sm text-muted-foreground mt-1">
-          <MapPin className="h-4 w-4 mr-2" />
-          <span>{appointment.location}</span>
-        </div>
-        <Separator className="my-3" />
-        <div className="flex items-center justify-between">
-          <div className="flex items-center text-green-600">
-            <DollarSign className="h-4 w-4 mr-1" />
-            <span className="font-semibold">{appointment.earnings}</span>
-          </div>
-          <Badge
-            variant={appointment.status === "confirmed" ? "default" : "outline"}
-            className={
-              appointment.status === "confirmed"
-                ? "bg-green-100 text-green-800"
-                : ""
-            }
-          >
-            {appointment.status === "confirmed" ? "Confirmado" : "Pendiente"}
-          </Badge>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
+    <div className="flex min-h-screen w-full flex-col bg-gray-50/50">
       <Header />
-      <main className="flex-1 p-4 sm:px-6 sm:py-0 md:p-8">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">Calendario</h1>
-              <Breadcrumb className="hidden md:flex mt-1">
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <a href="/es/dashboard">Dashboard</a>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Calendario</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-            </div>
+      <main className="flex-1 container mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Mi Calendario</h1>
+            <p className="text-gray-500 mt-1">Gestiona tus servicios y disponibilidad</p>
           </div>
-          <ResizablePanelGroup
-            direction="horizontal"
-            className="rounded-lg border"
-          >
-            <ResizablePanel defaultSize={60}>
-              <div className="flex h-full flex-col p-6">
+          <div className="flex gap-3">
+            <Button variant="outline" className="bg-white">
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              Sincronizar
+            </Button>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Evento
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Sidebar: Calendar Picker & Upcoming */}
+          <div className="lg:col-span-4 space-y-6">
+            <Card className="border-0 shadow-sm ring-1 ring-gray-200 overflow-hidden">
+              <CardContent className="p-0">
                 <Calendar
                   mode="single"
                   selected={date}
                   onSelect={setDate}
-                  className="w-full"
+                  className="w-full p-4"
+                  classNames={{
+                    day_selected: "bg-blue-600 text-white hover:bg-blue-700 hover:text-white focus:bg-blue-600 focus:text-white",
+                    day_today: "bg-gray-100 text-gray-900 font-semibold",
+                  }}
                   modifiers={{
-                    withAppointment: (date) => isDayWithAppointment(date),
+                    hasAppointment: (date) => isDayWithAppointment(date),
                   }}
                   modifiersClassNames={{
-                    withAppointment: "relative",
+                    hasAppointment: "relative",
                   }}
                   components={{
-                    DayButton: (props) => {
-                      const hasAppointment = isDayWithAppointment(
-                        props.day.date,
-                      );
+                    DayContent: (props) => {
+                      const hasAppointment = isDayWithAppointment(props.date);
                       return (
-                        <Button
-                          {...props}
-                          variant="ghost"
-                          size="icon"
-                          className={`${props.className} relative`}
-                        >
-                          {props.day.date.getDate()}
+                        <div className="relative flex h-full w-full items-center justify-center">
+                          {props.date.getDate()}
                           {hasAppointment && (
-                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-primary" />
+                            <div className="absolute bottom-1 h-1 w-1 rounded-full bg-blue-500" />
                           )}
-                        </Button>
+                        </div>
                       );
                     },
                   }}
                 />
-                <Separator className="my-6" />
-                <div className="flex-1">
-                  <h2 className="text-lg font-semibold mb-4">
-                    Próximos servicios
-                  </h2>
-                  <div className="space-y-4">
-                    {upcomingAppointments.length > 0 ? (
-                      upcomingAppointments
-                        .slice(0, 3)
-                        .map((appointment) => (
-                          <AppointmentCard
-                            key={appointment.id}
-                            appointment={appointment}
-                            showDate
-                          />
-                        ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        No tienes servicios programados.
-                      </p>
-                    )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-sm ring-1 ring-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg">Próximos Servicios</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {upcomingAppointments.slice(0, 3).map((apt) => (
+                  <div key={apt.id} className="flex items-start gap-3 pb-4 border-b last:border-0 last:pb-0">
+                    <div className="flex flex-col items-center justify-center bg-blue-50 rounded-lg p-2 h-12 w-12 min-w-[3rem]">
+                      <span className="text-xs font-medium text-blue-600 uppercase">
+                        {apt.date.toLocaleDateString("es-ES", { month: "short" }).slice(0, 3)}
+                      </span>
+                      <span className="text-lg font-bold text-blue-700">
+                        {apt.date.getDate()}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-medium text-sm leading-none">{apt.title}</p>
+                      <p className="text-xs text-muted-foreground">{apt.time}</p>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </ResizablePanel>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={40}>
-              <div className="flex h-full flex-col p-6">
-                <h2 className="text-lg font-semibold mb-4">
-                  {date
-                    ? date.toLocaleDateString("es-ES", { dateStyle: "long" })
-                    : "Selecciona una fecha"}
-                </h2>
-                {selectedDateAppointments.length > 0 ? (
-                  <div className="space-y-4">
-                    {selectedDateAppointments.map((appointment) => (
-                      <AppointmentCard
-                        key={appointment.id}
-                        appointment={appointment}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-1 flex-col items-center justify-center text-center">
-                    <CalendarIcon className="w-12 h-12 text-muted-foreground mb-4" />
-                    <p className="text-sm text-muted-foreground">
-                      No hay nada programado para esta fecha.
-                    </p>
-                  </div>
+                ))}
+                {upcomingAppointments.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    No hay servicios próximos
+                  </p>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content: Agenda for Selected Date */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm ring-1 ring-gray-200">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-1 bg-blue-600 rounded-full" />
+                <h2 className="text-xl font-semibold text-gray-900 capitalize">
+                  {date ? date.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" }) : "Selecciona una fecha"}
+                </h2>
               </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+              <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
+                {selectedDateAppointments.length} Eventos
+              </Badge>
+            </div>
+
+            <div className="space-y-4">
+              {selectedDateAppointments.length > 0 ? (
+                selectedDateAppointments.map((appointment) => (
+                  <AppointmentCard key={appointment.id} appointment={appointment} />
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white rounded-xl border-2 border-dashed border-gray-200">
+                  <div className="bg-gray-50 p-4 rounded-full mb-4">
+                    <CalendarIcon className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900">Sin eventos programados</h3>
+                  <p className="text-sm text-gray-500 max-w-xs mt-1">
+                    No tienes servicios agendados para este día. ¡Disfruta tu tiempo libre o busca nuevas oportunidades!
+                  </p>
+                  <Button variant="outline" className="mt-6">
+                    Explorar Servicios
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </main>
     </div>
+  );
+}
+
+function AppointmentCard({ appointment }: { appointment: Appointment }) {
+  const statusConfig = {
+    confirmed: { label: "Confirmado", color: "bg-green-100 text-green-700 border-green-200" },
+    pending: { label: "Pendiente", color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
+    completed: { label: "Completado", color: "bg-gray-100 text-gray-700 border-gray-200" },
+  };
+
+  const config = statusConfig[appointment.status];
+
+  return (
+    <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group">
+      <div className="flex flex-col sm:flex-row">
+        {/* Left colored strip - visible on mobile */}
+        <div className={`h-2 sm:h-auto sm:w-1.5 ${appointment.status === 'confirmed' ? 'bg-green-500' : appointment.status === 'pending' ? 'bg-yellow-500' : 'bg-gray-400'}`} />
+        
+        <CardContent className="flex-1 p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="space-y-3 flex-1">
+              <div className="flex items-start justify-between sm:justify-start gap-3">
+                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {appointment.title}
+                </h3>
+                <Badge variant="outline" className={cn("capitalize sm:hidden", config.color)}>
+                  {config.label}
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-blue-500 shrink-0" />
+                  <span>{appointment.time}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-blue-500 shrink-0" />
+                  <span className="truncate">{appointment.location}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-start gap-4 pl-0 sm:pl-4 sm:border-l sm:border-gray-100">
+              <Badge variant="outline" className={cn("capitalize hidden sm:inline-flex", config.color)}>
+                {config.label}
+              </Badge>
+              <div className="text-right">
+                <p className="text-xs text-gray-500 mb-0.5">Ganancia estimada</p>
+                <p className="font-bold text-green-600 text-lg">{appointment.earnings}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+             <Button variant="ghost" size="sm" className="text-gray-500 h-8 hover:bg-transparent hover:underline">Detalles</Button>
+             <Button size="sm" className="bg-indigo-600 text-white hover:bg-indigo-700 h-8 shadow-sm border-transparent">Gestionar</Button>
+          </div>
+        </CardContent>
+      </div>
+    </Card>
   );
 }
