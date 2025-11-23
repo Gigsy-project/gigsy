@@ -28,6 +28,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { CalendarDayButton } from "@/components/ui/calendar";
+import type { DayButtonProps } from "react-day-picker";
 
 // Mock data
 interface Appointment {
@@ -133,6 +135,18 @@ export default function CalendarPage() {
     );
   };
 
+  const CustomDayButton = (props: DayButtonProps) => {
+    const hasAppointment = isDayWithAppointment(props.day.date);
+    return (
+      <div className="relative">
+        <CalendarDayButton {...props} />
+        {hasAppointment && (
+          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-blue-500" />
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-gray-50/50">
       <Header />
@@ -172,20 +186,10 @@ export default function CalendarPage() {
                     hasAppointment: (date) => isDayWithAppointment(date),
                   }}
                   modifiersClassNames={{
-                    hasAppointment: "relative",
+                    hasAppointment: "has-appointment",
                   }}
                   components={{
-                    DayContent: (props) => {
-                      const hasAppointment = isDayWithAppointment(props.date);
-                      return (
-                        <div className="relative flex h-full w-full items-center justify-center">
-                          {props.date.getDate()}
-                          {hasAppointment && (
-                            <div className="absolute bottom-1 h-1 w-1 rounded-full bg-blue-500" />
-                          )}
-                        </div>
-                      );
-                    },
+                    DayButton: CustomDayButton,
                   }}
                 />
               </CardContent>
