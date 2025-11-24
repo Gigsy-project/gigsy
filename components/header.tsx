@@ -80,7 +80,7 @@ export const Header = ({className}: {className?: string}) => {
               {/* Post Task Button - hidden on mobile */}
               <Button
                 onClick={() => router.push(ROUTES.requestService)}
-                className="hidden md:inline-flex bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full px-6 h-10 transition-colors shadow-sm"
+                className="hidden md:inline-flex bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full px-6 h-9 transition-colors shadow-sm"
               >
                 {t("nav.postTask")}
               </Button>
@@ -156,11 +156,11 @@ export const Header = ({className}: {className?: string}) => {
                   <span className="hidden sm:inline">{t("button.login")}</span>
                 </Button>
               ) : (
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="px-3 md:px-4 text-sm" onClick={() => router.push("/login")}>
+                <div className="hidden md:flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="px-3 md:px-4 text-sm rounded-full" onClick={() => router.push("/login")}>
                     {t("button.login")}
                   </Button>
-                  <Button size="sm" className="px-3 md:px-4 text-sm" onClick={() => router.push("/register")}>
+                  <Button size="sm" className="px-3 md:px-4 text-sm rounded-full" onClick={() => router.push("/register")}>
                     {t("button.register")}
                   </Button>
                 </div>
@@ -176,83 +176,86 @@ export const Header = ({className}: {className?: string}) => {
           <SheetHeader>
             <SheetTitle className="text-left">Menu</SheetTitle>
           </SheetHeader>
-          <div className="mt-6 flex flex-col gap-1">
-            {/* Main Navigation Links */}
-            {mainNavLinks.map((link) => {
-              if (link.href === null) {
-                // How it works - no link, just text
+          <div className="mt-6 flex flex-col h-[calc(100vh-120px)]">
+            <div className="flex flex-col gap-1 flex-1 overflow-y-auto">
+              {/* Main Navigation Links */}
+              {mainNavLinks.map((link) => {
+                if (link.href === null) {
+                  // How it works - no link, just text
+                  return (
+                    <div
+                      key={link.label}
+                      className="flex items-center px-4 py-3 text-base font-medium rounded-lg text-gray-700 cursor-default"
+                    >
+                      {link.label}
+                    </div>
+                  )
+                }
                 return (
-                  <div
-                    key={link.label}
-                    className="flex items-center px-4 py-3 text-base font-medium rounded-lg text-gray-700 cursor-default"
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center px-4 py-3 text-base font-medium rounded-lg transition-colors ${
+                      pathname === link.href || (link.href === ROUTES.browseServices && pathname?.startsWith(ROUTES.browseServices + "/"))
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
                   >
                     {link.label}
-                  </div>
+                  </Link>
                 )
-              }
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center px-4 py-3 text-base font-medium rounded-lg transition-colors ${
-                    pathname === link.href || (link.href === ROUTES.browseServices && pathname?.startsWith(ROUTES.browseServices + "/"))
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
-            
-            {/* Post Task Button in Mobile Menu */}
-            <Button
-              onClick={() => {
-                router.push(ROUTES.requestService)
-                setMobileMenuOpen(false)
-              }}
-              className="mt-4 mx-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full h-11"
-            >
-              {t("nav.postTask")}
-            </Button>
+              })}
+              
+              {/* Post Task Button in Mobile Menu */}
+              <Button
+                onClick={() => {
+                  router.push(ROUTES.requestService)
+                  setMobileMenuOpen(false)
+                }}
+                className="mt-4 mx-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full h-11"
+              >
+                {t("nav.postTask")}
+              </Button>
 
-            {/* User Account Links (if logged in) */}
-            {isLoggedIn && (
-              <>
-                <div className="mt-6 pt-6 border-t">
-                  <p className="px-4 text-xs font-semibold text-gray-500 uppercase mb-2">{t("nav.account")}</p>
-                  {navigationItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              {/* User Account Links (if logged in) */}
+              {isLoggedIn && (
+                <>
+                  <div className="mt-6 pt-6 border-t">
+                    <p className="px-4 text-xs font-semibold text-gray-500 uppercase mb-2">{t("nav.account")}</p>
+                    {navigationItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
+                        <item.icon className="h-5 w-5 mr-3" />
+                        {item.label}
+                      </Link>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleLogout()
+                        setMobileMenuOpen(false)
+                      }}
+                      className="w-full flex items-center px-4 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >
-                      <item.icon className="h-5 w-5 mr-3" />
-                      {item.label}
-                    </Link>
-                  ))}
-                  <button
-                    onClick={() => {
-                      handleLogout()
-                      setMobileMenuOpen(false)
-                    }}
-                    className="w-full flex items-center px-4 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <LogOut className="h-5 w-5 mr-3" />
-                    {t("button.logout")}
-                  </button>
-                </div>
-              </>
-            )}
+                      <LogOut className="h-5 w-5 mr-3" />
+                      {t("button.logout")}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
 
-            {/* Login/Register Links (if not logged in) */}
+            {/* Login/Register Links (if not logged in) - Fixed at bottom */}
             {!isLoggedIn && !isGuest && (
-              <div className="mt-6 pt-6 border-t flex flex-col gap-2 px-4">
+              <div className="mt-auto pt-6 border-t flex flex-col gap-2 px-4 pb-4">
                 <Button
                   variant="outline"
-                  className="w-full h-11"
+                  className="w-full h-11 rounded-full"
                   onClick={() => {
                     router.push("/login")
                     setMobileMenuOpen(false)
@@ -261,7 +264,7 @@ export const Header = ({className}: {className?: string}) => {
                   {t("button.login")}
                 </Button>
                 <Button
-                  className="w-full h-11"
+                  className="w-full h-11 rounded-full"
                   onClick={() => {
                     router.push("/register")
                     setMobileMenuOpen(false)

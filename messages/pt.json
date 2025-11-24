@@ -121,7 +121,33 @@
     "favorites": "Favoritos",
     "edit": "Editar perfil",
     "switch": "Mudar para",
-    "switchInfo": "Não se preocupe, você pode alternar entre os dois perfis a qualquer momento no aplicativo."
+    "switchInfo": "Não se preocupe, você pode alternar entre os dois perfis a qualquer momento no aplicativo.",
+    "back": "Voltar",
+    "title": "Perfil",
+    "available": "Disponível",
+    "identityVerified": "Identidade verificada",
+    "speaksSpanish": "Fala espanhol",
+    "statistics": "Estatísticas",
+    "servicesCompleted": "Serviços concluídos",
+    "rating": "Avaliação",
+    "totalReviews": "Total de avaliações",
+    "memberSince": "Membro desde",
+    "professionalSummary": "Resumo Profissional",
+    "workExperience": "Experiência Profissional",
+    "educationCertifications": "Educação e Certificações",
+    "servicesOffered": "Serviços Oferecidos",
+    "request": "Solicitar",
+    "clientReviews": "Avaliações de Clientes",
+    "basedOnReviews": "Baseado em {count} avaliações",
+    "viewAllReviews": "Ver todas as avaliações",
+    "favoriteProviders": "Provedores Favoritos",
+    "remove": "Remover",
+    "contact": "Contatar",
+    "noFavorites": "Você não tem provedores favoritos",
+    "noFavoritesDesc": "Salve seus profissionais preferidos para acesso rápido no futuro.",
+    "exploreProviders": "Explorar provedores",
+    "lastService": "Último serviço",
+    "reviewsCount": "{count} avaliações"
   },
   "register": {
     "title": "Criar uma conta",
@@ -169,7 +195,104 @@
     "description": "Aqui você pode obter assistência com problemas relacionados à plataforma ou com outros usuários.",
     "support": "Suporte GigSy",
     "online": "Online",
-    "message": "Escreva sua mensagem..."
+    "message": "Escreva sua mensagem...",
+    "back": "Voltar",
+    "helpCenter": "Central de Ajuda",
+    "subtitleDescription": "Encontre respostas para suas perguntas ou entre em contato com nossa equipe de suporte",
+    "searchPlaceholder": "Buscar na central de ajuda...",
+    "searchLabel": "Buscar na central de ajuda",
+    "searchResults": "Resultados da busca",
+    "articles": "Artigos",
+    "faqs": "Perguntas frequentes",
+    "noResults": "Nenhum resultado encontrado para",
+    "contactSupport": "Contatar suporte",
+    "liveChat": "Chat ao vivo",
+    "immediateResponse": "Resposta imediata",
+    "email": "Email",
+    "articlesCount": "artigos",
+    "views": "visualizações",
+    "helpful": "úteis",
+    "peopleFoundHelpful": "pessoas acharam isso útil",
+    "wasHelpful": "Este artigo foi útil?",
+    "yes": "Sim",
+    "no": "Não",
+    "needMoreHelp": "Precisa de mais ajuda?",
+    "contactSupportTitle": "Contatar suporte",
+    "chooseContactMethod": "Escolha a forma que preferir para nos contatar",
+    "available247": "Disponível 24/7",
+    "response24h": "Resposta em 24 horas",
+    "writeMessage": "Escreva sua mensagem...",
+    "sendMessage": "Enviar mensagem",
+    "categories": {
+      "gettingStarted": {
+        "title": "Primeiros Passos",
+        "description": "Aprenda o básico para usar AidMarkt"
+      },
+      "services": {
+        "title": "Serviços",
+        "description": "Tudo sobre oferecer e solicitar serviços"
+      },
+      "payments": {
+        "title": "Pagamentos e Faturamento",
+        "description": "Informações sobre pagamentos seguros"
+      },
+      "safety": {
+        "title": "Segurança",
+        "description": "Mantenha-se seguro na plataforma"
+      }
+    },
+    "articles": {
+      "createAccount": {
+        "title": "Como criar uma conta",
+        "content": "Para criar uma conta no AidMarkt, siga estes passos:\n\n1. Clique em 'Registrar' na página principal\n2. Complete seus dados pessoais\n3. Verifique seu email\n4. Envie os documentos necessários\n5. Pronto! Agora você pode usar a plataforma"
+      },
+      "profileSetup": {
+        "title": "Configurar seu perfil",
+        "content": "Um perfil completo ajuda você a conseguir mais trabalhos:\n\n• Envie uma foto profissional\n• Descreva suas habilidades\n• Adicione sua experiência\n• Defina sua disponibilidade\n• Complete a verificação de identidade"
+      },
+      "requestService": {
+        "title": "Como solicitar um serviço",
+        "content": "Para solicitar ajuda:\n\n1. Clique em 'Buscar ajuda'\n2. Descreva detalhadamente o que você precisa\n3. Defina data, hora e localização\n4. Defina seu orçamento\n5. Publique sua solicitação\n6. Revise as ofertas que receber"
+      },
+      "offerService": {
+        "title": "Como oferecer serviços",
+        "content": "Para gerar renda ajudando:\n\n1. Complete seu perfil profissional\n2. Defina seus serviços e tarifas\n3. Estabeleça sua disponibilidade\n4. Responda a solicitações relevantes\n5. Negocie termos se necessário\n6. Confirme o trabalho"
+      },
+      "paymentProcess": {
+        "title": "Como funcionam os pagamentos",
+        "content": "AidMarkt garante pagamentos seguros:\n\n• O dinheiro é retido até a conclusão do serviço\n• O cliente confirma a satisfação\n• O pagamento é liberado para o prestador\n• Comissão de 10% por transação\n• Pagamentos processados em 24-48 horas"
+      },
+      "withdrawMoney": {
+        "title": "Sacar dinheiro",
+        "content": "Para sacar seus ganhos:\n\n1. Vá para sua carteira\n2. Clique em 'Sacar'\n3. Selecione seu método de pagamento\n4. Confirme o valor\n5. O dinheiro chegará em 1-3 dias úteis"
+      },
+      "safetyTips": {
+        "title": "Dicas de segurança",
+        "content": "Para sua segurança:\n\n• Sempre verifique a identidade do usuário\n• Comunique-se apenas através da plataforma\n• Denuncie comportamentos suspeitos\n• Não compartilhe informações pessoais sensíveis\n• Confie em seus instintos"
+      }
+    },
+    "faqItems": {
+      "faq1": {
+        "question": "Como posso alterar minha senha?",
+        "answer": "Vá para seu perfil, clique em 'Editar perfil' e depois em 'Alterar senha'. Digite sua senha atual e a nova."
+      },
+      "faq2": {
+        "question": "O que fazer se não receber respostas à minha solicitação?",
+        "answer": "Certifique-se de que sua solicitação seja clara e detalhada. Você também pode ajustar o orçamento ou ampliar a área de busca."
+      },
+      "faq3": {
+        "question": "Quanto tempo leva para processar um pagamento?",
+        "answer": "Os pagamentos são processados automaticamente 24 horas após o cliente confirmar a satisfação do serviço."
+      },
+      "faq4": {
+        "question": "Posso cancelar um serviço já confirmado?",
+        "answer": "Sim, mas deve ser feito com pelo menos 24 horas de antecedência. Cancelamentos tardios podem afetar sua avaliação."
+      },
+      "faq5": {
+        "question": "Como denuncio um problema com outro usuário?",
+        "answer": "Use o botão 'Denunciar' no perfil do usuário ou entre em contato diretamente com o suporte através do chat."
+      }
+    }
   },
   "calendar": {
     "title": "Calendário",
@@ -178,6 +301,25 @@
     "noServices": "Não há serviços agendados para esta data",
     "confirmed": "Confirmado",
     "pending": "Pendente"
+  },
+  "calendarPage": {
+    "title": "Meu Calendário",
+    "subtitle": "Gerencie seus serviços e disponibilidade",
+    "sync": "Sincronizar",
+    "newEvent": "Novo Evento",
+    "upcomingServices": "Próximos Serviços",
+    "noUpcoming": "Não há serviços próximos",
+    "selectDate": "Selecione uma data",
+    "events": "Eventos",
+    "noEventsScheduled": "Sem eventos programados",
+    "noServicesDate": "Você não tem serviços agendados para este dia. Aproveite seu tempo livre ou procure novas oportunidades!",
+    "exploreServices": "Explorar Serviços",
+    "estimatedEarnings": "Ganho estimado",
+    "confirmed": "Confirmado",
+    "pending": "Pendente",
+    "completed": "Completado",
+    "manage": "Gerenciar",
+    "details": "Detalhes"
   },
   "wallet": {
     "title": "Carteira",
@@ -190,18 +332,69 @@
     "transactions": "Histórico de transações",
     "chart": "Renda por mês"
   },
+  "walletPage": {
+    "title": "Carteira",
+    "dashboard": "Dashboard",
+    "exportReport": "Exportar Relatório",
+    "availableBalance": "Saldo disponível",
+    "withdraw": "Retirar",
+    "add": "Adicionar",
+    "totalIncome": "Renda Total (6 meses)",
+    "totalIncomeDesc": "Soma de toda a renda.",
+    "completedServices": "Serviços Concluídos",
+    "completedServicesDesc": "Total de trabalhos finalizados.",
+    "averageRating": "Avaliação Média",
+    "averageRatingDesc": "De 5 estrelas.",
+    "income": "Renda",
+    "incomeDesc": "Visualização da sua renda nos últimos 6 meses.",
+    "recentTransactions": "Transações Recentes",
+    "transactionHistory": "Histórico de transações",
+    "paid": "Pago",
+    "completed": "Concluído",
+    "processed": "Processado",
+    "pending": "Pendente",
+    "myCards": "Minhas Cartas",
+    "noCardsAssociated": "Você não tem cartas associadas",
+    "addCardDescription": "Adicione um cartão de débito ou crédito para fazer pagamentos de forma rápida e segura.",
+    "addCard": "Adicionar carta",
+    "card": "Carta",
+    "number": "Número",
+    "holder": "Titular",
+    "expiry": "Vencimento",
+    "status": "Status",
+    "default": "Padrão",
+    "secondary": "Secundária",
+    "setAsDefault": "Definir como padrão",
+    "delete": "Excluir",
+    "servicesCompleted": "Serviços concluídos",
+    "averageRatingLabel": "Avaliação média",
+    "incomeLabel": "Renda",
+    "servicesLabel": "Serviços",
+    "ratingLabel": "Avaliação"
+  },
   "messages": {
     "title": "Mensagens",
+    "back": "Voltar",
     "helpCenter": "Central de Ajuda 24/7",
     "select": "Selecione uma conversa",
+    "selectDescription": "Escolha um chat para ver as mensagens",
+    "selectServiceDescription": "Escolha um chat para ver os detalhes do serviço",
     "details": "Detalhes do serviço",
     "write": "Escreva uma mensagem...",
     "date": "Data e hora",
     "location": "Localização",
     "price": "Preço",
     "description": "Descrição",
+    "profileOf": "Perfil de",
     "accept": "Aceitar serviço",
-    "counter": "Fazer contraproposta"
+    "counter": "Fazer contraproposta",
+    "photo": "Foto",
+    "file": "Arquivo",
+    "attachFile": "Anexar arquivo",
+    "sendMessage": "Enviar mensagem",
+    "confirmed": "Confirmado",
+    "pending": "Pendente",
+    "noDetailsAvailable": "Não há detalhes disponíveis"
   },
   "how": {
     "title": "Como funciona?",
@@ -261,6 +454,104 @@
   "oferente": {
     "title": "Informações de serviço",
     "subtitle": "Conte-nos quais serviços você pode oferecer e sua disponibilidade"
+  },
+  "requestService": {
+    "backToHome": "Voltar ao início",
+    "publishTask": "Publicar uma tarefa",
+    "step1": "Informações básicas",
+    "step2": "Detalhes do projeto",
+    "step3": "Pagamento e confirmação",
+    "stepTitle1": "Vamos começar com o básico",
+    "stepTitle2": "Orçamento e descrição",
+    "stepTitle3": "Pagamento seguro",
+    "whatNeed": "O que você precisa que seja feito?",
+    "whatNeedDesc": "Descreva sua tarefa em poucas palavras para que os provedores possam entender rapidamente o que você precisa.",
+    "whatNeedPlaceholder": "ex. Ajuda para mover meu sofá do segundo andar",
+    "whenNeed": "Quando você precisa que seja feito?",
+    "whenNeedDesc": "Escolha a opção que melhor se adapta à sua disponibilidade.",
+    "dateExact": "Data específica",
+    "dateExactDesc": "Preciso que seja em um dia concreto",
+    "dateBefore": "Antes da data",
+    "dateBeforeDesc": "Tenho uma data limite",
+    "dateFlexible": "Sou flexível",
+    "dateFlexibleDesc": "Podemos coordenar juntos",
+    "dateFlexibleGood": "Excelente escolha!",
+    "dateFlexibleGoodDesc": "Ao ser flexível com as datas, é mais provável que você receba propostas de provedores e possa negociar melhores preços.",
+    "selectExactDate": "Selecione a data específica",
+    "selectExactDatePlaceholder": "Que dia você precisa do serviço?",
+    "selectBeforeDate": "Data limite para concluir",
+    "selectBeforeDatePlaceholder": "Antes de que data você precisa que esteja pronto?",
+    "needSpecificTime": "Preciso de um horário específico do dia",
+    "timeMorning": "Manhã",
+    "timeMorningSub": "Antes das 10h",
+    "timeMidday": "Meio-dia",
+    "timeMiddaySub": "10h - 14h",
+    "timeAfternoon": "Tarde",
+    "timeAfternoonSub": "14h - 18h",
+    "timeEvening": "Noite",
+    "timeEveningSub": "Depois das 18h",
+    "budget": "Qual é o seu orçamento?",
+    "budgetDesc": "Indique um orçamento aproximado. Lembre-se de que você sempre pode negociar o preço final com o provedor.",
+    "budgetLabel": "Orçamento estimado (CLP)",
+    "budgetPlaceholder": "50.000",
+    "budgetNote": "Os provedores poderão fazer contrapropostas",
+    "describeProject": "Descreva seu projeto",
+    "describeProjectDesc": "Forneça todos os detalhes importantes para que os provedores entendam exatamente o que você precisa.",
+    "describeProjectPlaceholder": "Por exemplo: Preciso de ajuda para mover um sofá de 3 lugares do meu apartamento no segundo andar até minha nova casa. O sofá pesa aproximadamente 80kg e preciso que seja movido no sábado de manhã...",
+    "tip1": "Inclua dimensões se aplicável",
+    "tip2": "Mencione peso ou dificuldade",
+    "tip3": "Especifique duração estimada",
+    "whereWork": "Onde o trabalho será realizado?",
+    "whereWorkDesc": "Selecione se você precisa que o provedor vá a um local específico ou se o trabalho pode ser feito online.",
+    "locationPresential": "Presencial",
+    "locationPresentialDesc": "O provedor deve ir a um local específico",
+    "locationOnline": "Online",
+    "locationOnlineDesc": "O trabalho pode ser feito remotamente",
+    "addressLabel": "Endereço onde o trabalho será realizado",
+    "addressPlaceholder": "ex. Av. Paulista 1234, São Paulo, SP",
+    "addressNote": "Esta informação será compartilhada apenas com provedores selecionados",
+    "addImages": "Adicionar imagens",
+    "addImagesOptional": "Opcional",
+    "addImagesDesc": "As imagens ajudam os provedores a entender melhor seu projeto e fazer propostas mais precisas.",
+    "paymentTitle": "Pagamento seguro e protegido",
+    "paymentDesc": "Sua solicitação será publicada imediatamente após confirmar o pagamento.",
+    "paymentDesc2": "Você só paga quando o trabalho estiver concluído à sua satisfação.",
+    "orderSummary": "Resumo do seu pedido",
+    "publishCost": "Custo de publicação",
+    "paymentProtection": "Proteção de pagamento incluída",
+    "free": "Grátis",
+    "choosePayment": "Escolha seu método de pagamento",
+    "paymentCard": "Cartão de crédito/débito",
+    "paymentCardDesc": "Visa, Mastercard, American Express",
+    "paymentTransfer": "Transferência bancária",
+    "paymentTransferDesc": "Pagamento direto da sua conta",
+    "paymentProtected": "Pagamento 100% protegido",
+    "paymentProtectedDesc": "Seu dinheiro está completamente seguro conosco. Mantemos seu pagamento em custódia e só o liberamos ao provedor quando você confirmar que o trabalho foi concluído satisfatoriamente.",
+    "paymentSecure": "Pagamento seguro",
+    "paymentRefund": "Reembolso garantido",
+    "paymentSupport": "Suporte 24/7",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "completeRegister": "Completar registro para publicar",
+    "publishMyTask": "Publicar minha tarefa",
+    "successTitle": "Solicitação enviada com sucesso!",
+    "successDesc": "Sua tarefa foi publicada e em breve você começará a receber propostas de provedores qualificados.",
+    "nextSteps": "Próximos passos",
+    "receiveProposals": "Receba propostas",
+    "receiveProposalsDesc": "Os provedores começarão a enviar suas ofertas",
+    "compareChat": "Compare e converse",
+    "compareChatDesc": "Revise perfis e converse com os candidatos",
+    "chooseConfirm": "Escolha e confirme",
+    "chooseConfirmDesc": "Selecione o melhor provedor e agende o trabalho",
+    "viewActiveTasks": "Ver minhas tarefas ativas",
+    "paymentProtectedNote": "Seu pagamento está protegido até que o trabalho esteja concluído"
+  },
+  "common": {
+    "back": "Voltar",
+    "loading": "Carregando...",
+    "optional": "Opcional",
+    "step": "Passo",
+    "of": "de"
   }
 }
 

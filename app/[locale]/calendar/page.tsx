@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Header } from "@/components/header";
+import { useTranslations } from "next-intl";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
@@ -43,6 +44,7 @@ interface Appointment {
 }
 
 export default function CalendarPage() {
+  const t = useTranslations("calendarPage");
   const [date, setDate] = useState<Date | undefined>(new Date());
 
   const appointments: Appointment[] = [
@@ -153,17 +155,17 @@ export default function CalendarPage() {
       <main className="flex-1 container mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Mi Calendario</h1>
-            <p className="text-gray-500 mt-1">Gestiona tus servicios y disponibilidad</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
+            <p className="text-gray-500 mt-1">{t("subtitle")}</p>
           </div>
           <div className="flex gap-3">
             <Button variant="outline" className="bg-white">
               <CalendarIcon className="mr-2 h-4 w-4" />
-              Sincronizar
+              {t("sync")}
             </Button>
             <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
               <Plus className="mr-2 h-4 w-4" />
-              Nuevo Evento
+              {t("newEvent")}
             </Button>
           </div>
         </div>
@@ -197,7 +199,7 @@ export default function CalendarPage() {
 
             <Card className="border-0 shadow-sm ring-1 ring-gray-200">
               <CardHeader>
-                <CardTitle className="text-lg">Próximos Servicios</CardTitle>
+                <CardTitle className="text-lg">{t("upcomingServices")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {upcomingAppointments.slice(0, 3).map((apt) => (
@@ -218,7 +220,7 @@ export default function CalendarPage() {
                 ))}
                 {upcomingAppointments.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-2">
-                    No hay servicios próximos
+                    {t("noUpcoming")}
                   </p>
                 )}
               </CardContent>
@@ -231,11 +233,11 @@ export default function CalendarPage() {
               <div className="flex items-center gap-2">
                 <div className="h-8 w-1 bg-blue-600 rounded-full" />
                 <h2 className="text-xl font-semibold text-gray-900 capitalize">
-                  {date ? date.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" }) : "Selecciona una fecha"}
+                  {date ? date.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" }) : t("selectDate")}
                 </h2>
               </div>
               <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
-                {selectedDateAppointments.length} Eventos
+                {selectedDateAppointments.length} {t("events")}
               </Badge>
             </div>
 
@@ -249,12 +251,12 @@ export default function CalendarPage() {
                   <div className="bg-gray-50 p-4 rounded-full mb-4">
                     <CalendarIcon className="h-8 w-8 text-gray-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900">Sin eventos programados</h3>
+                  <h3 className="text-lg font-medium text-gray-900">{t("noEventsScheduled")}</h3>
                   <p className="text-sm text-gray-500 max-w-xs mt-1">
-                    No tienes servicios agendados para este día. ¡Disfruta tu tiempo libre o busca nuevas oportunidades!
+                    {t("noServicesDate")}
                   </p>
                   <Button variant="outline" className="mt-6">
-                    Explorar Servicios
+                    {t("exploreServices")}
                   </Button>
                 </div>
               )}
@@ -267,10 +269,11 @@ export default function CalendarPage() {
 }
 
 function AppointmentCard({ appointment }: { appointment: Appointment }) {
+  const t = useTranslations("calendarPage");
   const statusConfig = {
-    confirmed: { label: "Confirmado", color: "bg-green-100 text-green-700 border-green-200" },
-    pending: { label: "Pendiente", color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
-    completed: { label: "Completado", color: "bg-gray-100 text-gray-700 border-gray-200" },
+    confirmed: { label: t("confirmed"), color: "bg-green-100 text-green-700 border-green-200" },
+    pending: { label: t("pending"), color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
+    completed: { label: t("completed"), color: "bg-gray-100 text-gray-700 border-gray-200" },
   };
 
   const config = statusConfig[appointment.status];
@@ -310,15 +313,15 @@ function AppointmentCard({ appointment }: { appointment: Appointment }) {
                 {config.label}
               </Badge>
               <div className="text-right">
-                <p className="text-xs text-gray-500 mb-0.5">Ganancia estimada</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t("estimatedEarnings")}</p>
                 <p className="font-bold text-green-600 text-lg">{appointment.earnings}</p>
               </div>
             </div>
           </div>
           
           <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-             <Button variant="ghost" size="sm" className="text-gray-500 h-8 hover:bg-transparent hover:underline">Detalles</Button>
-             <Button size="sm" className="bg-indigo-600 text-white hover:bg-indigo-700 h-8 shadow-sm border-transparent">Gestionar</Button>
+             <Button variant="ghost" size="sm" className="text-gray-500 h-8 hover:bg-transparent hover:underline">{t("details")}</Button>
+             <Button size="sm" className="bg-indigo-600 text-white hover:bg-indigo-700 h-8 shadow-sm border-transparent">{t("manage")}</Button>
           </div>
         </CardContent>
       </div>

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { Header } from "@/components/header";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -25,8 +26,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Briefcase,
-  Calendar,
-  ChevronDown,
   Edit,
   Globe,
   Heart,
@@ -43,7 +42,6 @@ import {
 } from "lucide-react";
 import { ProviderProfileModal } from "@/components/provider-profile-modal";
 import type { Provider } from "@/lib/types";
-import { Progress } from "@/components/ui/progress";
 
 // Mock data for CV sections
 const experienceData = [
@@ -169,6 +167,7 @@ const favoriteProviders: Provider[] = [
 ];
 
 export default function ProfilePage() {
+  const t = useTranslations("profile");
   const [activeTab, setActiveTab] = useState("about");
   const router = useRouter();
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(
@@ -213,12 +212,12 @@ export default function ProfilePage() {
                   onClick={() => router.back()}
                   className="cursor-pointer hover:text-primary transition-colors"
                 >
-                  Volver
+                  {t("back")}
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Perfil</BreadcrumbPage>
+                <BreadcrumbPage>{t("title")}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -252,11 +251,12 @@ const ProfileSidebar = ({
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }) => {
+  const t = useTranslations("profile");
   const navItems = [
-    { id: "about", label: "Acerca de mí", icon: User },
-    { id: "services", label: "Servicios", icon: Briefcase },
-    { id: "reviews", label: "Reseñas", icon: Star },
-    { id: "favorites", label: "Favoritos", icon: Heart },
+    { id: "about", label: t("about"), icon: User },
+    { id: "services", label: t("services"), icon: Briefcase },
+    { id: "reviews", label: t("reviews"), icon: Star },
+    { id: "favorites", label: t("favorites"), icon: Heart },
   ];
   return (
     <Card className="sticky top-24">
@@ -278,7 +278,7 @@ const ProfileSidebar = ({
               variant="outline"
               className="text-xs text-green-600 border-green-600/50 ml-2"
             >
-              Disponible
+              {t("available")}
             </Badge>
           </div>
           <div className="flex flex-wrap justify-center gap-2 mt-4">
@@ -287,20 +287,20 @@ const ProfileSidebar = ({
               className="flex items-center gap-1.5 py-1 px-2.5"
             >
               <Shield className="h-4 w-4 text-green-600" />
-              <span>Identidad verificada</span>
+              <span>{t("identityVerified")}</span>
             </Badge>
             <Badge
               variant="outline"
               className="flex items-center gap-1.5 py-1 px-2.5"
             >
               <Globe className="h-4 w-4 text-purple-600" />
-              <span>Habla español</span>
+              <span>{t("speaksSpanish")}</span>
             </Badge>
           </div>
           <Button asChild className="mt-6 w-full">
             <Link href="/profile/edit">
               <Edit className="h-4 w-4 mr-2" />
-              Editar perfil
+              {t("edit")}
             </Link>
           </Button>
         </div>
@@ -309,12 +309,22 @@ const ProfileSidebar = ({
             {navItems.map((item) => (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                tabIndex={0}
+                aria-label={item.label}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setActiveTab(item.id);
+                  }
+                }}
+                className={[
+                  "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all",
                   activeTab === item.id
                     ? "bg-muted text-foreground border border-border"
                     : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                }`}
+                ].join(" ")}
               >
                 <item.icon className="h-5 w-5" />
                 <span>{item.label}</span>
@@ -323,27 +333,27 @@ const ProfileSidebar = ({
           </nav>
         </div>
         <div className="mt-8 pt-8 border-t">
-          <h3 className="text-lg font-semibold mb-4">Estadísticas</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("statistics")}</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">
-                Servicios completados
+                {t("servicesCompleted")}
               </span>
               <span className="font-bold">12</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Calificación</span>
+              <span className="text-muted-foreground">{t("rating")}</span>
               <div className="flex items-center gap-1">
                 <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                 <span className="font-bold">4.8</span>
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Total reseñas</span>
+              <span className="text-muted-foreground">{t("totalReviews")}</span>
               <span className="font-bold">8</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Miembro desde</span>
+              <span className="text-muted-foreground">{t("memberSince")}</span>
               <span className="font-bold">2023</span>
             </div>
           </div>
@@ -383,11 +393,13 @@ const TimelineItem = ({
   </div>
 );
 
-const AboutSection = () => (
+const AboutSection = () => {
+  const t = useTranslations("profile");
+  return (
   <div className="space-y-8">
     <Card>
       <CardHeader>
-        <CardTitle>Resumen Profesional</CardTitle>
+        <CardTitle>{t("professionalSummary")}</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-muted-foreground leading-relaxed">
@@ -401,7 +413,7 @@ const AboutSection = () => (
 
     <Card>
       <CardHeader>
-        <CardTitle>Habilidades</CardTitle>
+        <CardTitle>{t("skills")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-2">
@@ -426,7 +438,7 @@ const AboutSection = () => (
 
     <Card>
       <CardHeader>
-        <CardTitle>Experiencia Laboral</CardTitle>
+        <CardTitle>{t("workExperience")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -447,7 +459,7 @@ const AboutSection = () => (
 
     <Card>
       <CardHeader>
-        <CardTitle>Educación y Certificaciones</CardTitle>
+        <CardTitle>{t("educationCertifications")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -479,12 +491,15 @@ const AboutSection = () => (
       </CardContent>
     </Card>
   </div>
-);
+  );
+};
 
-const ServicesSection = () => (
+const ServicesSection = () => {
+  const t = useTranslations("profile");
+  return (
   <Card>
     <CardHeader>
-      <CardTitle>Servicios Ofrecidos</CardTitle>
+      <CardTitle>{t("servicesOffered")}</CardTitle>
       <CardDescription>
         Estos son los servicios que Juan Pérez puede realizar.
       </CardDescription>
@@ -511,7 +526,7 @@ const ServicesSection = () => (
           <CardHeader>
             <h3 className="font-semibold text-lg">{service.title}</h3>
           </CardHeader>
-          <CardContent className="flex-grow">
+          <CardContent className="grow">
             <p className="text-muted-foreground text-sm">{service.desc}</p>
           </CardContent>
           <CardFooter className="flex items-center justify-between bg-muted/50 py-3 px-4 rounded-b-lg">
@@ -520,33 +535,38 @@ const ServicesSection = () => (
               <span>{service.price}</span>
               <span className="text-xs text-muted-foreground ml-1">/hr</span>
             </div>
-            <Button size="sm">Solicitar</Button>
+            <Button size="sm">{t("request")}</Button>
           </CardFooter>
         </Card>
       ))}
     </CardContent>
   </Card>
-);
+  );
+};
 
-const ReviewsSection = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Reseñas de Clientes</CardTitle>
-      <div className="flex items-center gap-2 pt-1">
-        <div className="flex items-center">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`h-5 w-5 ${4.8 > i ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground"}`}
-            />
-          ))}
+const ReviewsSection = () => {
+  const t = useTranslations("profile");
+  const starsId = useId();
+  const starIds = Array.from({ length: 5 }, (_, i) => `${starsId}-star-${i}`);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("clientReviews")}</CardTitle>
+        <div className="flex items-center gap-2 pt-1">
+          <div className="flex items-center">
+            {starIds.map((starKey, i) => (
+              <Star
+                key={starKey}
+                className={`h-5 w-5 ${4.8 > i ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground"}`}
+              />
+            ))}
+          </div>
+          <span className="font-bold text-lg">4.8</span>
+          <span className="text-muted-foreground text-sm">
+            ({t("basedOnReviews", { count: 8 })})
+          </span>
         </div>
-        <span className="font-bold text-lg">4.8</span>
-        <span className="text-muted-foreground text-sm">
-          (Basado en 8 reseñas)
-        </span>
-      </div>
-    </CardHeader>
+      </CardHeader>
     <CardContent className="space-y-6">
       <ReviewItem
         name="María González"
@@ -572,11 +592,12 @@ const ReviewsSection = () => (
     </CardContent>
     <CardFooter>
       <Button variant="outline" className="w-full">
-        Ver todas las reseñas
+        {t("viewAllReviews")}
       </Button>
     </CardFooter>
   </Card>
-);
+  );
+};
 
 const ReviewItem = ({
   name,
@@ -590,37 +611,42 @@ const ReviewItem = ({
   date: string;
   rating: number;
   comment: string;
-}) => (
-  <div className="border-b pb-6 last:border-0 last:pb-0">
-    <div className="flex justify-between items-start mb-2">
-      <div className="flex items-center gap-3">
-        <Avatar className="h-11 w-11">
-          <AvatarImage src={avatar} />
-          <AvatarFallback>{name.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <div>
-          <h3 className="font-medium">{name}</h3>
-          <p className="text-sm text-muted-foreground">{date}</p>
+}) => {
+  const reviewStarsId = useId();
+  const starIds = Array.from({ length: 5 }, (_, i) => `${reviewStarsId}-star-${i}`);
+  return (
+    <div className="border-b pb-6 last:border-0 last:pb-0">
+      <div className="flex justify-between items-start mb-2">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-11 w-11">
+            <AvatarImage src={avatar} />
+            <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <h3 className="font-medium">{name}</h3>
+            <p className="text-sm text-muted-foreground">{date}</p>
+          </div>
+        </div>
+        <div className="flex items-center">
+          {starIds.map((starKey, i) => (
+            <Star
+              key={starKey}
+              className={`h-4 w-4 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground"}`}
+            />
+          ))}
         </div>
       </div>
-      <div className="flex items-center">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`h-4 w-4 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground"}`}
-          />
-        ))}
-      </div>
+      <p className="text-muted-foreground text-sm leading-relaxed">{comment}</p>
     </div>
-    <p className="text-muted-foreground text-sm leading-relaxed">{comment}</p>
-  </div>
-);
+  );
+};
 
 const FavoritesSection = ({
   onProviderClick,
 }: {
   onProviderClick: (provider: Provider) => void;
 }) => {
+  const t = useTranslations("profile");
   const [favorites, setFavorites] = useState(favoriteProviders);
 
   const handleRemoveFavorite = (id: number) => {
@@ -630,7 +656,7 @@ const FavoritesSection = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Oferentes Favoritos</CardTitle>
+        <CardTitle>{t("favoriteProviders")}</CardTitle>
         <CardDescription>
           Profesionales que has guardado para futuros servicios.
         </CardDescription>
@@ -642,11 +668,17 @@ const FavoritesSection = ({
               <Card
                 key={provider.id}
                 className="overflow-hidden transition-all hover:shadow-lg pb-0"
+                tabIndex={0}
+                aria-label={`Ver detalles de ${provider.name}`}
+                role="button"
+                onClick={() => onProviderClick(provider)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    onProviderClick(provider);
+                  }
+                }}
               >
-                <div
-                  className="p-4 cursor-pointer"
-                  onClick={() => onProviderClick(provider)}
-                >
+                <div className="p-4">
                   <div className="flex items-start gap-4">
                     <Avatar className="h-14 w-14">
                       <AvatarImage
@@ -658,17 +690,17 @@ const FavoritesSection = ({
                       <h3 className="font-semibold text-lg">{provider.name}</h3>
                       <div className="flex items-center text-sm text-muted-foreground mt-1">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1.5" />
-                        <span>{provider.rating}</span>
+                        <span>{provider.rating || 0}</span>
                         <span className="mx-2">•</span>
-                        <span>{provider.reviews} reseñas</span>
+                        <span>{t("reviewsCount", { count: provider.reviews || 0 })}</span>
                       </div>
                     </div>
                   </div>
                   <div className="mt-4">
                     <div className="flex flex-wrap gap-2 mb-3">
-                      {provider.services.slice(0, 3).map((service, index) => (
+                      {provider.services.slice(0, 3).map((service) => (
                         <Badge
-                          key={index}
+                          key={`service-${service}`}
                           variant="secondary"
                           className="text-xs"
                         >
@@ -679,7 +711,7 @@ const FavoritesSection = ({
                     <div className="text-sm text-muted-foreground space-y-2">
                       <div className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span>Último servicio: {provider.lastService}</span>
+                        <span>{t("lastService")}: {provider.lastService}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
@@ -698,10 +730,10 @@ const FavoritesSection = ({
                       handleRemoveFavorite(provider.id);
                     }}
                   >
-                    Quitar
+                    {t("remove")}
                   </Button>
                   <Button variant="outline" size="sm">
-                    Contactar
+                    {t("contact")}
                   </Button>
                 </CardFooter>
               </Card>
@@ -711,13 +743,12 @@ const FavoritesSection = ({
           <div className="text-center py-16">
             <Heart className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
             <h3 className="text-xl font-medium mb-2">
-              No tienes oferentes favoritos
+              {t("noFavorites")}
             </h3>
             <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-              Guarda a tus profesionales preferidos para un acceso rápido en el
-              futuro.
+              {t("noFavoritesDesc")}
             </p>
-            <Button variant="outline">Explorar oferentes</Button>
+            <Button variant="outline">{t("exploreProviders")}</Button>
           </div>
         )}
       </CardContent>

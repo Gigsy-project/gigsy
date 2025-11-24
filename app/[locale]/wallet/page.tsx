@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Header } from "@/components/header"
+import { useTranslations } from "next-intl"
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -75,6 +76,7 @@ const userCardsData: UserCard[] = [
 ];
 
 export default function WalletPage() {
+  const t = useTranslations("walletPage");
   const [cards, setCards] = useState<UserCard[]>(userCardsData);
 
   const handleRemoveCard = (id: number) => {
@@ -237,58 +239,58 @@ export default function WalletPage() {
         <div className="mx-auto grid max-w-7xl gap-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Billetera</h1>
+              <h1 className="text-3xl font-bold">{t("title")}</h1>
               <Breadcrumb className="hidden md:flex mt-2">
                 <BreadcrumbList>
                   <BreadcrumbItem>
                     <BreadcrumbLink asChild>
-                      <a href="/es/dashboard">Dashboard</a>
+                      <a href="/es/dashboard">{t("dashboard")}</a>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Billetera</BreadcrumbPage>
+                    <BreadcrumbPage>{t("title")}</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
             <Button>
               <Download className="h-4 w-4 mr-2" />
-              Exportar Reporte
+              {t("exportReport")}
             </Button>
           </div>
           {/* Cards superiores en fila horizontal */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardHeader>
-                <CardDescription>Saldo disponible</CardDescription>
+                <CardDescription>{t("availableBalance")}</CardDescription>
                 <CardTitle className="text-4xl font-bold">$125.000</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-4">
-                <Button size="sm">Retirar</Button>
+                <Button size="sm">{t("withdraw")}</Button>
                 <Button variant="outline" size="sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Añadir
+                  {t("add")}
                 </Button>
               </CardContent>
             </Card>
             <StatCard
               icon={DollarSign}
-              title="Ingresos Totales (6 meses)"
+              title={t("totalIncome")}
               value={`$${totalIncome.toLocaleString("es-CL")}`}
-              description="Suma de todos los ingresos."
+              description={t("totalIncomeDesc")}
             />
             <StatCard
               icon={Briefcase}
-              title="Servicios Completados"
+              title={t("completedServices")}
               value={totalServices.toString()}
-              description="Total de trabajos finalizados."
+              description={t("completedServicesDesc")}
             />
             <StatCard
               icon={Star}
-              title="Calificación Promedio"
+              title={t("averageRating")}
               value={avgRating}
-              description="Sobre 5 estrellas."
+              description={t("averageRatingDesc")}
             />
           </div>
 
@@ -298,9 +300,9 @@ export default function WalletPage() {
             <div className="lg:col-span-8">
               <Card className="flex flex-col h-full">
                 <CardHeader>
-                  <CardTitle>Ingresos</CardTitle>
+                  <CardTitle>{t("income")}</CardTitle>
                   <CardDescription>
-                    Visualización de tus ingresos en los últimos 6 meses.
+                    {t("incomeDesc")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
@@ -313,7 +315,7 @@ export default function WalletPage() {
             <div className="lg:col-span-4 flex flex-col gap-6 h-full">
               <Card className="flex flex-col h-[380px] pb-0">
                 <CardHeader className="shrink-0">
-                  <CardTitle>Transacciones Recientes</CardTitle>
+                  <CardTitle>{t("recentTransactions")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6 overflow-y-auto">
                   {transactions.map((tx) => (

@@ -168,7 +168,7 @@ const LOCATIONS = [
 
 const PRICE_RANGES = [
   "Cualquier precio",
-  "Hasta $5.000",
+  "Desde $5.000",
   "$5.000 - $15.000",
   "$15.000 - $30.000",
   "Más de $30.000",
@@ -490,8 +490,8 @@ const useFilters = () => {
 // Utility functions
 const matchesPriceRange = (budget: number, priceRange: string): boolean => {
   switch (priceRange) {
-    case "Hasta $5.000":
-      return budget <= 5000;
+    case "Desde $5.000":
+      return budget >= 5000;
     case "$5.000 - $15.000":
       return budget > 5000 && budget <= 15000;
     case "$15.000 - $30.000":

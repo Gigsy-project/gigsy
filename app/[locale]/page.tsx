@@ -145,13 +145,25 @@ export default function HomePage() {
         {/* Hero Section */}
         <section className="relative bg-gray-50">
           <div className="container mx-auto grid lg:grid-cols-2 gap-8 lg:gap-10 xl:gap-12 items-center min-h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
-            <div className="text-center lg:text-left">
+            <div className="text-center lg:text-left flex flex-col order-1 lg:order-1">
               <h1 className="hero-element text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl">
                 {t("landing.hero.title")}
               </h1>
               <p className="hero-element mt-4 sm:mt-6 text-base sm:text-lg text-gray-600 md:text-lg lg:text-base xl:text-xl">
                 {t("landing.hero.subtitle")}
               </p>
+              
+              {/* Image - appears after title/subtitle in mobile, hidden in desktop (shown in right column) */}
+              <div className="hero-element relative h-[300px] sm:h-[400px] w-full rounded-3xl overflow-hidden mt-6 sm:mt-8 lg:hidden">
+                <Image
+                  src="/heroLanding.png"
+                  alt={t("landing.hero.imageAlt")}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
+
               <div className="hero-element mt-6 sm:mt-8 space-y-4 sm:space-y-6">
                 {/* Location */}
                 <div className="flex items-center gap-4">
@@ -237,7 +249,7 @@ export default function HomePage() {
 
                   <Button size="lg" className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">
                     {t("button.search")}
-                  </Button>
+                </Button>
                 </div>
 
                 {/* Login Prompt */}
@@ -248,7 +260,9 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <div className="hero-element relative h-[300px] sm:h-[400px] lg:h-[450px] xl:h-[500px] w-full rounded-3xl overflow-hidden">
+            
+            {/* Image - desktop only */}
+            <div className="hero-element relative h-[300px] sm:h-[400px] lg:h-[450px] xl:h-[500px] w-full rounded-3xl overflow-hidden hidden lg:block order-2">
               <Image
                 src="/hero.png"
                 alt={t("landing.hero.imageAlt")}
@@ -280,13 +294,14 @@ export default function HomePage() {
                   alt="GigSy Community Ecosystem"
                   fill
                   className="object-cover"
+                  priority
                 />
               </div>
 
               {/* Column 2: Steps */}
               <div className="space-y-8 sm:space-y-10 lg:space-y-12">
-                {communitySteps.map((step, index) => (
-                  <div key={index} className="flex gap-4 sm:gap-6">
+                {communitySteps.map((step) => (
+                  <div key={step.title} className="flex gap-4 sm:gap-6">
                     <div className="shrink-0">
                       <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-primary text-white shadow-md">
                         <step.icon className="h-6 w-6 sm:h-7 sm:w-7" />
@@ -321,6 +336,7 @@ export default function HomePage() {
                     alt={t("landing.findService.imageAlt")}
                     fill
                     className="object-cover"
+                    priority
                 />
             </div>
             <div>
@@ -331,7 +347,7 @@ export default function HomePage() {
                 {t("landing.findService.subtitle")}
               </p>
               <Button size="lg" className="mt-6 sm:mt-8 rounded-full h-11 sm:h-12 px-6 sm:px-8" asChild>
-                <Link href="/browse-services">{t("button.exploreServices")}</Link>
+                <Link href="/request-service">{t("button.exploreServices")}</Link>
               </Button>
             </div>
           </div>
@@ -371,6 +387,7 @@ export default function HomePage() {
                     alt={t("landing.offerService.imageAlt")}
                     fill
                     className="object-cover"
+                    priority
                 />
             </div>
           </div>
@@ -400,7 +417,7 @@ export default function HomePage() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="animated-section py-16 sm:py-20 lg:py-24 bg-primary text-white mx-2 rounded-xl">
+        <section className="animated-section py-16 sm:py-20 lg:py-24 bg-primary text-white mx-2 rounded-xl mb-4 sm:mb-6">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight lg:text-3xl xl:text-4xl">
               {t("landing.finalCta.title")}

@@ -2,8 +2,8 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
-import { useLanguage } from "@/components/language-provider";
+import { useState, useMemo } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { AuthGuard } from "@/components/auth-guard";
 
 export default function RequestServicePage() {
-  const { t, language } = useLanguage();
+  const t = useTranslations("requestService");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
   const { status, isLoggedIn, isGuest, startRegistration } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
@@ -52,13 +54,6 @@ export default function RequestServicePage() {
   );
   const [timePreference, setTimePreference] = useState<string>("");
   const [needSpecificTime, setNeedSpecificTime] = useState(false);
-
-  // Redirect to registration if not logged in and not guest
-  useEffect(() => {
-    if (status !== "loading" && !isLoggedIn && !isGuest) {
-      startRegistration("/request-service");
-    }
-  }, [status, isLoggedIn, isGuest, startRegistration]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +81,7 @@ export default function RequestServicePage() {
 
   // Get locale for date formatting based on selected language
   const getLocale = () => {
-    switch (language) {
+    switch (locale) {
       case "en":
         return undefined; // Default locale
       case "es":
@@ -98,18 +93,18 @@ export default function RequestServicePage() {
     }
   };
 
-  const timeOptions = [
-    { id: "morning", label: "Mañana", subtitle: "Antes de 10am", icon: Sun },
-    { id: "midday", label: "Mediodía", subtitle: "10am - 2pm", icon: Clock },
-    { id: "afternoon", label: "Tarde", subtitle: "2pm - 6pm", icon: Sunset },
-    { id: "evening", label: "Noche", subtitle: "Después de 6pm", icon: Moon },
-  ];
+  const timeOptions = useMemo(() => [
+    { id: "morning", label: t("timeMorning"), subtitle: t("timeMorningSub"), icon: Sun },
+    { id: "midday", label: t("timeMidday"), subtitle: t("timeMiddaySub"), icon: Clock },
+    { id: "afternoon", label: t("timeAfternoon"), subtitle: t("timeAfternoonSub"), icon: Sunset },
+    { id: "evening", label: t("timeEvening"), subtitle: t("timeEveningSub"), icon: Moon },
+  ], [t]);
 
-  const stepTitles = [
-    "Comencemos con lo básico",
-    "Presupuesto y descripción",
-    "Pago seguro",
-  ];
+  const stepTitles = useMemo(() => [
+    t("stepTitle1"),
+    t("stepTitle2"),
+    t("stepTitle3"),
+  ], [t]);
 
   // Show loading state while checking auth
   if (status === "loading") {
@@ -117,35 +112,35 @@ export default function RequestServicePage() {
       <div className="flex min-h-screen flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
-          <div>Cargando...</div>
+          <div>{tCommon("loading")}</div>
         </main>
       </div>
     );
   }
 
   return (
-    <AuthGuard allowGuest={true}>
+    <AuthGuard requireAuth={false} allowGuest={true}>
       <div className="flex min-h-screen flex-col bg-background">
         <Header />
-        <main className="flex-1 py-8">
-          <div className="container max-w-5xl mx-auto px-4">
-            <div className="mb-8">
+        <main className="flex-1 py-4 sm:py-6 lg:py-8">
+          <div className="container max-w-5xl mx-auto px-4 sm:px-6">
+            <div className="mb-4 sm:mb-6 lg:mb-8">
               <Link
                 href="/"
-                className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors"
+                className="inline-flex items-center text-sm sm:text-base text-muted-foreground hover:text-primary transition-colors"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver al inicio
+                {t("backToHome")}
               </Link>
             </div>
 
             {!submitted ? (
-              <div className="flex gap-8">
-                {/* Left Sidebar - Steps Navigation */}
-                <div className="w-72 flex-shrink-0">
+              <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+                {/* Left Sidebar - Steps Navigation (Desktop only) */}
+                <div className="hidden lg:block w-72 flex-shrink-0">
                   <div className="bg-card border rounded-lg p-6 sticky top-8">
                     <h2 className="text-xl font-semibold mb-6 text-foreground">
-                      Publicar una tarea
+                      {t("publishTask")}
                     </h2>
                     <div className="space-y-3">
                       {[1, 2, 3].map((step) => (
@@ -176,9 +171,9 @@ export default function RequestServicePage() {
                           </div>
                           <div className="text-sm">
                             <div className="font-medium">
-                              {step === 1 && "Información básica"}
-                              {step === 2 && "Detalles del proyecto"}
-                              {step === 3 && "Pago y confirmación"}
+                              {step === 1 && t("step1")}
+                              {step === 2 && t("step2")}
+                              {step === 3 && t("step3")}
                             </div>
                           </div>
                         </div>
@@ -187,65 +182,103 @@ export default function RequestServicePage() {
                   </div>
                 </div>
 
+                {/* Mobile Steps Indicator */}
+                <div className="lg:hidden bg-card border rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-foreground">
+                      {t("publishTask")}
+                    </h2>
+                    <span className="text-sm text-muted-foreground">
+                      {tCommon("step")} {currentStep} {tCommon("of")} 3
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3].map((step) => (
+                      <div key={step} className="flex-1 flex items-center gap-2">
+                        <div
+                          className={`flex-1 h-2 rounded-full transition-colors ${
+                            currentStep >= step
+                              ? "bg-primary"
+                              : "bg-muted"
+                          }`}
+                        />
+                        {step < 3 && (
+                          <div
+                            className={`w-2 h-2 rounded-full transition-colors ${
+                              currentStep > step
+                                ? "bg-primary"
+                                : "bg-muted"
+                            }`}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 text-center">
+                    <span className="text-sm font-medium text-foreground">
+                      {currentStep === 1 && t("step1")}
+                      {currentStep === 2 && t("step2")}
+                      {currentStep === 3 && t("step3")}
+                    </span>
+                  </div>
+                </div>
+
                 {/* Main Content */}
-                <div className="flex-1">
-                  <div className="bg-card border rounded-lg p-8">
-                    <div className="text-center mb-8">
-                      <h1 className="text-3xl font-semibold mb-2 text-foreground">
+                <div className="flex-1 min-w-0">
+                  <div className="bg-card border rounded-lg p-4 sm:p-6 lg:p-8">
+                    <div className="text-center mb-6 sm:mb-8">
+                      <h1 className="text-2xl sm:text-3xl font-semibold mb-2 text-foreground">
                         {stepTitles[currentStep - 1]}
                       </h1>
                       <div className="w-12 h-1 bg-primary mx-auto rounded-full"></div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-8">
+                    <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
                       {/* Step 1: Basics */}
                       {currentStep === 1 && (
-                        <div className="space-y-8">
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-4">
-                              <FileText className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-medium text-foreground">
-                                ¿Qué necesitas que se haga?
+                        <div className="space-y-6 sm:space-y-8">
+                          <div className="space-y-3 sm:space-y-4">
+                            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                              <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                              <h3 className="text-base sm:text-lg font-medium text-foreground">
+                                {t("whatNeed")}
                               </h3>
                             </div>
-                            <p className="text-muted-foreground">
-                              Describe tu tarea en pocas palabras para que los
-                              proveedores puedan entender rápidamente qué
-                              necesitas.
+                            <p className="text-sm sm:text-base text-muted-foreground">
+                              {t("whatNeedDesc")}
                             </p>
                             <Input
-                              placeholder="ej. Ayuda para mover mi sofá desde el segundo piso"
-                              className="h-12 text-base"
+                              placeholder={t("whatNeedPlaceholder")}
+                              className="h-11 sm:h-12 text-base"
                             />
                           </div>
 
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-4">
-                              <Calendar className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-medium text-foreground">
-                                ¿Cuándo necesitas que se haga?
+                          <div className="space-y-3 sm:space-y-4">
+                            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                              <Calendar className="h-5 w-5 text-primary flex-shrink-0" />
+                              <h3 className="text-base sm:text-lg font-medium text-foreground">
+                                {t("whenNeed")}
                               </h3>
                             </div>
-                            <p className="text-muted-foreground mb-6">
-                              Elige la opción que mejor se adapte a tu
-                              disponibilidad.
+                            <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
+                              {t("whenNeedDesc")}
                             </p>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                               {[
                                 {
                                   id: "exact",
-                                  label: "Fecha específica",
-                                  desc: "Necesito que sea un día concreto",
+                                  label: t("dateExact"),
+                                  desc: t("dateExactDesc"),
                                 },
                                 {
                                   id: "before",
-                                  label: "Antes de fecha",
-                                  desc: "Tengo una fecha límite",
+                                  label: t("dateBefore"),
+                                  desc: t("dateBeforeDesc"),
                                 },
                                 {
                                   id: "flexible",
-                                  label: "Soy flexible",
-                                  desc: "Podemos coordinar juntos",
+                                  label: t("dateFlexible"),
+                                  desc: t("dateFlexibleDesc"),
                                 },
                               ].map((option) => (
                                 <button
@@ -254,16 +287,16 @@ export default function RequestServicePage() {
                                   onClick={() =>
                                     setDatePreference(option.id as any)
                                   }
-                                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                                  className={`p-3 sm:p-4 rounded-lg border-2 transition-all text-left ${
                                     datePreference === option.id
                                       ? "border-primary bg-primary/5 text-foreground"
                                       : "border-border bg-card hover:border-primary/30"
                                   }`}
                                 >
-                                  <div className="font-medium mb-1">
+                                  <div className="font-medium mb-1 text-sm sm:text-base">
                                     {option.label}
                                   </div>
-                                  <div className="text-sm text-muted-foreground">
+                                  <div className="text-xs sm:text-sm text-muted-foreground">
                                     {option.desc}
                                   </div>
                                 </button>
@@ -272,46 +305,43 @@ export default function RequestServicePage() {
 
                             {/* Date Picker based on selection */}
                             {datePreference === "exact" && (
-                              <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
+                              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-muted/30 rounded-lg border">
                                 <DatePicker
-                                  label="Selecciona la fecha específica"
-                                  placeholder="¿Qué día necesitas el servicio?"
+                                  label={t("selectExactDate")}
+                                  placeholder={t("selectExactDatePlaceholder")}
                                   value={exactDate}
                                   onChange={setExactDate}
                                   size="lg"
-                                  locale="es"
+                                  locale={locale === "es" ? "es" : "en"}
                                 />
                               </div>
                             )}
 
                             {datePreference === "before" && (
-                              <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
+                              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-muted/30 rounded-lg border">
                                 <DatePicker
-                                  label="Fecha límite para completar"
-                                  placeholder="¿Antes de qué fecha necesitas que esté listo?"
+                                  label={t("selectBeforeDate")}
+                                  placeholder={t("selectBeforeDatePlaceholder")}
                                   value={beforeDate}
                                   onChange={setBeforeDate}
                                   size="lg"
-                                  locale="es"
+                                  locale={locale === "es" ? "es" : "en"}
                                 />
                               </div>
                             )}
 
                             {datePreference === "flexible" && (
-                              <div className="mt-6 p-4 bg-secondary/20 border border-secondary/30 rounded-lg">
-                                <div className="flex items-start gap-3">
+                              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-secondary/20 border border-secondary/30 rounded-lg">
+                                <div className="flex items-start gap-2 sm:gap-3">
                                   <div className="w-5 h-5 bg-secondary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                                     <Check className="h-3 w-3 text-secondary-foreground" />
                                   </div>
                                   <div>
-                                    <h4 className="font-medium text-foreground mb-1">
-                                      ¡Excelente elección!
+                                    <h4 className="font-medium text-sm sm:text-base text-foreground mb-1">
+                                      {t("dateFlexibleGood")}
                                     </h4>
-                                    <p className="text-sm text-muted-foreground">
-                                      Al ser flexible con las fechas, es más
-                                      probable que recibas propuestas de
-                                      proveedores y puedas negociar mejores
-                                      precios.
+                                    <p className="text-xs sm:text-sm text-muted-foreground">
+                                      {t("dateFlexibleGoodDesc")}
                                     </p>
                                   </div>
                                 </div>
@@ -319,7 +349,7 @@ export default function RequestServicePage() {
                             )}
                           </div>
 
-                          <div className="space-y-4">
+                          <div className="space-y-3 sm:space-y-4">
                             <div className="flex items-center gap-2">
                               <input
                                 type="checkbox"
@@ -328,18 +358,18 @@ export default function RequestServicePage() {
                                 onChange={(e) =>
                                   setNeedSpecificTime(e.target.checked)
                                 }
-                                className="w-4 h-4 text-primary rounded focus:ring-primary border-border"
+                                className="w-4 h-4 text-primary rounded focus:ring-primary border-border flex-shrink-0"
                               />
                               <Label
                                 htmlFor="specific-time"
-                                className="text-foreground"
+                                className="text-sm sm:text-base text-foreground cursor-pointer"
                               >
-                                Necesito una hora específica del día
+                                {t("needSpecificTime")}
                               </Label>
                             </div>
 
                             {needSpecificTime && (
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-3 sm:mt-4">
                                 {timeOptions.map((option) => {
                                   const IconComponent = option.icon;
                                   return (
@@ -349,17 +379,17 @@ export default function RequestServicePage() {
                                       onClick={() =>
                                         setTimePreference(option.id)
                                       }
-                                      className={`p-4 rounded-lg border-2 text-center transition-all ${
+                                      className={`p-3 sm:p-4 rounded-lg border-2 text-center transition-all ${
                                         timePreference === option.id
                                           ? "border-primary bg-primary/5 text-foreground"
                                           : "border-border bg-card hover:border-primary/30"
                                       }`}
                                     >
-                                      <IconComponent className="h-6 w-6 mx-auto mb-2 text-primary" />
-                                      <div className="font-medium text-sm mb-1">
+                                      <IconComponent className="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-1 sm:mb-2 text-primary" />
+                                      <div className="font-medium text-xs sm:text-sm mb-0.5 sm:mb-1">
                                         {option.label}
                                       </div>
-                                      <div className="text-xs text-muted-foreground">
+                                      <div className="text-[10px] sm:text-xs text-muted-foreground">
                                         {option.subtitle}
                                       </div>
                                     </button>
@@ -373,64 +403,60 @@ export default function RequestServicePage() {
 
                       {/* Step 2: Budget + Description */}
                       {currentStep === 2 && (
-                        <div className="space-y-8">
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-4">
-                              <DollarSign className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-medium text-foreground">
-                                ¿Cuál es tu presupuesto?
+                        <div className="space-y-6 sm:space-y-8">
+                          <div className="space-y-3 sm:space-y-4">
+                            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                              <DollarSign className="h-5 w-5 text-primary flex-shrink-0" />
+                              <h3 className="text-base sm:text-lg font-medium text-foreground">
+                                {t("budget")}
                               </h3>
                             </div>
-                            <p className="text-muted-foreground mb-6">
-                              Indica un presupuesto aproximado. Recuerda que
-                              siempre puedes negociar el precio final con el
-                              proveedor.
+                            <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
+                              {t("budgetDesc")}
                             </p>
-                            <div className="max-w-sm">
+                            <div className="w-full sm:max-w-sm">
                               <Label className="text-sm font-medium text-foreground mb-2 block">
-                                Presupuesto estimado (CLP)
+                                {t("budgetLabel")}
                               </Label>
                               <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-semibold text-primary">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base sm:text-lg font-semibold text-primary">
                                   $
                                 </span>
                                 <Input
                                   type="number"
-                                  className="pl-8 h-12 text-lg font-medium"
-                                  placeholder="50,000"
+                                  className="pl-8 h-11 sm:h-12 text-base sm:text-lg font-medium"
+                                  placeholder={t("budgetPlaceholder")}
                                 />
                               </div>
                               <p className="text-xs text-muted-foreground mt-1">
-                                Los proveedores podrán hacer contraofertas
+                                {t("budgetNote")}
                               </p>
                             </div>
                           </div>
 
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-4">
-                              <FileText className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-medium text-foreground">
-                                Describe tu proyecto
+                          <div className="space-y-3 sm:space-y-4">
+                            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                              <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                              <h3 className="text-base sm:text-lg font-medium text-foreground">
+                                {t("describeProject")}
                               </h3>
                             </div>
-                            <p className="text-muted-foreground mb-4">
-                              Proporciona todos los detalles importantes para
-                              que los proveedores entiendan exactamente qué
-                              necesitas.
+                            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
+                              {t("describeProjectDesc")}
                             </p>
                             <Textarea
-                              placeholder="Por ejemplo: Necesito ayuda para mover un sofá de 3 cuerpos desde mi apartamento en el segundo piso hasta mi nueva casa. El sofá pesa aproximadamente 80kg y necesito que lo muevan el sábado por la mañana..."
-                              className="min-h-[150px] text-base resize-none"
+                              placeholder={t("describeProjectPlaceholder")}
+                              className="min-h-[120px] sm:min-h-[150px] text-sm sm:text-base resize-none"
                             />
-                            <div className="flex flex-wrap gap-2 mt-3">
+                            <div className="flex flex-wrap gap-2 mt-2 sm:mt-3">
                               {[
-                                "Incluye dimensiones si aplica",
-                                "Menciona peso o dificultad",
-                                "Especifica duración estimada",
+                                t("tip1"),
+                                t("tip2"),
+                                t("tip3"),
                               ].map((tip, index) => (
                                 <span
                                   key={index}
-                                  className="text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground"
+                                  className="text-[10px] sm:text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground"
                                 >
                                   {tip}
                                 </span>
@@ -438,17 +464,15 @@ export default function RequestServicePage() {
                             </div>
                           </div>
 
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-4">
-                              <MapPin className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-medium text-foreground">
-                                ¿Dónde se realizará el trabajo?
+                          <div className="space-y-3 sm:space-y-4">
+                            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                              <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
+                              <h3 className="text-base sm:text-lg font-medium text-foreground">
+                                {t("whereWork")}
                               </h3>
                             </div>
-                            <p className="text-muted-foreground mb-4">
-                              Selecciona si necesitas que el proveedor vaya a
-                              una ubicación específica o si el trabajo se puede
-                              hacer en línea.
+                            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
+                              {t("whereWorkDesc")}
                             </p>
                             <RadioGroup
                               value={locationType}
@@ -457,10 +481,10 @@ export default function RequestServicePage() {
                                   value as "presencial" | "online",
                                 )
                               }
-                              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                              className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
                             >
                               <div
-                                className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                                className={`p-3 sm:p-4 rounded-lg border-2 transition-all cursor-pointer ${
                                   locationType === "presencial"
                                     ? "border-primary bg-primary/5 text-foreground"
                                     : "border-border bg-card hover:border-primary/30"
@@ -475,20 +499,19 @@ export default function RequestServicePage() {
                                   htmlFor="presencial"
                                   className="cursor-pointer block"
                                 >
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <MapPin className="h-5 w-5 text-primary" />
-                                    <span className="font-medium">
-                                      Presencial
+                                  <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                                    <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                                    <span className="font-medium text-sm sm:text-base">
+                                      {t("locationPresential")}
                                     </span>
                                   </div>
-                                  <div className="text-sm text-muted-foreground">
-                                    El proveedor debe ir a una ubicación
-                                    específica
+                                  <div className="text-xs sm:text-sm text-muted-foreground">
+                                    {t("locationPresentialDesc")}
                                   </div>
                                 </Label>
                               </div>
                               <div
-                                className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                                className={`p-3 sm:p-4 rounded-lg border-2 transition-all cursor-pointer ${
                                   locationType === "online"
                                     ? "border-primary bg-primary/5 text-foreground"
                                     : "border-border bg-card hover:border-primary/30"
@@ -503,55 +526,53 @@ export default function RequestServicePage() {
                                   htmlFor="online"
                                   className="cursor-pointer block"
                                 >
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <Monitor className="h-5 w-5 text-primary" />
-                                    <span className="font-medium">
-                                      En línea
+                                  <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                                    <Monitor className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                                    <span className="font-medium text-sm sm:text-base">
+                                      {t("locationOnline")}
                                     </span>
                                   </div>
-                                  <div className="text-sm text-muted-foreground">
-                                    El trabajo se puede hacer remotamente
+                                  <div className="text-xs sm:text-sm text-muted-foreground">
+                                    {t("locationOnlineDesc")}
                                   </div>
                                 </Label>
                               </div>
                             </RadioGroup>
 
                             {locationType === "presencial" && (
-                              <div className="mt-4 p-4 bg-muted/30 rounded-lg border">
+                              <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-muted/30 rounded-lg border">
                                 <Label
                                   htmlFor="address"
                                   className="text-sm font-medium text-foreground mb-2 block"
                                 >
-                                  Dirección donde se realizará el trabajo
+                                  {t("addressLabel")}
                                 </Label>
                                 <Input
                                   id="address"
-                                  placeholder="ej. Av. Providencia 1234, Providencia, Santiago"
+                                  placeholder={t("addressPlaceholder")}
                                   className="h-11"
                                 />
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  Esta información solo se compartirá con
-                                  proveedores seleccionados
+                                  {t("addressNote")}
                                 </p>
                               </div>
                             )}
                           </div>
 
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-4">
-                              <Camera className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-medium text-foreground">
-                                Agregar imágenes
+                          <div className="space-y-3 sm:space-y-4">
+                            <div className="flex items-center gap-2 mb-3 sm:mb-4 flex-wrap">
+                              <Camera className="h-5 w-5 text-primary flex-shrink-0" />
+                              <h3 className="text-base sm:text-lg font-medium text-foreground">
+                                {t("addImages")}
                               </h3>
-                              <span className="text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground">
-                                Opcional
+                              <span className="text-[10px] sm:text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground">
+                                {tCommon("optional")}
                               </span>
                             </div>
-                            <p className="text-muted-foreground mb-4">
-                              Las imágenes ayudan a los proveedores a entender
-                              mejor tu proyecto y hacer propuestas más precisas.
+                            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
+                              {t("addImagesDesc")}
                             </p>
-                            <div className="border-2 border-dashed border-border rounded-lg p-6">
+                            <div className="border-2 border-dashed border-border rounded-lg p-4 sm:p-6">
                               <FileUpload
                                 label=""
                                 multiple={true}
@@ -565,131 +586,125 @@ export default function RequestServicePage() {
 
                       {/* Step 3: Payment */}
                       {currentStep === 3 && (
-                        <div className="space-y-8">
+                        <div className="space-y-6 sm:space-y-8">
                           <div className="text-center">
-                            <div className="mx-auto h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                              <CreditCard className="h-8 w-8 text-primary" />
+                            <div className="mx-auto h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
+                              <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                             </div>
-                            <h2 className="text-2xl font-semibold text-foreground mb-3">
-                              Pago seguro y protegido
+                            <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-2 sm:mb-3">
+                              {t("paymentTitle")}
                             </h2>
-                            <p className="text-muted-foreground max-w-xl mx-auto">
-                              Tu solicitud será publicada inmediatamente después
-                              de confirmar el pago.
+                            <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto px-2">
+                              {t("paymentDesc")}
                               <span className="font-medium text-foreground">
                                 {" "}
-                                Solo pagas cuando el trabajo esté completado a
-                                tu satisfacción.
+                                {t("paymentDesc2")}
                               </span>
                             </p>
                           </div>
 
-                          <div className="bg-muted/30 rounded-lg p-6 border">
-                            <h3 className="text-lg font-semibold text-foreground mb-4 text-center">
-                              Resumen de tu pedido
+                          <div className="bg-muted/30 rounded-lg p-4 sm:p-6 border">
+                            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 text-center">
+                              {t("orderSummary")}
                             </h3>
-                            <div className="bg-card rounded-lg p-4 space-y-3 border">
+                            <div className="bg-card rounded-lg p-3 sm:p-4 space-y-2 sm:space-y-3 border">
                               <div className="flex justify-between items-center">
-                                <span className="text-foreground font-medium">
-                                  Costo de publicación
+                                <span className="text-sm sm:text-base text-foreground font-medium">
+                                  {t("publishCost")}
                                 </span>
-                                <span className="text-2xl font-bold text-foreground">
+                                <span className="text-xl sm:text-2xl font-bold text-foreground">
                                   $2.990
                                 </span>
                               </div>
-                              <div className="border-t pt-3">
+                              <div className="border-t pt-2 sm:pt-3">
                                 <div className="flex justify-between items-center text-primary">
-                                  <span className="flex items-center gap-2">
-                                    <Shield className="h-4 w-4" />
-                                    Protección de pago incluida
+                                  <span className="flex items-center gap-2 text-xs sm:text-sm">
+                                    <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
+                                    {t("paymentProtection")}
                                   </span>
-                                  <span className="font-semibold">Gratis</span>
+                                  <span className="font-semibold text-sm sm:text-base">{t("free")}</span>
                                 </div>
                               </div>
                             </div>
                           </div>
 
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-4">
-                              <CreditCard className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-medium text-foreground">
-                                Elige tu método de pago
+                          <div className="space-y-3 sm:space-y-4">
+                            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                              <CreditCard className="h-5 w-5 text-primary flex-shrink-0" />
+                              <h3 className="text-base sm:text-lg font-medium text-foreground">
+                                {t("choosePayment")}
                               </h3>
                             </div>
 
-                            <div className="grid gap-3">
+                            <div className="grid gap-2 sm:gap-3">
                               <button
                                 type="button"
-                                className="p-4 border-2 border-primary bg-primary/5 rounded-lg flex items-center gap-4 transition-colors"
+                                className="p-3 sm:p-4 border-2 border-primary bg-primary/5 rounded-lg flex items-center gap-3 sm:gap-4 transition-colors"
                               >
-                                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                                  <CreditCard className="h-5 w-5 text-primary-foreground" />
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
                                 </div>
-                                <div className="text-left flex-1">
-                                  <div className="font-medium text-foreground">
-                                    Tarjeta de crédito/débito
+                                <div className="text-left flex-1 min-w-0">
+                                  <div className="font-medium text-sm sm:text-base text-foreground">
+                                    {t("paymentCard")}
                                   </div>
-                                  <div className="text-sm text-muted-foreground">
-                                    Visa, Mastercard, American Express
+                                  <div className="text-xs sm:text-sm text-muted-foreground">
+                                    {t("paymentCardDesc")}
                                   </div>
                                 </div>
-                                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                                  <Check className="h-3 w-3 text-primary-foreground" />
+                                <div className="w-4 h-4 sm:w-5 sm:h-5 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                                  <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary-foreground" />
                                 </div>
                               </button>
 
                               <button
                                 type="button"
-                                className="p-4 border-2 border-border bg-card rounded-lg flex items-center gap-4 hover:border-primary/30 transition-colors"
+                                className="p-3 sm:p-4 border-2 border-border bg-card rounded-lg flex items-center gap-3 sm:gap-4 hover:border-primary/30 transition-colors"
                               >
-                                <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                                  <div className="w-6 h-6 bg-muted-foreground rounded text-background text-xs font-bold flex items-center justify-center">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <div className="w-5 h-5 sm:w-6 sm:h-6 bg-muted-foreground rounded text-background text-[10px] sm:text-xs font-bold flex items-center justify-center">
                                     T
                                   </div>
                                 </div>
-                                <div className="text-left flex-1">
-                                  <div className="font-medium text-foreground">
-                                    Transferencia bancaria
+                                <div className="text-left flex-1 min-w-0">
+                                  <div className="font-medium text-sm sm:text-base text-foreground">
+                                    {t("paymentTransfer")}
                                   </div>
-                                  <div className="text-sm text-muted-foreground">
-                                    Pago directo desde tu cuenta
+                                  <div className="text-xs sm:text-sm text-muted-foreground">
+                                    {t("paymentTransferDesc")}
                                   </div>
                                 </div>
                               </button>
                             </div>
                           </div>
 
-                          <div className="bg-secondary/20 rounded-lg p-6 border border-secondary/30">
-                            <div className="flex items-start gap-4">
-                              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                                <Shield className="h-5 w-5 text-secondary-foreground" />
+                          <div className="bg-secondary/20 rounded-lg p-4 sm:p-6 border border-secondary/30">
+                            <div className="flex items-start gap-3 sm:gap-4">
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                                <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-foreground" />
                               </div>
-                              <div>
-                                <div className="font-semibold text-lg text-foreground mb-2">
-                                  Pago 100% protegido
+                              <div className="min-w-0 flex-1">
+                                <div className="font-semibold text-base sm:text-lg text-foreground mb-2">
+                                  {t("paymentProtected")}
                                 </div>
-                                <div className="text-muted-foreground mb-4">
-                                  Tu dinero está completamente seguro con
-                                  nosotros. Mantenemos tu pago en custodia y
-                                  solo lo liberamos al proveedor cuando
-                                  confirmes que el trabajo ha sido completado
-                                  satisfactoriamente.
+                                <div className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
+                                  {t("paymentProtectedDesc")}
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                                   {[
-                                    { icon: Shield, label: "Pago seguro" },
+                                    { icon: Shield, label: t("paymentSecure") },
                                     {
                                       icon: Check,
-                                      label: "Reembolso garantizado",
+                                      label: t("paymentRefund"),
                                     },
-                                    { icon: Star, label: "Soporte 24/7" },
+                                    { icon: Star, label: t("paymentSupport") },
                                   ].map((item, index) => (
                                     <div
                                       key={index}
                                       className="flex items-center gap-2 text-secondary"
                                     >
-                                      <item.icon className="h-4 w-4" />
-                                      <span className="text-sm font-medium">
+                                      <item.icon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                                      <span className="text-xs sm:text-sm font-medium">
                                         {item.label}
                                       </span>
                                     </div>
@@ -702,35 +717,37 @@ export default function RequestServicePage() {
                       )}
 
                       {/* Navigation Buttons */}
-                      <div className="flex justify-between items-center pt-6 border-t">
+                      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 pt-4 sm:pt-6 border-t">
                         <Button
                           type="button"
                           variant="outline"
                           onClick={handlePrevious}
                           disabled={currentStep === 1}
-                          className="flex items-center gap-2 h-11 px-6"
+                          className="flex items-center justify-center gap-2 h-11 px-4 sm:px-6 order-2 sm:order-1 w-full sm:w-auto"
                         >
                           <ArrowLeft className="h-4 w-4" />
-                          Anterior
+                          {t("previous")}
                         </Button>
 
                         {currentStep < 3 ? (
                           <Button
                             type="button"
                             onClick={handleNext}
-                            className="flex items-center gap-2 h-11 px-6"
+                            className="flex items-center justify-center gap-2 h-11 px-4 sm:px-6 order-1 sm:order-2 w-full sm:w-auto"
                           >
-                            Siguiente
+                            {t("next")}
                             <ArrowRight className="h-4 w-4" />
                           </Button>
                         ) : (
                           <Button
                             type="submit"
-                            className="flex items-center gap-2 h-11 px-6 font-semibold"
+                            className="flex items-center justify-center gap-2 h-11 px-4 sm:px-6 font-semibold order-1 sm:order-2 w-full sm:w-auto"
                           >
-                            {isGuest
-                              ? "Completar registro para publicar"
-                              : "Publicar mi tarea"}
+                            <span className="text-sm sm:text-base">
+                              {isGuest
+                                ? t("completeRegister")
+                                : t("publishMyTask")}
+                            </span>
                             <ArrowRight className="h-4 w-4" />
                           </Button>
                         )}
@@ -745,32 +762,31 @@ export default function RequestServicePage() {
                   <Check className="h-8 w-8 text-primary" />
                 </div>
                 <h2 className="text-3xl font-semibold mb-4 text-foreground">
-                  ¡Solicitud enviada con éxito!
+                  {t("successTitle")}
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-                  Tu tarea ha sido publicada y pronto comenzarás a recibir
-                  propuestas de proveedores calificados.
+                  {t("successDesc")}
                 </p>
                 <div className="mt-8 p-6 border rounded-lg bg-secondary/10 border-secondary/20">
                   <h3 className="text-xl font-semibold mb-6 text-foreground">
-                    Próximos pasos
+                    {t("nextSteps")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     {[
                       {
                         icon: FileText,
-                        title: "Recibe propuestas",
-                        desc: "Los proveedores comenzarán a enviar sus ofertas",
+                        title: t("receiveProposals"),
+                        desc: t("receiveProposalsDesc"),
                       },
                       {
                         icon: Monitor,
-                        title: "Compara y chatea",
-                        desc: "Revisa perfiles y habla con los candidatos",
+                        title: t("compareChat"),
+                        desc: t("compareChatDesc"),
                       },
                       {
                         icon: Check,
-                        title: "Elige y confirma",
-                        desc: "Selecciona el mejor proveedor y programa el trabajo",
+                        title: t("chooseConfirm"),
+                        desc: t("chooseConfirmDesc"),
                       },
                     ].map((step, index) => (
                       <div key={index} className="text-center">
@@ -787,10 +803,10 @@ export default function RequestServicePage() {
                     ))}
                   </div>
                   <Button className="w-full max-w-md mx-auto h-12 text-base font-medium">
-                    Ver mis tareas activas
+                    {t("viewActiveTasks")}
                   </Button>
                   <p className="mt-4 text-sm text-muted-foreground">
-                    Tu pago está protegido hasta que el trabajo esté completado
+                    {t("paymentProtectedNote")}
                   </p>
                 </div>
               </div>

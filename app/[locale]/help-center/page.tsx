@@ -2,6 +2,7 @@
 import { useState, useMemo, useCallback } from "react" // Added useMemo and useCallback
 import { Header } from "@/components/header"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -23,6 +24,7 @@ import { helpCategoriesData, faqsData } from "./data" // Import data
 import type { Message as HelpMessage } from "@/lib/types" // Use Message from lib/types
 
 export default function HelpCenterPage() {
+  const t = useTranslations("help");
   const router = useRouter()
   const [helpMessageText, setHelpMessageText] = useState("")
   const [helpView, setHelpView] = useState<"main" | "category" | "article" | "chat" | "contact">("main")
@@ -39,30 +41,108 @@ export default function HelpCenterPage() {
     },
   ])
 
+  const categoryTranslations = useMemo(() => ({
+    "getting-started": {
+      title: t("categories.gettingStarted.title"),
+      description: t("categories.gettingStarted.description"),
+    },
+    "services": {
+      title: t("categories.services.title"),
+      description: t("categories.services.description"),
+    },
+    "payments": {
+      title: t("categories.payments.title"),
+      description: t("categories.payments.description"),
+    },
+    "safety": {
+      title: t("categories.safety.title"),
+      description: t("categories.safety.description"),
+    },
+  }), [t])
+
+  const getCategoryTranslation = useCallback((categoryId: string) => {
+    const categoryKey = categoryId as keyof typeof categoryTranslations
+    return categoryTranslations[categoryKey] || { title: "", description: "" }
+  }, [categoryTranslations])
+
+  const getArticleTranslation = useCallback((articleId: string) => {
+    const articleKeyMap: Record<string, string> = {
+      "create-account": "createAccount",
+      "profile-setup": "profileSetup",
+      "request-service": "requestService",
+      "offer-service": "offerService",
+      "payment-process": "paymentProcess",
+      "withdraw-money": "withdrawMoney",
+      "safety-tips": "safetyTips",
+    }
+    const key = articleKeyMap[articleId]
+    if (!key) return { title: "", content: "" }
+    return {
+      title: t(`articles.${key}.title`),
+      content: t(`articles.${key}.content`),
+    }
+  }, [t])
+
+  const getFAQTranslation = useCallback((faqId: string) => {
+    const faqKeyMap: Record<string, string> = {
+      "faq-1": "faq1",
+      "faq-2": "faq2",
+      "faq-3": "faq3",
+      "faq-4": "faq4",
+      "faq-5": "faq5",
+    }
+    const key = faqKeyMap[faqId]
+    if (!key) return { question: "", answer: "" }
+    return {
+      question: t(`faqItems.${key}.question`),
+      answer: t(`faqItems.${key}.answer`),
+    }
+  }, [t])
+
   const filteredArticles = useMemo(() => {
     if (!searchQuery.trim()) return []
 
     const lowerCaseQuery = searchQuery.toLowerCase()
     const allArticlesWithCategory = helpCategoriesData.flatMap((category) =>
-      category.articles.map((article) => ({ ...article, categoryTitle: category.title })),
+      category.articles.map((article) => {
+        const articleTranslation = getArticleTranslation(article.id)
+        return {
+          ...article,
+          categoryTitle: getCategoryTranslation(category.id).title,
+          categoryId: category.id,
+          translatedTitle: articleTranslation.title,
+          translatedContent: articleTranslation.content,
+        }
+      }),
     )
 
     return allArticlesWithCategory.filter(
       (article) =>
-        article.title.toLowerCase().includes(lowerCaseQuery) ||
-        article.content.toLowerCase().includes(lowerCaseQuery) ||
+        (article.translatedTitle || "").toLowerCase().includes(lowerCaseQuery) ||
+        (article.translatedContent || "").toLowerCase().includes(lowerCaseQuery) ||
         article.tags.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)),
     )
-  }, [searchQuery])
+  }, [searchQuery, getArticleTranslation, getCategoryTranslation])
 
   const filteredFAQs = useMemo(() => {
-    if (!searchQuery.trim()) return faqsData // Return all FAQs if no search query
+    const faqsWithTranslations = faqsData.map((faq) => {
+      const faqTranslation = getFAQTranslation(faq.id)
+      return {
+        ...faq,
+        translatedQuestion: faqTranslation.question,
+        translatedAnswer: faqTranslation.answer,
+      }
+    })
+
+    if (!searchQuery.trim()) return faqsWithTranslations
 
     const lowerCaseQuery = searchQuery.toLowerCase()
-    return faqsData.filter(
-      (faq) => faq.question.toLowerCase().includes(lowerCaseQuery) || faq.answer.toLowerCase().includes(lowerCaseQuery),
+    return faqsWithTranslations.filter(
+      (faq) =>
+        faq.translatedQuestion.toLowerCase().includes(lowerCaseQuery) ||
+        faq.translatedAnswer.toLowerCase().includes(lowerCaseQuery),
     )
-  }, [searchQuery])
+  }, [searchQuery, getFAQTranslation])
 
   const handleStartLiveChat = useCallback(() => {
     // Consider using Next.js router for internal navigation if possible,
@@ -113,20 +193,20 @@ export default function HelpCenterPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 type="search"
-                placeholder="Buscar en el centro de ayuda..."
+                placeholder={t("searchPlaceholder")}
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                aria-label="Buscar en el centro de ayuda"
+                aria-label={t("searchLabel")}
               />
             </div>
 
             {searchQuery.trim() && (
               <div className="space-y-4">
-                <h3 className="font-semibold">Resultados de búsqueda</h3>
+                <h3 className="font-semibold">{t("searchResults")}</h3>
                 {filteredArticles.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Artículos</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-2">{t("articles")}</h4>
                     <div className="space-y-2">
                       {filteredArticles.map((article) => (
                         <Card
@@ -143,7 +223,7 @@ export default function HelpCenterPage() {
                           }}
                         >
                           <CardContent className="p-4">
-                            <h5 className="font-medium">{article.title}</h5>
+                            <h5 className="font-medium">{article.translatedTitle || article.title}</h5>
                             <p className="text-sm text-muted-foreground">{article.categoryTitle}</p>
                           </CardContent>
                         </Card>
@@ -153,12 +233,12 @@ export default function HelpCenterPage() {
                 )}
                 {filteredFAQs.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Preguntas frecuentes</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-2">{t("faqs")}</h4>
                     <Accordion type="single" collapsible className="w-full">
                       {filteredFAQs.map((faq) => (
                         <AccordionItem key={faq.id} value={faq.id}>
-                          <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
-                          <AccordionContent>{faq.answer}</AccordionContent>
+                          <AccordionTrigger className="text-left">{faq.translatedQuestion}</AccordionTrigger>
+                          <AccordionContent>{faq.translatedAnswer}</AccordionContent>
                         </AccordionItem>
                       ))}
                     </Accordion>
@@ -166,9 +246,9 @@ export default function HelpCenterPage() {
                 )}
                 {filteredArticles.length === 0 && filteredFAQs.length === 0 && (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">No se encontraron resultados para "{searchQuery}"</p>
+                    <p className="text-muted-foreground">{t("noResults")} "{searchQuery}"</p>
                     <Button variant="outline" className="mt-4" onClick={() => setHelpView("chat")}>
-                      Contactar soporte
+                      {t("contactSupport")}
                     </Button>
                   </div>
                 )}
@@ -191,9 +271,9 @@ export default function HelpCenterPage() {
                         <div className="flex items-start gap-4">
                           <div className="p-2 bg-primary/10 rounded-lg">{category.icon}</div>
                           <div className="flex-1">
-                            <h3 className="font-semibold mb-1">{category.title}</h3>
-                            <p className="text-sm text-muted-foreground mb-2">{category.description}</p>
-                            <p className="text-xs text-muted-foreground">{category.articles.length} artículos</p>
+                            <h3 className="font-semibold mb-1">{getCategoryTranslation(category.id).title}</h3>
+                            <p className="text-sm text-muted-foreground mb-2">{getCategoryTranslation(category.id).description}</p>
+                            <p className="text-xs text-muted-foreground">{category.articles.length} {t("articlesCount")}</p>
                           </div>
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         </div>
@@ -209,8 +289,8 @@ export default function HelpCenterPage() {
                   >
                     <MessageCircle className="h-6 w-6" />
                     <div className="text-center">
-                      <div className="font-medium">Chat en vivo</div>
-                      <div className="text-xs text-muted-foreground">Respuesta inmediata</div>
+                      <div className="font-medium">{t("liveChat")}</div>
+                      <div className="text-xs text-muted-foreground">{t("immediateResponse")}</div>
                     </div>
                   </Button>
                   <Button
@@ -220,18 +300,18 @@ export default function HelpCenterPage() {
                   >
                     <Mail className="h-6 w-6" />
                     <div className="text-center">
-                      <div className="font-medium">Email</div>
+                      <div className="font-medium">{t("email")}</div>
                       <div className="text-xs text-muted-foreground">soporte@aidmarkt.com</div>
                     </div>
                   </Button>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-4">Preguntas frecuentes</h3>
+                  <h3 className="font-semibold mb-4">{t("faqs")}</h3>
                   <Accordion type="single" collapsible className="w-full">
-                    {faqsData.slice(0, 3).map((faq) => (
+                    {filteredFAQs.slice(0, 3).map((faq) => (
                       <AccordionItem key={faq.id} value={faq.id}>
-                        <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
-                        <AccordionContent>{faq.answer}</AccordionContent>
+                        <AccordionTrigger className="text-left">{faq.translatedQuestion}</AccordionTrigger>
+                        <AccordionContent>{faq.translatedAnswer}</AccordionContent>
                       </AccordionItem>
                     ))}
                   </Accordion>
@@ -252,41 +332,44 @@ export default function HelpCenterPage() {
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => setHelpView("main")}>
                 <ArrowLeft className="h-4 w-4 mr-1" />
-                Volver
+                {t("back")}
               </Button>
             </div>
             <div className="flex items-start gap-4">
               <div className="p-3 bg-primary/10 rounded-lg">{currentCategory.icon}</div>
               <div>
-                <h2 className="text-2xl font-bold">{currentCategory.title}</h2>
-                <p className="text-muted-foreground">{currentCategory.description}</p>
+                <h2 className="text-2xl font-bold">{getCategoryTranslation(currentCategory.id).title}</h2>
+                <p className="text-muted-foreground">{getCategoryTranslation(currentCategory.id).description}</p>
               </div>
             </div>
             <div className="space-y-4">
-              {currentCategory.articles.map((article) => (
-                <Card
-                  key={article.id}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => {
-                    setSelectedArticleId(article.id)
-                    setHelpView("article")
-                  }}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-medium mb-1">{article.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">{article.content.substring(0, 100)}...</p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span>{article.views} vistas</span>
-                          <span>{article.helpful} útiles</span>
+              {currentCategory.articles.map((article) => {
+                const articleTranslation = getArticleTranslation(article.id)
+                return (
+                  <Card
+                    key={article.id}
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => {
+                      setSelectedArticleId(article.id)
+                      setHelpView("article")
+                    }}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="font-medium mb-1">{articleTranslation.title}</h3>
+                          <p className="text-sm text-muted-foreground mb-2">{articleTranslation.content?.substring(0, 100) || ""}...</p>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span>{article.views} {t("views")}</span>
+                            <span>{article.helpful} {t("helpful")}</span>
+                          </div>
                         </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground ml-4" />
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground ml-4" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           </div>
         )
@@ -318,8 +401,8 @@ export default function HelpCenterPage() {
             <div>
               <h2 className="text-2xl font-bold mb-4">{currentArticle.title}</h2>
               <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
-                <span>{currentArticle.views} vistas</span>
-                <span>{currentArticle.helpful} personas encontraron esto útil</span>
+                <span>{currentArticle.views} {t("views")}</span>
+                <span>{currentArticle.helpful} {t("peopleFoundHelpful")}</span>
               </div>
             </div>
             <div className="prose max-w-none">
@@ -335,21 +418,21 @@ export default function HelpCenterPage() {
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">¿Te resultó útil este artículo?</p>
+                <p className="text-sm font-medium">{t("wasHelpful")}</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm">
-                  👍 Sí
+                  👍 {t("yes")}
                 </Button>
                 <Button variant="outline" size="sm">
-                  👎 No
+                  👎 {t("no")}
                 </Button>
               </div>
             </div>
             <div className="bg-muted/30 p-4 rounded-lg">
-              <p className="text-sm font-medium mb-2">¿Necesitas más ayuda?</p>
+              <p className="text-sm font-medium mb-2">{t("needMoreHelp")}</p>
               <Button variant="outline" size="sm" onClick={() => setHelpView("chat")}>
-                Contactar soporte
+                {t("contactSupport")}
               </Button>
             </div>
           </div>
@@ -361,12 +444,12 @@ export default function HelpCenterPage() {
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => setHelpView("main")}>
                 <ArrowLeft className="h-4 w-4 mr-1" />
-                Volver
+                {t("back")}
               </Button>
             </div>
             <div>
-              <h2 className="text-2xl font-bold mb-4">Contactar soporte</h2>
-              <p className="text-muted-foreground">Elige la forma que prefieras para contactarnos</p>
+              <h2 className="text-2xl font-bold mb-4">{t("contactSupportTitle")}</h2>
+              <p className="text-muted-foreground">{t("chooseContactMethod")}</p>
             </div>
             <div className="grid gap-4">
               <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={handleStartLiveChat}>
@@ -376,10 +459,10 @@ export default function HelpCenterPage() {
                       <MessageCircle className="h-6 w-6 text-green-600" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold">Chat en vivo</h3>
-                      <p className="text-sm text-muted-foreground">Respuesta inmediata • Disponible 24/7</p>
+                      <h3 className="font-semibold">{t("liveChat")}</h3>
+                      <p className="text-sm text-muted-foreground">{t("immediateResponse")} • {t("available247")}</p>
                     </div>
-                    <Badge className="bg-green-500">En línea</Badge>
+                    <Badge className="bg-green-500">{t("online")}</Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -390,9 +473,9 @@ export default function HelpCenterPage() {
                       <Mail className="h-6 w-6 text-purple-600" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold">Email</h3>
+                      <h3 className="font-semibold">{t("email")}</h3>
                       <p className="text-sm text-muted-foreground">soporte@aidmarkt.com</p>
-                      <p className="text-xs text-muted-foreground">Respuesta en 24 horas</p>
+                      <p className="text-xs text-muted-foreground">{t("response24h")}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -417,10 +500,10 @@ export default function HelpCenterPage() {
                   <AvatarFallback>AM</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="font-semibold">Soporte AidMarkt</h2>
+                  <h2 className="font-semibold">{t("support")}</h2>
                   <p className="text-xs text-green-600 flex items-center">
                     <span className="h-2 w-2 rounded-full bg-green-600 mr-1"></span>
-                    En línea
+                    {t("online")}
                   </p>
                 </div>
               </div>
@@ -460,11 +543,11 @@ export default function HelpCenterPage() {
                 className="flex gap-2"
               >
                 <Input
-                  placeholder="Escribe tu mensaje..."
+                  placeholder={t("writeMessage")}
                   value={helpMessageText}
                   onChange={(e) => setHelpMessageText(e.target.value)}
                 />
-                <Button type="submit" size="icon" aria-label="Enviar mensaje">
+                <Button type="submit" size="icon" aria-label={t("sendMessage")}>
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
@@ -480,8 +563,8 @@ export default function HelpCenterPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
-        <div className="container mx-auto py-6">
-          <div className="max-w-4xl mx-auto">
+        <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
             <Breadcrumb className="mb-4">
               <BreadcrumbList>
                 <BreadcrumbItem>
@@ -489,19 +572,19 @@ export default function HelpCenterPage() {
                     onClick={() => router.back()}
                     className="cursor-pointer"
                   >
-                    Volver
+                    {t("back")}
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Centro de Ayuda</BreadcrumbPage>
+                  <BreadcrumbPage>{t("helpCenter")}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
             <div className="mb-6">
-              <h1 className="text-3xl font-bold mb-2">Centro de Ayuda</h1>
+              <h1 className="text-3xl font-bold mb-2">{t("helpCenter")}</h1>
               <p className="text-muted-foreground">
-                Encuentra respuestas a tus preguntas o contacta con nuestro equipo de soporte
+                {t("subtitleDescription")}
               </p>
             </div>
             <div className="py-6">{renderHelpContent()}</div>

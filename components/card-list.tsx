@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Plus,
   MoreHorizontal,
@@ -53,6 +54,7 @@ export const CardList = ({
   onSetDefaultCard,
   onAddCard,
 }: CardListProps) => {
+  const t = useTranslations("walletPage");
   const maskCardNumber = (cardNumber: string) => {
     const cleaned = cardNumber.replace(/\s/g, "");
     return `•••• •••• •••• ${cleaned.slice(-4)}`;
@@ -84,18 +86,17 @@ export const CardList = ({
           <div className="text-center py-16">
             <CreditCard className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
             <h3 className="text-xl font-medium mb-2">
-              No tienes tarjetas asociadas
+              {t("noCardsAssociated")}
             </h3>
             <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-              Agrega una tarjeta de débito o crédito para realizar pagos de
-              forma rápida y segura.
+              {t("addCardDescription")}
             </p>
             <AddCardDialog
               onAddCard={onAddCard}
               trigger={
                 <Button className="gap-2">
                   <Plus className="h-4 w-4" />
-                  Agregar tarjeta
+                  {t("addCard")}
                 </Button>
               }
             />
@@ -108,13 +109,13 @@ export const CardList = ({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle>Mis tarjetas</CardTitle>
+        <CardTitle>{t("myCards")}</CardTitle>
         <AddCardDialog
           onAddCard={onAddCard}
           trigger={
             <Button size="sm" className="gap-2">
               <Plus className="h-4 w-4" />
-              Agregar tarjeta
+              {t("addCard")}
             </Button>
           }
         />
@@ -123,11 +124,11 @@ export const CardList = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tarjeta</TableHead>
-              <TableHead>Número</TableHead>
-              <TableHead>Titular</TableHead>
-              <TableHead>Vencimiento</TableHead>
-              <TableHead>Estado</TableHead>
+              <TableHead>{t("card")}</TableHead>
+              <TableHead>{t("number")}</TableHead>
+              <TableHead>{t("holder")}</TableHead>
+              <TableHead>{t("expiry")}</TableHead>
+              <TableHead>{t("status")}</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -160,11 +161,11 @@ export const CardList = ({
                   {card.isDefault ? (
                     <Badge variant="default" className="text-xs">
                       <Star className="w-3 h-3 mr-1" />
-                      Predeterminada
+                      {t("default")}
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-xs">
-                      Secundaria
+                      {t("secondary")}
                     </Badge>
                   )}
                 </TableCell>
@@ -181,7 +182,7 @@ export const CardList = ({
                           onClick={() => onSetDefaultCard(card.id)}
                         >
                           <CheckCircle className="mr-2 h-4 w-4" />
-                          Establecer como predeterminada
+                          {t("setAsDefault")}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem
@@ -189,7 +190,7 @@ export const CardList = ({
                         className="text-red-600"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
+                        {t("delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

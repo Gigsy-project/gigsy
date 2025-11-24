@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react"; // Added useMemo, useCallback
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Added useMemo, useCallback, useRef
 import { Header } from "@/components/header";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -24,6 +25,8 @@ import {
   FileUp,
   Paperclip,
   Calendar,
+  Info,
+  ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +40,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -48,7 +58,9 @@ import type { Conversation, Message, Service, Provider } from "@/lib/types"; // 
 const DEFAULT_ACTIVE_CONVERSATION_ID = initialConversations[0]?.id || null;
 
 export default function MessagesPage() {
+  const t = useTranslations("messages");
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [activeConversationId, setActiveConversationId] = useState<
     number | null
   >(DEFAULT_ACTIVE_CONVERSATION_ID);
@@ -57,6 +69,8 @@ export default function MessagesPage() {
   const [showMakeOfferModal, setShowMakeOfferModal] = useState(false);
   const [showAcceptServiceModal, setShowAcceptServiceModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [chatSheetOpen, setChatSheetOpen] = useState(false);
+  const [serviceDetailsSheetOpen, setServiceDetailsSheetOpen] = useState(false);
 
   const [conversations, setConversations] =
     useState<Conversation[]>(initialConversations);
@@ -74,6 +88,8 @@ export default function MessagesPage() {
   });
   const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
   const [isAcceptingService, setIsAcceptingService] = useState(false);
+  const [isScrollingServiceDetails, setIsScrollingServiceDetails] = useState(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const searchParams = useSearchParams();
 
@@ -335,32 +351,34 @@ export default function MessagesPage() {
   }, [activeConversation, currentService]);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-screen flex-col overflow-hidden">
       <Header />
-      <main className="flex-1">
-        <div className="container mx-auto py-6">
-          <Breadcrumb className="mb-4">
+      <main className="flex-1 flex flex-col overflow-hidden min-h-0">
+        <div className="container mx-auto py-2 px-4 sm:px-6 lg:px-8 shrink-0 mt-4">
+          <Breadcrumb className="mb-2">
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink
                   onClick={() => router.back()}
                   className="cursor-pointer"
                 >
-                  Volver
+                  {t("back")}
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Mensajes</BreadcrumbPage>
+                <BreadcrumbPage>{t("title")}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-[calc(100vh-200px)] min-h-[500px]">
+        <div className="w-full flex-1 overflow-hidden min-h-0">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 h-full px-4 sm:px-6 lg:px-8 pb-4">
             {/* Conversations list */}
             <div className="border rounded-lg overflow-hidden md:col-span-3">
               <div className="p-4 border-b bg-muted/30">
-                <h2 className="font-semibold text-lg">Mensajes</h2>
+                <h2 className="font-semibold text-lg">{t("title")}</h2>
               </div>
               <div className="overflow-y-auto h-[calc(100%-60px)]">
                 {conversations.map((conversation) => (
@@ -370,7 +388,12 @@ export default function MessagesPage() {
                       "p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors",
                       activeConversationId === conversation.id && "bg-muted/50",
                     )}
-                    onClick={() => setActiveConversationId(conversation.id)}
+                    onClick={() => {
+                      setActiveConversationId(conversation.id);
+                      if (isMobile) {
+                        setChatSheetOpen(true);
+                      }
+                    }}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
@@ -416,30 +439,42 @@ export default function MessagesPage() {
             </div>
 
             {/* Chat area */}
-            <div className="border rounded-lg overflow-hidden md:col-span-5 flex flex-col">
+            <div className="hidden md:flex border rounded-lg overflow-hidden md:col-span-5 flex flex-col">
               {activeConversation ? (
                 <>
-                  <div className="p-4 border-b bg-muted/30 flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage
-                        src={activeConversation.avatar || "/placeholder.svg"}
-                        alt={activeConversation.name}
-                      />
-                      <AvatarFallback>
-                        {activeConversation.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h2 className="font-semibold">
-                        {activeConversation.name}
-                      </h2>
-                      <p className="text-xs text-muted-foreground">
-                        {currentService?.title}
-                      </p>
+                  <div className="p-4 border-b bg-muted/30 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <Avatar>
+                        <AvatarImage
+                          src={activeConversation.avatar || "/placeholder.svg"}
+                          alt={activeConversation.name}
+                        />
+                        <AvatarFallback>
+                          {activeConversation.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h2 className="font-semibold">
+                          {activeConversation.name}
+                        </h2>
+                        <p className="text-xs text-muted-foreground">
+                          {currentService?.title}
+                        </p>
+                      </div>
                     </div>
+                    {isMobile && currentService && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setServiceDetailsSheetOpen(true)}
+                        className="md:hidden"
+                      >
+                        <Info className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                     {currentMessages.map((message) => (
                       <div
                         key={message.id}
@@ -498,7 +533,7 @@ export default function MessagesPage() {
                           className="flex items-center gap-1"
                         >
                           <ImageIcon className="h-4 w-4" />
-                          <span>Foto</span>
+                          <span>{t("photo")}</span>
                         </Button>
                         <Button
                           size="sm"
@@ -506,7 +541,7 @@ export default function MessagesPage() {
                           className="flex items-center gap-1"
                         >
                           <FileUp className="h-4 w-4" />
-                          <span>Archivo</span>
+                          <span>{t("file")}</span>
                         </Button>
                       </div>
                     )}
@@ -524,19 +559,19 @@ export default function MessagesPage() {
                         onClick={() =>
                           setShowAttachmentOptions(!showAttachmentOptions)
                         }
-                        aria-label="Adjuntar archivo"
+                        aria-label={t("attachFile")}
                       >
                         <Paperclip className="h-4 w-4" />
                       </Button>
                       <Input
-                        placeholder="Escribe un mensaje..."
+                        placeholder={t("write")}
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                       />
                       <Button
                         type="submit"
                         size="icon"
-                        aria-label="Enviar mensaje"
+                        aria-label={t("sendMessage")}
                       >
                         <Send className="h-4 w-4" />
                       </Button>
@@ -547,10 +582,10 @@ export default function MessagesPage() {
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
                     <h3 className="font-medium text-lg">
-                      Selecciona una conversación
+                      {t("select")}
                     </h3>
                     <p className="text-muted-foreground">
-                      Elige un chat para ver los mensajes
+                      {t("selectDescription")}
                     </p>
                   </div>
                 </div>
@@ -558,15 +593,37 @@ export default function MessagesPage() {
             </div>
 
             {/* Service details */}
-            <div className="border rounded-lg overflow-hidden md:col-span-4">
+            <div className="hidden md:block border rounded-lg overflow-hidden md:col-span-4">
               {activeConversation && currentService ? (
                 <div className="h-full flex flex-col">
                   <div className="p-4 border-b bg-muted/30">
                     <h2 className="font-semibold text-lg">
-                      Detalles del servicio
+                      {t("details")}
                     </h2>
                   </div>
-                  <div className="overflow-y-auto p-4 flex-1">
+                  <div 
+                    className={cn(
+                      "overflow-y-auto p-4 flex-1 transition-all duration-300",
+                      isScrollingServiceDetails 
+                        ? "[&::-webkit-scrollbar]:block [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-gray-100 [scrollbar-width:thin]" 
+                        : "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                    )}
+                    onScroll={() => {
+                      setIsScrollingServiceDetails(true);
+                      if (scrollTimeoutRef.current) {
+                        clearTimeout(scrollTimeoutRef.current);
+                      }
+                      scrollTimeoutRef.current = setTimeout(() => {
+                        setIsScrollingServiceDetails(false);
+                      }, 1000);
+                    }}
+                    onMouseEnter={() => setIsScrollingServiceDetails(true)}
+                    onMouseLeave={() => {
+                      setTimeout(() => {
+                        setIsScrollingServiceDetails(false);
+                      }, 500);
+                    }}
+                  >
                     <div className="space-y-6">
                       <div>
                         <h3 className="text-xl font-bold">
@@ -580,8 +637,8 @@ export default function MessagesPage() {
                           )}
                         >
                           {currentService.status === "confirmed"
-                            ? "Confirmado"
-                            : "Pendiente"}
+                            ? t("confirmed")
+                            : t("pending")}
                         </Badge>
                       </div>
 
@@ -589,7 +646,7 @@ export default function MessagesPage() {
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <p className="text-sm font-medium">Fecha y hora</p>
+                            <p className="text-sm font-medium">{t("date")}</p>
                             <p className="text-sm text-muted-foreground">
                               {currentService.date}, {currentService.time}
                             </p>
@@ -598,7 +655,7 @@ export default function MessagesPage() {
                         <div className="flex items-center gap-2">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <p className="text-sm font-medium">Ubicación</p>
+                            <p className="text-sm font-medium">{t("location")}</p>
                             <p className="text-sm text-muted-foreground">
                               {currentService.location}
                             </p>
@@ -607,7 +664,7 @@ export default function MessagesPage() {
                         <div className="flex items-center gap-2">
                           <DollarSign className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <p className="text-sm font-medium">Precio</p>
+                            <p className="text-sm font-medium">{t("price")}</p>
                             <p className="text-sm text-muted-foreground">
                               {currentService.price}
                             </p>
@@ -616,7 +673,7 @@ export default function MessagesPage() {
                       </div>
                       <Separator />
                       <div>
-                        <h4 className="font-medium mb-2">Descripción</h4>
+                        <h4 className="font-medium mb-2">{t("description")}</h4>
                         <p className="text-sm text-muted-foreground">
                           {currentService.description}
                         </p>
@@ -624,7 +681,7 @@ export default function MessagesPage() {
                       <Separator />
                       <div>
                         <h4 className="font-medium mb-2">
-                          Perfil de {activeConversation.name}
+                          {t("profileOf")} {activeConversation.name}
                         </h4>
                         <div className="flex items-center gap-3 mb-3">
                           <Avatar className="h-12 w-12">
@@ -871,10 +928,10 @@ export default function MessagesPage() {
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
                     <h3 className="font-medium text-lg">
-                      Selecciona una conversación
+                      {t("select")}
                     </h3>
                     <p className="text-muted-foreground">
-                      Elige un chat para ver los detalles del servicio
+                      {t("selectServiceDescription")}
                     </p>
                   </div>
                 </div>
@@ -892,6 +949,295 @@ export default function MessagesPage() {
           onSuccess={handleBookingSuccess}
         />
       )}
+
+      {/* Mobile Chat Sheet */}
+      <Sheet open={chatSheetOpen} onOpenChange={setChatSheetOpen}>
+        <SheetContent side="right" className="w-full sm:w-full p-0 flex flex-col [&>button]:hidden">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Chat</SheetTitle>
+          </SheetHeader>
+          {activeConversation ? (
+            <div className="flex flex-col h-full">
+              <div className="p-4 border-b bg-muted/30 flex items-center justify-between gap-3 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setChatSheetOpen(false)}
+                  className="mr-2"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  {t("back")}
+                </Button>
+                <div className="flex items-center gap-3 flex-1">
+                  <Avatar>
+                    <AvatarImage
+                      src={activeConversation.avatar || "/placeholder.svg"}
+                      alt={activeConversation.name}
+                    />
+                    <AvatarFallback>
+                      {activeConversation.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="font-semibold">
+                      {activeConversation.name}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {currentService?.title}
+                    </p>
+                  </div>
+                </div>
+                {currentService && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setServiceDetailsSheetOpen(true);
+                      setChatSheetOpen(false);
+                    }}
+                  >
+                    <Info className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {currentMessages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={cn(
+                      "flex",
+                      message.sender === "user"
+                        ? "justify-end"
+                        : "justify-start",
+                    )}
+                  >
+                    {message.sender !== "user" && (
+                      <Avatar className="h-8 w-8 mr-2 mt-1 shrink-0">
+                        <AvatarImage
+                          src={
+                            activeConversation?.avatar || "/placeholder.svg"
+                          }
+                          alt={activeConversation?.name}
+                        />
+                        <AvatarFallback>
+                          {activeConversation?.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div
+                      className={cn(
+                        "max-w-[80%] rounded-lg p-3",
+                        message.sender === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted",
+                      )}
+                    >
+                      <p>{message.text}</p>
+                      {message.hasAttachment && (
+                        <div className="mt-2 border rounded p-2 bg-background/50 flex items-center gap-2">
+                          <ImageIcon className="h-4 w-4" />
+                          <span className="text-xs">foto_muebles.jpg</span>
+                        </div>
+                      )}
+                      <p className="text-xs mt-1 opacity-70">
+                        {message.timestamp}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-4 border-t shrink-0">
+                {showAttachmentOptions && (
+                  <div className="mb-2 p-2 bg-muted/30 rounded-lg flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-1"
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                      <span>Foto</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-1"
+                    >
+                      <FileUp className="h-4 w-4" />
+                      <span>Archivo</span>
+                    </Button>
+                  </div>
+                )}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }}
+                  className="flex gap-2"
+                >
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() =>
+                      setShowAttachmentOptions(!showAttachmentOptions)
+                    }
+                    aria-label="Adjuntar archivo"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                  </Button>
+                  <Input
+                    placeholder="Escribe un mensaje..."
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    aria-label="Enviar mensaje"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </form>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <h3 className="font-medium text-lg">
+                  {t("select")}
+                </h3>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Mobile Service Details Sheet */}
+      <Sheet open={serviceDetailsSheetOpen} onOpenChange={setServiceDetailsSheetOpen}>
+        <SheetContent side="right" className="w-full sm:w-full p-0 flex flex-col [&>button]:hidden">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Detalles del servicio</SheetTitle>
+          </SheetHeader>
+          {activeConversation && currentService ? (
+            <div className="flex flex-col h-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="p-4 border-b bg-muted/30 shrink-0 flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setServiceDetailsSheetOpen(false);
+                    setChatSheetOpen(true);
+                  }}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  {t("back")}
+                </Button>
+                <h2 className="font-semibold text-lg">{t("details")}</h2>
+              </div>
+              <div className="p-4 space-y-6">
+                <div>
+                  <h3 className="text-xl font-bold">
+                    {currentService.title}
+                  </h3>
+                  <Badge
+                    className={cn(
+                      currentService.status === "confirmed"
+                        ? "bg-green-500"
+                        : "bg-yellow-500",
+                    )}
+                  >
+                    {currentService.status === "confirmed"
+                      ? "Confirmado"
+                      : "Pendiente"}
+                  </Badge>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Fecha y hora</p>
+                      <p className="text-sm text-muted-foreground">
+                        {currentService.date}, {currentService.time}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Ubicación</p>
+                      <p className="text-sm text-muted-foreground">
+                        {currentService.location}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Precio</p>
+                      <p className="text-sm text-muted-foreground">
+                        {currentService.price}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <Separator />
+                <div>
+                  <h4 className="font-medium mb-2">Descripción</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {currentService.description}
+                  </p>
+                </div>
+                <Separator />
+                <div>
+                  <h4 className="font-medium mb-2">
+                    Perfil de {activeConversation.name}
+                  </h4>
+                  <div className="flex items-center gap-3 mb-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage
+                        src={
+                          activeConversation.avatar || "/placeholder.svg"
+                        }
+                      />
+                      <AvatarFallback>
+                        {activeConversation.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">
+                        {activeConversation.name}
+                      </p>
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className="h-3 w-3 fill-yellow-400 text-yellow-400"
+                          />
+                        ))}
+                        <span className="text-xs ml-1">(12 reseñas)</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Miembro desde enero 2023
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-muted-foreground">
+                  {t("noDetailsAvailable")}
+                </p>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
