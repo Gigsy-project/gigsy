@@ -159,7 +159,8 @@
     "account": "Mi cuenta",
     "postTask": "Publicar tarea",
     "browseTasks": "Buscar tareas",
-    "howItWorks": "Cómo funciona"
+    "howItWorks": "Cómo funciona",
+    "menu": "Menú"
   },
   "services": {
     "cleaning": "Aseo",

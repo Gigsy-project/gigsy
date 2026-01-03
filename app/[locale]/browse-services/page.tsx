@@ -79,7 +79,7 @@ interface ServiceLocation {
 
 interface ServiceTaskWithLocation extends ServiceTask {
   coordinates: ServiceLocation;
-}
+} 
 
 type WorkType = "in-person" | "remotely" | "all";
 

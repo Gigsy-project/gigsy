@@ -159,7 +159,8 @@
     "account": "My account",
     "postTask": "Post a task",
     "browseTasks": "Browse tasks",
-    "howItWorks": "How it works"
+    "howItWorks": "How it works",
+    "menu": "Menu"
   },
   "services": {
     "cleaning": "Cleaning",

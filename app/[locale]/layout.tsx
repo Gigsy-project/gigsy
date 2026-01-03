@@ -7,6 +7,7 @@ import { routing } from '@/i18n/routing';
 import { Inter } from "next/font/google"
 import "../globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { TanStackProvider } from "@/components/tanstack-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -45,7 +46,9 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light">
           <NextIntlClientProvider messages={messages}>
-            {children}
+            <TanStackProvider>
+              {children}
+            </TanStackProvider>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

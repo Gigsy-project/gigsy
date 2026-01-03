@@ -1,0 +1,119 @@
+import { betterAuth } from "better-auth"
+import { createAuthMiddleware } from "better-auth/api"
+import { Pool } from "pg"
+
+export const auth = betterAuth({
+  database: new Pool({
+    connectionString:
+      "postgresql://postgres:GigSy20252026_@db.ehulewqechbhsuuquwuh.supabase.co:5432/postgres",
+  }),
+	hooks: {
+		before: createAuthMiddleware(async (ctx) => {
+			// Execute before processing the request
+			console.log("Request path:", ctx.body);
+		}),
+	},
+  advanced: {
+    database: {
+      generateId: () => crypto.randomUUID(),
+    },
+  },
+  account: {
+    modelName: "accounts",
+    fields: {
+      userId: "user_id",
+      providerId: "provider", 
+      accountId: "provider_account_id", // Cambié esto - tu BD tiene "provider_account_id"
+      refreshToken: "refresh_token",
+      accessToken: "access_token",
+      accessTokenExpiresAt: "expires_at",
+      refreshTokenExpiresAt: "refresh_token_expires_at", // Cambié esto
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+    },
+  },
+  user: {
+    modelName: "users",
+    fields: {
+      email: "email",
+      name: "name",
+      emailVerified: "isEmailVerified",
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
+    },
+    additionalFields: {
+      isActive: {
+        type: "boolean",
+        required: false,
+        input: false,
+      },
+      avatar: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      verificationToken: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      type: {
+        type: "string",
+        required: true,
+        input: true,
+      },
+      organizationId: {
+        type: "string",
+        required: false,
+        input: true,
+      },
+      description: {
+        type: "string",
+        required: false,
+        input: true,
+      }
+    },
+  },
+  session: {
+    modelName: "session",
+    fields: {
+      userId: "userId", // Tu BD usa camelCase
+      expiresAt: "expiresAt", // Tu BD usa camelCase - ESTO era el problema
+      token: "accessToken", // Uso accessToken como token principal
+      ipAddress: "provider", // Mapeo temporal - puedes crear esta columna si la necesitas
+      userAgent: "scope", // Mapeo temporal - puedes crear esta columna si la necesitas  
+      createdAt: "createdAt", // Tu BD usa camelCase
+      updatedAt: "updatedAt", // Tu BD usa camelCase
+    },
+    expiresIn: 604800, // 7 days
+    updateAge: 86400, // 1 day
+    disableSessionRefresh: true,
+    additionalFields: {
+      customField: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+    },
+    cookieCache: {
+      enabled: true,
+      maxAge: 300, // 5 minutes
+    },
+  },
+  verification: {
+    modelName: "verification",
+    fields: {
+      identifier: "identifier",
+      value: "value",
+      expiresAt: "expiresAt",
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
+    },
+  },
+  emailAndPassword: {
+    enabled: true,
+  },
+	logger: {
+    level: "debug",
+	}
+})

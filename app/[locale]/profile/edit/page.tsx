@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import {CircularProgress} from "@heroui/progress";
 import {
   Select,
   SelectContent,
@@ -624,8 +625,8 @@ export default function EditProfilePage() {
       <Header />
 
       {/* Main Container - Centered */}
-      <div className="flex justify-center py-8 px-4">
-        <div className="w-full max-w-4xl">
+      <div className="flex justify-center py-8">
+        <div className="w-full max-w-7xl">
           {/* Back Navigation */}
           <div className="mb-6">
             <Link
@@ -677,31 +678,35 @@ export default function EditProfilePage() {
 
                 {/* Profile Info */}
                 <div className="flex-1 space-y-6">
-                  <div>
-                    <h1 className="text-3xl font-semibold mb-3 text-foreground">
-                      Editar mi perfil
-                    </h1>
-                    <p className="text-muted-foreground text-base">
-                      Completa tu perfil para generar más confianza en nuestra
-                      comunidad y recibir mejores oportunidades.
-                    </p>
-                  </div>
-
-                  {/* Progress */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">
-                        Completitud del perfil
-                      </span>
-                      <span className="text-sm text-primary font-semibold">
-                        {completionPercentage}%
-                      </span>
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                      <h1 className="text-3xl font-semibold mb-3 text-foreground">
+                        Editar mi perfil
+                      </h1>
+                      <p className="text-muted-foreground text-base">
+                        Completa tu perfil para generar más confianza en nuestra
+                        comunidad y recibir mejores oportunidades.
+                      </p>
                     </div>
-                    <div className="w-full bg-muted/70 rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
-                        style={{ width: `${completionPercentage}%` }}
-                      />
+                    
+                    {/* Progress */}
+                    <div className="flex mr-24">
+                      <div className="flex-col">
+                        <CircularProgress
+                          classNames={{
+                            svg: "w-24 h-24",
+                            indicator: "stroke-blue-600",
+                            track: "stroke-white/10",
+                            value: "text-lg font-semibold text-blue-600",
+                          }}
+                          showValueLabel={true}
+                          strokeWidth={4}
+                          value={100}
+                        />
+                        <span className="text-sm font-medium text-foreground/70">
+                          Perfil completo
+                        </span>
+                      </div>
                     </div>
                   </div>
 

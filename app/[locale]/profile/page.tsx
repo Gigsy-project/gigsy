@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useId } from "react";
+import { useState, useId, Suspense, useEffect } from "react";
 import { Header } from "@/components/header";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
@@ -23,6 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   Briefcase,
@@ -42,6 +43,8 @@ import {
 } from "lucide-react";
 import { ProviderProfileModal } from "@/components/provider-profile-modal";
 import type { Provider } from "@/lib/types";
+import { authClient } from "@/lib/auth-client";
+import { useUserProfile } from "@/lib/utils/useUser-profile";
 
 // Mock data for CV sections
 const experienceData = [
@@ -258,15 +261,27 @@ const ProfileSidebar = ({
     { id: "reviews", label: t("reviews"), icon: Star },
     { id: "favorites", label: t("favorites"), icon: Heart },
   ];
+  const { useSession } = authClient;
+  const { data: session, isPending } = useSession();
+  console.log(session)
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   return (
     <Card className="sticky top-24">
       <CardContent className="p-6">
         <div className="flex flex-col items-center text-center">
           <Avatar className="h-28 w-28 border-4 border-background shadow-md">
-            <AvatarImage src="/images/juan-perez.jpg" />
+            <AvatarImage src={session?.user.avatar} />
             <AvatarFallback>JP</AvatarFallback>
           </Avatar>
-          <h1 className="text-2xl font-bold mt-4">Juan Pérez</h1>
+          {isPending ? (
+            <Skeleton className="h-8 w-32 mt-4" />
+          ) : (
+            <h1 className="text-2xl font-bold mt-4">{session?.user.name}</h1>
+          )}
           <div className="flex items-center gap-2 mt-1 text-muted-foreground">
             <MapPin className="h-4 w-4" />
             <span>Santiago, Chile</span>
@@ -323,7 +338,7 @@ const ProfileSidebar = ({
                   "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all",
                   activeTab === item.id
                     ? "bg-muted text-foreground border border-border"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
                 ].join(" ")}
               >
                 <item.icon className="h-5 w-5" />
@@ -395,152 +410,159 @@ const TimelineItem = ({
 
 const AboutSection = () => {
   const t = useTranslations("profile");
+  const { useSession } = authClient;
+  const { data: session, isPending } = useSession();
+  
   return (
-  <div className="space-y-8">
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("professionalSummary")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground leading-relaxed">
-          Profesional con más de 5 años de experiencia en servicios de limpieza,
-          mantenimiento y jardinería. Especializado en limpieza hospitalaria y
-          manejo de productos químicos. Comprometido con la excelencia en el
-          servicio y la satisfacción del cliente.
-        </p>
-      </CardContent>
-    </Card>
+    <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("professionalSummary")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isPending ? (
+            <div className="flex-col space-y-2">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+            </div>
+          ) : (
+            <p className="text-muted-foreground leading-relaxed">
+              {session?.user.description}
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("skills")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-2">
-          {[
-            "Limpieza",
-            "Organización",
-            "Mantenimiento",
-            "Jardinería",
-            "Reparaciones menores",
-            "Limpieza Hospitalaria",
-            "Bioseguridad",
-            "Primeros Auxilios",
-            "Seguridad Laboral",
-          ].map((skill) => (
-            <Badge key={skill} variant="secondary" className="py-1 px-3">
-              {skill}
-            </Badge>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("skills")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {[
+              "Limpieza",
+              "Organización",
+              "Mantenimiento",
+              "Jardinería",
+              "Reparaciones menores",
+              "Limpieza Hospitalaria",
+              "Bioseguridad",
+              "Primeros Auxilios",
+              "Seguridad Laboral",
+            ].map((skill) => (
+              <Badge key={skill} variant="secondary" className="py-1 px-3">
+                {skill}
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("workExperience")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {experienceData.map((exp) => (
-            <TimelineItem
-              key={exp.id}
-              icon={Building}
-              title={exp.position}
-              subtitle={`${exp.company} • ${exp.type}`}
-              date={`${exp.duration} • ${exp.location}`}
-            >
-              <p className="text-muted-foreground">{exp.description}</p>
-            </TimelineItem>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("workExperience")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {experienceData.map((exp) => (
+              <TimelineItem
+                key={exp.id}
+                icon={Building}
+                title={exp.position}
+                subtitle={`${exp.company} • ${exp.type}`}
+                date={`${exp.duration} • ${exp.location}`}
+              >
+                <p className="text-muted-foreground">{exp.description}</p>
+              </TimelineItem>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("educationCertifications")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {educationData.map((edu) => (
-            <TimelineItem
-              key={edu.id}
-              icon={GraduationCap}
-              title={edu.institution}
-              subtitle={edu.degree}
-              date={edu.duration}
-            >
-              <p className="text-muted-foreground">{edu.description}</p>
-            </TimelineItem>
-          ))}
-          {certificationsData.map((cert) => (
-            <TimelineItem
-              key={cert.id}
-              icon={Award}
-              title={cert.name}
-              subtitle={cert.issuer}
-              date={`Emitido ${cert.issueDate}`}
-            >
-              <p className="text-muted-foreground">
-                ID de credencial: {cert.credentialId}
-              </p>
-            </TimelineItem>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("educationCertifications")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {educationData.map((edu) => (
+              <TimelineItem
+                key={edu.id}
+                icon={GraduationCap}
+                title={edu.institution}
+                subtitle={edu.degree}
+                date={edu.duration}
+              >
+                <p className="text-muted-foreground">{edu.description}</p>
+              </TimelineItem>
+            ))}
+            {certificationsData.map((cert) => (
+              <TimelineItem
+                key={cert.id}
+                icon={Award}
+                title={cert.name}
+                subtitle={cert.issuer}
+                date={`Emitido ${cert.issueDate}`}
+              >
+                <p className="text-muted-foreground">
+                  ID de credencial: {cert.credentialId}
+                </p>
+              </TimelineItem>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
 const ServicesSection = () => {
   const t = useTranslations("profile");
   return (
-  <Card>
-    <CardHeader>
-      <CardTitle>{t("servicesOffered")}</CardTitle>
-      <CardDescription>
-        Estos son los servicios que Juan Pérez puede realizar.
-      </CardDescription>
-    </CardHeader>
-    <CardContent className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-      {[
-        {
-          title: "Limpieza de hogar",
-          desc: "Limpieza completa de hogares, incluyendo cocina, baños, dormitorios y áreas comunes.",
-          price: "15.000",
-        },
-        {
-          title: "Jardinería",
-          desc: "Mantenimiento de jardines, poda de plantas, riego y cuidado general.",
-          price: "12.000",
-        },
-        {
-          title: "Reparaciones menores",
-          desc: "Arreglos básicos en el hogar como cambio de bombillas, reparación de grifos, etc.",
-          price: "18.000",
-        },
-      ].map((service) => (
-        <Card key={service.title} className="flex flex-col pb-0">
-          <CardHeader>
-            <h3 className="font-semibold text-lg">{service.title}</h3>
-          </CardHeader>
-          <CardContent className="grow">
-            <p className="text-muted-foreground text-sm">{service.desc}</p>
-          </CardContent>
-          <CardFooter className="flex items-center justify-between bg-muted/50 py-3 px-4 rounded-b-lg">
-            <div className="flex items-baseline font-semibold">
-              <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
-              <span>{service.price}</span>
-              <span className="text-xs text-muted-foreground ml-1">/hr</span>
-            </div>
-            <Button size="sm">{t("request")}</Button>
-          </CardFooter>
-        </Card>
-      ))}
-    </CardContent>
-  </Card>
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("servicesOffered")}</CardTitle>
+        <CardDescription>
+          Estos son los servicios que Juan Pérez puede realizar.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        {[
+          {
+            title: "Limpieza de hogar",
+            desc: "Limpieza completa de hogares, incluyendo cocina, baños, dormitorios y áreas comunes.",
+            price: "15.000",
+          },
+          {
+            title: "Jardinería",
+            desc: "Mantenimiento de jardines, poda de plantas, riego y cuidado general.",
+            price: "12.000",
+          },
+          {
+            title: "Reparaciones menores",
+            desc: "Arreglos básicos en el hogar como cambio de bombillas, reparación de grifos, etc.",
+            price: "18.000",
+          },
+        ].map((service) => (
+          <Card key={service.title} className="flex flex-col pb-0">
+            <CardHeader>
+              <h3 className="font-semibold text-lg">{service.title}</h3>
+            </CardHeader>
+            <CardContent className="grow">
+              <p className="text-muted-foreground text-sm">{service.desc}</p>
+            </CardContent>
+            <CardFooter className="flex items-center justify-between bg-muted/50 py-3 px-4 rounded-b-lg">
+              <div className="flex items-baseline font-semibold">
+                <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
+                <span>{service.price}</span>
+                <span className="text-xs text-muted-foreground ml-1">/hr</span>
+              </div>
+              <Button size="sm">{t("request")}</Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </CardContent>
+    </Card>
   );
 };
 
@@ -567,35 +589,35 @@ const ReviewsSection = () => {
           </span>
         </div>
       </CardHeader>
-    <CardContent className="space-y-6">
-      <ReviewItem
-        name="María González"
-        avatar="/images/josefa.jpg"
-        date="Mayo 2025"
-        rating={5}
-        comment="Excelente servicio. Juan fue muy profesional y dejó mi casa impecable. Definitivamente lo recomendaría y volveré a contratarlo."
-      />
-      <ReviewItem
-        name="Carlos Rodríguez"
-        avatar="/images/hernan.jpg"
-        date="Abril 2025"
-        rating={4}
-        comment="Muy buen trabajo con las reparaciones en mi departamento. Puntual y eficiente. Le faltó traer algunas herramientas, pero supo improvisar."
-      />
-      <ReviewItem
-        name="Ana Martínez"
-        avatar=""
-        date="Marzo 2025"
-        rating={4}
-        comment="Juan hizo un excelente trabajo con mi jardín. Es muy detallista y conoce bien su oficio. Lo recomiendo ampliamente para cualquier trabajo de jardinería."
-      />
-    </CardContent>
-    <CardFooter>
-      <Button variant="outline" className="w-full">
-        {t("viewAllReviews")}
-      </Button>
-    </CardFooter>
-  </Card>
+      <CardContent className="space-y-6">
+        <ReviewItem
+          name="María González"
+          avatar="/images/josefa.jpg"
+          date="Mayo 2025"
+          rating={5}
+          comment="Excelente servicio. Juan fue muy profesional y dejó mi casa impecable. Definitivamente lo recomendaría y volveré a contratarlo."
+        />
+        <ReviewItem
+          name="Carlos Rodríguez"
+          avatar="/images/hernan.jpg"
+          date="Abril 2025"
+          rating={4}
+          comment="Muy buen trabajo con las reparaciones en mi departamento. Puntual y eficiente. Le faltó traer algunas herramientas, pero supo improvisar."
+        />
+        <ReviewItem
+          name="Ana Martínez"
+          avatar=""
+          date="Marzo 2025"
+          rating={4}
+          comment="Juan hizo un excelente trabajo con mi jardín. Es muy detallista y conoce bien su oficio. Lo recomiendo ampliamente para cualquier trabajo de jardinería."
+        />
+      </CardContent>
+      <CardFooter>
+        <Button variant="outline" className="w-full">
+          {t("viewAllReviews")}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 
@@ -613,7 +635,10 @@ const ReviewItem = ({
   comment: string;
 }) => {
   const reviewStarsId = useId();
-  const starIds = Array.from({ length: 5 }, (_, i) => `${reviewStarsId}-star-${i}`);
+  const starIds = Array.from(
+    { length: 5 },
+    (_, i) => `${reviewStarsId}-star-${i}`,
+  );
   return (
     <div className="border-b pb-6 last:border-0 last:pb-0">
       <div className="flex justify-between items-start mb-2">
@@ -692,7 +717,9 @@ const FavoritesSection = ({
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1.5" />
                         <span>{provider.rating || 0}</span>
                         <span className="mx-2">•</span>
-                        <span>{t("reviewsCount", { count: provider.reviews || 0 })}</span>
+                        <span>
+                          {t("reviewsCount", { count: provider.reviews || 0 })}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -711,7 +738,9 @@ const FavoritesSection = ({
                     <div className="text-sm text-muted-foreground space-y-2">
                       <div className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span>{t("lastService")}: {provider.lastService}</span>
+                        <span>
+                          {t("lastService")}: {provider.lastService}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
@@ -742,9 +771,7 @@ const FavoritesSection = ({
         ) : (
           <div className="text-center py-16">
             <Heart className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-            <h3 className="text-xl font-medium mb-2">
-              {t("noFavorites")}
-            </h3>
+            <h3 className="text-xl font-medium mb-2">{t("noFavorites")}</h3>
             <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
               {t("noFavoritesDesc")}
             </p>
@@ -755,4 +782,3 @@ const FavoritesSection = ({
     </Card>
   );
 };
-

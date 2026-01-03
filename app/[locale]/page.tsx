@@ -264,7 +264,7 @@ export default function HomePage() {
             {/* Image - desktop only */}
             <div className="hero-element relative h-[300px] sm:h-[400px] lg:h-[450px] xl:h-[500px] w-full rounded-3xl overflow-hidden hidden lg:block order-2">
               <Image
-                src="/hero.png"
+                src="/heroLanding.png"
                 alt={t("landing.hero.imageAlt")}
                 fill
                 className="object-cover"
@@ -328,7 +328,7 @@ export default function HomePage() {
         </section>
 
         {/* Find Services Section */}
-        <section className="animated-section py-16 sm:py-20 bg-gray-50">
+        <section className="animated-section py-16 sm:py-36 xl:py-48 bg-gray-50">
           <div className="container mx-auto grid lg:grid-cols-2 gap-8 lg:gap-10 xl:gap-12 items-center px-4 sm:px-6 lg:px-8">
             <div className="relative h-[300px] sm:h-[350px] lg:h-[400px] xl:h-[450px] w-full order-last lg:order-first rounded-3xl overflow-hidden">
                 <Image
@@ -354,7 +354,7 @@ export default function HomePage() {
         </section>
         
         {/* Offer Services Section */}
-        <section className="animated-section py-16 sm:py-20 bg-white">
+        <section className="animated-section py-16 sm:py-36 xl:py-48 bg-white">
           <div className="container mx-auto grid lg:grid-cols-2 gap-8 lg:gap-10 xl:gap-12 items-center px-4 sm:px-6 lg:px-8">
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 lg:text-3xl xl:text-4xl">
@@ -394,7 +394,7 @@ export default function HomePage() {
         </section>
         
         {/* Why Choose Us Section */}
-        <section className="animated-section py-16 sm:py-20 bg-gray-50">
+        <section className="animated-section py-16 sm:py-36 xl:py-48 bg-gray-50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12 sm:mb-16">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 lg:text-3xl xl:text-4xl">{t("hero.whyChoose")}</h2>
@@ -417,7 +417,7 @@ export default function HomePage() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="animated-section py-16 sm:py-20 lg:py-24 bg-primary text-white mx-2 rounded-xl mb-4 sm:mb-6">
+        <section className="animated-section py-16 sm:py-24 lg:py-34 bg-primary text-white mx-2 rounded-xl mb-4 sm:mb-6">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight lg:text-3xl xl:text-4xl">
               {t("landing.finalCta.title")}

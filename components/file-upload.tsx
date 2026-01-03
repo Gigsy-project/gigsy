@@ -1,49 +1,55 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useRef, useCallback, memo } from "react"
-import { Button } from "@/components/ui/button"
-import { Upload, X } from "lucide-react"
-import { useLanguage } from "./language-provider"
-import { APP_CONFIG } from "@/lib/constants"
+import { useState, useRef, useCallback, memo } from "react";
+import { Button } from "@/components/ui/button";
+import { Upload, X } from "lucide-react";
+import { useLanguage } from "./language-provider";
+import { APP_CONFIG } from "@/lib/constants";
 
 interface FileUploadProps {
-  label: string
-  multiple?: boolean
-  accept?: string
-  onChange: (files: File[]) => void
-  variant?: "default" | "circle" | "id"
-  buttonText?: string
-  maxSize?: number
+  label: string;
+  multiple?: boolean;
+  accept?: string;
+  onChange: (files: File[]) => void;
+  variant?: "default" | "circle" | "id";
+  buttonText?: string;
+  maxSize?: number;
 }
 
-const FilePreview = memo(({ file, onRemove }: { file: File; onRemove: () => void }) => {
-  const isImage = file.type.startsWith("image/")
-  const previewUrl = isImage ? URL.createObjectURL(file) : null
+const FilePreview = memo(
+  ({ file, onRemove }: { file: File; onRemove: () => void }) => {
+    const isImage = file.type.startsWith("image/");
+    const previewUrl = isImage ? URL.createObjectURL(file) : null;
 
-  return (
-    <div className="relative">
-      {isImage && previewUrl ? (
-        <img src={previewUrl || "/placeholder.svg"} alt="Preview" className="h-full w-full object-cover" />
-      ) : (
-        <div className="h-full w-full flex items-center justify-center bg-muted">
-          <Upload className="h-10 w-10 text-muted-foreground" />
-        </div>
-      )}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/80"
-        onClick={onRemove}
-      >
-        <X className="h-3 w-3" />
-      </Button>
-    </div>
-  )
-})
+    return (
+      <div className="relative">
+        {isImage && previewUrl ? (
+          <img
+            src={previewUrl || "/placeholder.svg"}
+            alt="Preview"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center bg-muted">
+            <Upload className="h-10 w-10 text-muted-foreground" />
+          </div>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/80"
+          onClick={onRemove}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+    );
+  },
+);
 
-FilePreview.displayName = "FilePreview"
+FilePreview.displayName = "FilePreview";
 
 export const FileUpload = memo<FileUploadProps>(
   ({
@@ -216,4 +222,4 @@ export const FileUpload = memo<FileUploadProps>(
   },
 )
 
-FileUpload.displayName = "FileUpload"
+FileUpload.displayName = "FileUpload";

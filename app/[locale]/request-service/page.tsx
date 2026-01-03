@@ -93,18 +93,40 @@ export default function RequestServicePage() {
     }
   };
 
-  const timeOptions = useMemo(() => [
-    { id: "morning", label: t("timeMorning"), subtitle: t("timeMorningSub"), icon: Sun },
-    { id: "midday", label: t("timeMidday"), subtitle: t("timeMiddaySub"), icon: Clock },
-    { id: "afternoon", label: t("timeAfternoon"), subtitle: t("timeAfternoonSub"), icon: Sunset },
-    { id: "evening", label: t("timeEvening"), subtitle: t("timeEveningSub"), icon: Moon },
-  ], [t]);
+  const timeOptions = useMemo(
+    () => [
+      {
+        id: "morning",
+        label: t("timeMorning"),
+        subtitle: t("timeMorningSub"),
+        icon: Sun,
+      },
+      {
+        id: "midday",
+        label: t("timeMidday"),
+        subtitle: t("timeMiddaySub"),
+        icon: Clock,
+      },
+      {
+        id: "afternoon",
+        label: t("timeAfternoon"),
+        subtitle: t("timeAfternoonSub"),
+        icon: Sunset,
+      },
+      {
+        id: "evening",
+        label: t("timeEvening"),
+        subtitle: t("timeEveningSub"),
+        icon: Moon,
+      },
+    ],
+    [t],
+  );
 
-  const stepTitles = useMemo(() => [
-    t("stepTitle1"),
-    t("stepTitle2"),
-    t("stepTitle3"),
-  ], [t]);
+  const stepTitles = useMemo(
+    () => [t("stepTitle1"), t("stepTitle2"), t("stepTitle3")],
+    [t],
+  );
 
   // Show loading state while checking auth
   if (status === "loading") {
@@ -194,20 +216,19 @@ export default function RequestServicePage() {
                   </div>
                   <div className="flex items-center gap-2">
                     {[1, 2, 3].map((step) => (
-                      <div key={step} className="flex-1 flex items-center gap-2">
+                      <div
+                        key={step}
+                        className="flex-1 flex items-center gap-2"
+                      >
                         <div
                           className={`flex-1 h-2 rounded-full transition-colors ${
-                            currentStep >= step
-                              ? "bg-primary"
-                              : "bg-muted"
+                            currentStep >= step ? "bg-primary" : "bg-muted"
                           }`}
                         />
                         {step < 3 && (
                           <div
                             className={`w-2 h-2 rounded-full transition-colors ${
-                              currentStep > step
-                                ? "bg-primary"
-                                : "bg-muted"
+                              currentStep > step ? "bg-primary" : "bg-muted"
                             }`}
                           />
                         )}
@@ -233,7 +254,10 @@ export default function RequestServicePage() {
                       <div className="w-12 h-1 bg-primary mx-auto rounded-full"></div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+                    <form
+                      onSubmit={handleSubmit}
+                      className="space-y-6 sm:space-y-8"
+                    >
                       {/* Step 1: Basics */}
                       {currentStep === 1 && (
                         <div className="space-y-6 sm:space-y-8">
@@ -449,18 +473,16 @@ export default function RequestServicePage() {
                               className="min-h-[120px] sm:min-h-[150px] text-sm sm:text-base resize-none"
                             />
                             <div className="flex flex-wrap gap-2 mt-2 sm:mt-3">
-                              {[
-                                t("tip1"),
-                                t("tip2"),
-                                t("tip3"),
-                              ].map((tip, index) => (
-                                <span
-                                  key={index}
-                                  className="text-[10px] sm:text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground"
-                                >
-                                  {tip}
-                                </span>
-                              ))}
+                              {[t("tip1"), t("tip2"), t("tip3")].map(
+                                (tip, index) => (
+                                  <span
+                                    key={index}
+                                    className="text-[10px] sm:text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground"
+                                  >
+                                    {tip}
+                                  </span>
+                                ),
+                              )}
                             </div>
                           </div>
 
@@ -622,7 +644,9 @@ export default function RequestServicePage() {
                                     <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
                                     {t("paymentProtection")}
                                   </span>
-                                  <span className="font-semibold text-sm sm:text-base">{t("free")}</span>
+                                  <span className="font-semibold text-sm sm:text-base">
+                                    {t("free")}
+                                  </span>
                                 </div>
                               </div>
                             </div>
